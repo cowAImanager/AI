@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>번식 진료 기록부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9E6DE;
+  --surface:#FFFFFF;
+  --surface-alt:#F2EFE8;
+  --ink:#1C2422;
+  --ink-soft:#6A7570;
+  --primary:#1B6660;
+  --primary-dark:#0F4440;
+  --accent:#E07B35;
+  --accent-soft:#FAEBD8;
+  --tag-yellow:#FFC83D;
+  --tag-ink:#241900;
+  --line:#CEC9BC;
+  --today:#FFE49A;
+  --green-soft:#D8EDE8;
+  --estrus-soft:#DCE8F5;
+  --ai-text:#8A3A10;
+  --sync-bg:#EAE3F5;
+  --sync-text:#4B3478;
+  --estrus-text:#1E4D7A;
+  --notpregnant-bg:#A06A1E;
+  --notpregnant-row-bg:#FBF0DA;
+  --notpregnant-row-border:#D9A33B;
+  --overdue-days-text:#8A3A10;
+  --active-item-bg:#FFF0D8;
+  --today-cell-bg:#FFF3D6;
+  --radius:14px;
+}
+html[data-theme="dark"]{
+  --bg:#111816;
+  --surface:#1C2724;
+  --surface-alt:#243330;
+  --ink:#E8EDEB;
+  --ink-soft:#8AA5A0;
+  --primary:#2A9B8A;
+  --primary-dark:#7BE3D0;
+  --accent:#FF8B4A;
+  --accent-soft:#3D2010;
+  --tag-yellow:#FFC83D;
+  --tag-ink:#241900;
+  --line:#2E3E3A;
+  --today:#5C4A1E;
+  --green-soft:#1A3530;
+  --estrus-soft:#1A2F45;
+  --ai-text:#FFB088;
+  --sync-bg:#332A47;
+  --sync-text:#D6C7F0;
+  --estrus-text:#9FCBF2;
+  --notpregnant-bg:#C98A33;
+  --notpregnant-row-bg:#3A2E14;
+  --notpregnant-row-border:#9C7426;
+  --overdue-days-text:#FF8F66;
+  --active-item-bg:#3A3010;
+  --today-cell-bg:#3A2E14;
+}
+html[data-theme="dark"] body{background:var(--bg);}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    repeating-radial-gradient(ellipse 120px 60px at 30% 40%, transparent 0, transparent 58px, rgba(100,110,100,.04) 59px, transparent 60px),
+    repeating-radial-gradient(ellipse 180px 90px at 70% 60%, transparent 0, transparent 86px, rgba(80,100,80,.03) 87px, transparent 88px),
+    repeating-radial-gradient(ellipse 90px 45px at 50% 80%, transparent 0, transparent 43px, rgba(90,105,90,.035) 44px, transparent 45px);
+}
+html[data-theme="dark"] body::before{
+  background-image:
+    repeating-radial-gradient(ellipse 120px 60px at 30% 40%, transparent 0, transparent 58px, rgba(50,80,70,.06) 59px, transparent 60px),
+    repeating-radial-gradient(ellipse 180px 90px at 70% 60%, transparent 0, transparent 86px, rgba(40,70,60,.04) 87px, transparent 88px);
+}
+.app{position:relative;z-index:1;}
+button{font-family:inherit;}
+.app{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ---------- header ---------- */
+header.topbar{padding:20px 20px 0;background:var(--bg);}
+.title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.title-row h1{font-weight:900;font-size:20px;margin:0;letter-spacing:-0.02em;color:var(--primary-dark);}
+.title-row .sub{font-size:11.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.8;}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.status-badge{font-size:11px;color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-weight:600;}
+.theme-toggle{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface-alt);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0;}
+.theme-toggle:hover{background:var(--surface);}
+
+.owner-tabs{display:flex;gap:6px;margin-top:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.owner-tab{padding:9px 18px;border-radius:10px 10px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
+.owner-tab.active{background:var(--surface);color:var(--primary-dark);font-weight:800;box-shadow:0 -2px 8px rgba(0,0,0,.06);}
+.owner-tab.addnew{background:transparent;border:1px dashed var(--line);color:var(--ink-soft);font-weight:600;}
+.owner-tab.calc-tab{background:var(--primary);color:#fff;border-color:var(--primary);margin-right:6px;}
+.owner-tab.calc-tab:hover{opacity:.88;}
+.owner-tab.allsched-tab{background:var(--primary-dark);}
+.owner-tab.addnew:hover{background:var(--surface-alt);}
+
+.subnav{display:flex;gap:20px;padding:14px 20px 0;align-items:center;}
+.subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;}
+.subnav button.active{color:var(--primary-dark);border-color:var(--accent);}
+
+main{flex:1;padding:18px 20px 70px;}
+
+/* ---------- tag chip (signature element: ear tag) ---------- */
+.tag-chip{display:inline-flex;align-items:center;background:var(--tag-yellow);color:var(--tag-ink);font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:12.5px;padding:5px 10px 5px 17px;border-radius:3px 9px 9px 3px;position:relative;box-shadow:1px 2px 0 rgba(0,0,0,0.18);white-space:nowrap;letter-spacing:0.03em;}
+.tag-chip::before{content:'';position:absolute;left:6px;top:50%;width:5px;height:5px;background:var(--bg);border:1px solid rgba(0,0,0,0.3);border-radius:50%;transform:translateY(-50%);}
+.tag-chip.lg{font-size:17px;padding:9px 16px 9px 25px;}
+.tag-chip.lg::before{left:9px;width:6px;height:6px;}
+.tag-chip.sm{font-size:12px;padding:4px 9px 4px 14px;}
+.tag-chip.sm::before{left:4px;width:4px;height:4px;}
+
+/* ---------- buttons ---------- */
+.btn{background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.88;}
+.btn.secondary{background:var(--surface-alt);color:var(--ink);border:1px solid var(--line);}
+.btn.ghost{background:transparent;color:var(--primary-dark);border:1px solid var(--primary);}
+.btn.danger{background:var(--surface);color:var(--accent);border:1px solid var(--accent);}
+.btn.small{padding:5px 11px;font-size:12px;border-radius:7px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.iconbtn{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:13px;padding:4px 7px;border-radius:6px;}
+.iconbtn:hover{background:var(--surface-alt);color:var(--accent);}
+
+/* ---------- panels ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);}
+.search-input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;margin-bottom:10px;font-family:inherit;background:var(--bg);}
+.search-input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+
+/* ---------- animal view ---------- */
+.animal-layout{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start;}
+@media (max-width:760px){
+  .animal-layout{grid-template-columns:1fr;}
+  .animal-layout.has-selection .list-panel{display:none;}
+  .animal-layout:not(.has-selection) .detail-panel{display:none;}
+}
+.mobile-back{display:none;}
+@media (max-width:760px){ .mobile-back{display:inline-flex;margin-bottom:12px;} }
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;}
+.panel-head h3{font-size:13px;margin:0;color:var(--ink-soft);font-weight:700;}
+.animal-list{max-height:68vh;overflow-y:auto;display:flex;flex-direction:column;gap:3px;}
+.animal-list-item{display:flex;flex-direction:column;gap:5px;padding:10px 9px;border-radius:9px;cursor:pointer;border:1px solid transparent;}
+.animal-list-item:hover{background:var(--surface-alt);}
+.animal-list-item.active{background:var(--active-item-bg);border-color:var(--tag-yellow);}
+.animal-meta{font-size:11px;color:var(--ink-soft);display:flex;gap:8px;flex-wrap:wrap;}
+.empty-state{color:var(--ink-soft);font-size:13px;text-align:center;padding:40px 10px;}
+
+.animal-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+.head-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:12px 18px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+.info-grid .field label{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;letter-spacing:.02em;}
+.info-grid .field .val{font-size:14px;font-weight:600;}
+
+.section-title{font-size:13px;font-weight:700;color:var(--ink-soft);margin:22px 0 8px;display:flex;justify-content:space-between;align-items:center;}
+
+/* 축주 정보 */
+.kv-display-list{display:flex;flex-direction:column;gap:6px;}
+.kv-display-row{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 13px;font-size:13.5px;}
+.kv-display-name{font-weight:700;color:var(--ink);}
+.kv-display-amount{color:var(--ink-soft);font-weight:600;}
+.kv-row-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.kv-row{display:flex;gap:8px;align-items:center;}
+
+/* 동기화 */
+.sync-list{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
+.sync-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.sync-row select{min-width:140px;}
+.sync-row input[type=date]{min-width:110px;}
+.sync-row input[type=time]{min-width:88px;}
+.sync-num{width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sync-row select{flex:1.4;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
+.sync-row input[type=date]{flex:1;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
+.sync-row input[type=time]{flex:.8;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
+.sync-row select:focus,.sync-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+.kv-row .kv-name{flex:1.3;}
+.kv-row .kv-amount{flex:1;}
+.kv-row input{padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
+.kv-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+
+/* 임신감정 */
+.pregcheck-list{display:flex;flex-direction:column;gap:9px;}
+.pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
+.pregcheck-row:hover{background:var(--surface-alt);}
+.pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
+.pregcheck-date{font-size:13px;color:var(--ink-soft);font-weight:700;}
+.pregcheck-days{font-size:13.5px;font-weight:800;color:var(--primary-dark);}
+.pregcheck-row.overdue .pregcheck-days{color:var(--overdue-days-text);}
+.pregcheck-status{font-size:12px;color:var(--ink-soft);background:var(--surface-alt);padding:3px 9px;border-radius:7px;font-weight:600;}
+.pregcheck-badge{font-size:12px;font-weight:800;color:#fff;background:var(--accent);padding:5px 11px;border-radius:7px;margin-left:auto;}
+.pregcheck-badge.notpregnant{background:var(--notpregnant-bg);}
+.pregcheck-badge.confirmed{background:var(--primary);}
+.pregcheck-row.notpregnant{background:var(--notpregnant-row-bg);border-color:var(--notpregnant-row-border);}
+.pregcheck-row.confirmed{background:var(--green-soft);border-color:var(--primary);}
+
+.record-card{border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-top:10px;background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,.05);}
+.record-card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+.record-dates{display:flex;gap:8px;flex-wrap:wrap;}
+.date-pill{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:7px;background:var(--surface-alt);color:var(--ink-soft);}
+.date-pill.exam{background:var(--green-soft);color:var(--primary-dark);}
+.date-pill.estrus{background:var(--estrus-soft);color:var(--estrus-text);}
+.date-pill.ai{background:var(--accent-soft);color:var(--ai-text);}
+.date-pill.sync{background:var(--sync-bg);color:var(--sync-text);}
+.record-body{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.5;display:flex;flex-direction:column;gap:7px;}
+.record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;}
+.record-body .kv:last-child{border-bottom:none;padding-bottom:0;}
+.record-body .kv b{color:var(--primary-dark);font-weight:800;font-size:12.5px;min-width:92px;flex-shrink:0;}
+.record-notes{margin-top:8px;color:var(--ink);font-size:14px;background:var(--bg);padding:9px 12px;border-radius:8px;line-height:1.5;}
+
+/* ---------- date view ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+.seg button{border:none;background:var(--surface);padding:8px 14px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
+.seg button.active{background:var(--primary);color:#fff;}
+.toolbar input[type=date]{padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--surface);}
+.toolbar .search-input{width:200px;margin-bottom:0;}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border-radius:12px;overflow:hidden;}
+.data-table th{text-align:left;font-size:11px;color:var(--ink-soft);padding:8px 10px;border-bottom:2px solid var(--line);font-weight:700;}
+.data-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;cursor:pointer;}
+.data-table tr:hover td{background:var(--surface-alt);}
+.data-table .actions{white-space:nowrap;}
+.note-trunc{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+
+/* ---------- schedule ---------- */
+.sched-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.quick-chip{background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;font-weight:700;color:var(--ink);}
+.quick-chip:hover{background:var(--tag-yellow);border-color:var(--tag-yellow);color:var(--tag-ink);}
+.sched-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh;background:var(--surface);}
+.sched-table{border-collapse:separate;border-spacing:0;font-size:12px;}
+.sched-table th,.sched-table td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:62px;text-align:center;}
+.sched-table thead th{position:sticky;top:0;background:var(--surface-alt);z-index:2;padding:7px 4px;font-weight:700;color:var(--ink-soft);font-size:11px;}
+.sched-table thead th.weekend{color:var(--accent);}
+.sched-table thead th.today{background:var(--today);color:var(--ink);}
+.sched-table th.corner{position:sticky;left:0;top:0;z-index:4;background:var(--surface-alt);min-width:180px;text-align:left;padding:7px 12px;}
+.sched-table td.rowhead{position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;padding:8px 10px;min-width:180px;}
+.rowhead-inner{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.sched-cell{padding:0;}
+.sched-cell.today{background:var(--today-cell-bg);}
+.sched-cell.auto input{color:var(--primary);font-style:italic;opacity:.85;}
+.sched-cell.done input{text-decoration:line-through;opacity:.5;}
+.sched-cell-inner{display:flex;align-items:center;width:100%;}
+.sched-cell-inner input{flex:1;min-width:0;}
+.done-btn{width:20px;height:20px;flex-shrink:0;border:1px solid var(--line);background:var(--surface-alt);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;padding:0;margin-left:2px;}
+.done-btn.is-done{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+/* 전체 스케줄 */
+
+/* 풀정보 */
+.grass-legend{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px;}
+.grass-tag{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:7px;}
+.grass-section-title{font-size:13px;font-weight:800;color:var(--primary-dark);margin:20px 0 10px;padding-top:14px;border-top:1px solid var(--line);}
+.grass-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+.grass-card{border-radius:11px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);}
+.grass-card.straw{border-left:4px solid #C8A44A;}
+.grass-card.quality{border-left:4px solid #4A8A40;}
+.grass-card.import{border-left:4px solid var(--primary-dark);}
+.grass-name{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.grass-meta{font-size:11.5px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.grass-color-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.15);}
+.grass-stats{display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
+.stat-tdn{font-size:11px;font-weight:800;background:#FFF3CD;color:#7A5A00;padding:2px 8px;border-radius:6px;}
+.stat-cp{font-size:11px;font-weight:800;background:#D5EDD8;color:#1C5C34;padding:2px 8px;border-radius:6px;}
+.stat-price{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;}
+.stat-price.p1{background:#E8F5E8;color:#2A6A2A;}   /* 저렴 */
+.stat-price.p2{background:#EEF5E0;color:#4A6A1A;}   /* 보통 */
+.stat-price.p3{background:#FFF0E0;color:#8A5010;}   /* 조금 비쌈 */
+.stat-price.p4{background:#FFE5D0;color:#9A3810;}   /* 비쌈 */
+.stat-price.p5{background:#FFD5C0;color:#AA2808;}   /* 가장 비쌈 */
+html[data-theme="dark"] .stat-price.p1{background:#1A3A1A;color:#7ACD7A;}
+html[data-theme="dark"] .stat-price.p2{background:#283A10;color:#AACD5A;}
+html[data-theme="dark"] .stat-price.p3{background:#3A2810;color:#CDA05A;}
+html[data-theme="dark"] .stat-price.p4{background:#3A1A08;color:#CDA050;}
+html[data-theme="dark"] .stat-price.p5{background:#3A0A00;color:#FF9070;}
+.grass-desc{font-size:12px;color:var(--ink-soft);line-height:1.55;margin-bottom:6px;}
+.grass-sim{font-size:11.5px;color:var(--primary);font-weight:700;}
+.grass-rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.grass-rec{background:var(--surface-alt);border-radius:11px;padding:13px 16px;}
+.grass-rec-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px;}
+.grass-rec ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:5px;}
+.grass-rec li{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+html[data-theme="dark"] .stat-tdn{background:#4A3A10;color:#FFD870;}
+html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
+.allsched-list{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.allsched-date{font-size:11.5px;font-weight:800;color:var(--ink-soft);padding:8px 0 3px;border-bottom:1px solid var(--line);}
+.allsched-date.allsched-today{color:var(--primary-dark);font-size:13px;}
+.allsched-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--surface);}
+.allsched-item.done{opacity:.5;}
+.allsched-item.done .allsched-note{text-decoration:line-through;}
+.allsched-item.auto .allsched-note{font-style:italic;color:var(--primary);}
+.allsched-owner{font-size:11px;color:var(--ink-soft);font-weight:600;}
+.allsched-note{flex:1;font-size:13px;font-weight:600;}
+@media(max-width:640px){
+  .modal[style*="860px"]{grid-template-columns:1fr;}
+  .modal[style*="860px"] > div > div:first-child{display:grid;grid-template-columns:1fr !important;}
+}
+.sched-cell input{width:100%;height:38px;border:none;background:transparent;text-align:center;font-size:11px;font-family:inherit;padding:2px;color:var(--ink);}
+.sched-cell input:focus{background:var(--surface);outline:2px solid var(--tag-yellow);position:relative;z-index:1;}
+
+/* ---------- modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(20,24,18,.5);display:flex;align-items:center;justify-content:center;padding:18px;z-index:200;}
+.modal{background:var(--surface);border-radius:18px;padding:24px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(0,0,0,.1);}
+.modal h2{margin:0 0 4px;font-size:18px;color:var(--primary-dark);}
+.modal .modal-sub{font-size:12px;color:var(--ink-soft);margin-bottom:16px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px 14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:11px;color:var(--ink-soft);font-weight:700;}
+.field input,.field select,.field textarea{padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;width:100%;background:var(--bg);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+.field textarea{resize:vertical;min-height:56px;}
+.field-pair{display:flex;gap:6px;flex-wrap:wrap;}
+.field-pair input{flex:1 1 92px;min-width:92px;}
+.field.checkbox{flex-direction:row;align-items:center;gap:7px;}
+.field.checkbox input{width:auto;}
+.chips-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.chips-inline button{border:1px solid var(--line);background:var(--surface-alt);border-radius:7px;padding:3px 9px;font-size:11.5px;cursor:pointer;font-weight:600;}
+.fieldset-title{font-size:12.5px;font-weight:700;color:var(--primary-dark);margin:18px 0 4px;padding-top:14px;border-top:1px solid var(--line);}
+.legacy-note{font-size:11.5px;color:var(--ink-soft);background:var(--bg);border-radius:7px;padding:7px 10px;margin:6px 0 4px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;}
+.modal-actions .left{margin-right:auto;}
+details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;}
+
+.confirm-modal{max-width:380px;text-align:center;}
+.confirm-modal p{font-size:14px;color:var(--ink);line-height:1.5;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#262420;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+
+@media (max-width:540px){
+  .modal{padding:18px;border-radius:14px;}
+  .form-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script id="data-island" type="application/json">{"owners":["김준규","이종현"],"animals":[{"animalId":"002 3123 4465 3","owner":"김준규","sire":"1281","damSire":"950","damDamSire":"497","birth":"2021-08-16","parity":"0","lastCalving":null},{"animalId":"002 3123 4345 0","owner":"김준규","sire":"1212","damSire":"911","damDamSire":"834","birth":"2021-07-07","parity":"2","lastCalving":"2025-09-17"},{"animalId":"002 3123 4342 5","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-06-24","parity":"","lastCalving":null},{"animalId":"002 3123 4341 7","owner":"김준규","sire":"1292","damSire":"911","damDamSire":"774","birth":"2021-08-01","parity":"2","lastCalving":"2024-07-23"},{"animalId":"002 2193 1122 7","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-12-06","parity":"","lastCalving":null},{"animalId":"002 2163 4747 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-10-10","parity":"","lastCalving":null},{"animalId":"002 2131 3902 6","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-06-17","parity":"","lastCalving":null},{"animalId":"002 2131 3880 8","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-06-18","parity":"","lastCalving":null},{"animalId":"002 2094 5891 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-05-10","parity":"","lastCalving":null},{"animalId":"002 2094 5883 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-05-08","parity":"","lastCalving":null},{"animalId":"002 2094 5732 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-04-09","parity":"","lastCalving":null},{"animalId":"002 2094 5660 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-04-04","parity":"","lastCalving":null},{"animalId":"002 2056 5538 5","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2024-12-13","parity":"","lastCalving":null},{"animalId":"002 2056 5537 7","owner":"김준규","sire":"","damSire":"1448","damDamSire":"866","birth":"2024-11-17","parity":"","lastCalving":null},{"animalId":"002 2056 5439 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2024-10-08","parity":"","lastCalving":null},{"animalId":"002 2029 9410 7","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2024-06-08","parity":"","lastCalving":null},{"animalId":"002 2029 9407 0","owner":"김준규","sire":"802","damSire":"1292","damDamSire":"911","birth":"2024-07-23","parity":"0","lastCalving":null},{"animalId":"002 1986 7203 8","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2025-05-20","parity":"","lastCalving":null},{"animalId":"002 1986 7202 0","owner":"김준규","sire":"1314","damSire":"1112","damDamSire":"828","birth":"2024-05-22","parity":"0","lastCalving":null},{"animalId":"002 1986 7201 1","owner":"김준규","sire":"1274","damSire":"1115","damDamSire":"890","birth":"2024-05-02","parity":"1","lastCalving":"2025-04-15"},{"animalId":"002 1986 7200 3","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2024-05-01","parity":"","lastCalving":null},{"animalId":"002 1986 7188 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2024-03-21","parity":"","lastCalving":null},{"animalId":"002 1959 3034 7","owner":"김준규","sire":"1485","damSire":"1101","damDamSire":"1180","birth":"2024-02-25","parity":"0","lastCalving":null},{"animalId":"002 1959 2683 0","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-11-13","parity":"1","lastCalving":null},{"animalId":"002 1932 9058 2","owner":"김준규","sire":"1292","damSire":"1448","damDamSire":"866","birth":"2023-11-02","parity":"1","lastCalving":"2025-08-19"},{"animalId":"002 1932 8869 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-09-17","parity":"","lastCalving":null},{"animalId":"002 1932 8802 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-10-08","parity":"","lastCalving":null},{"animalId":"002 1932 8629 4","owner":"김준규","sire":"1314","damSire":"789","damDamSire":"1016","birth":"2023-07-05","parity":"1","lastCalving":"2025-06-08"},{"animalId":"002 1905 7091 5","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-06-20","parity":"","lastCalving":null},{"animalId":"002 1905 6883 4","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-05-27","parity":"","lastCalving":null},{"animalId":"002 1905 6882 6","owner":"김준규","sire":"990","damSire":"1112","damDamSire":"850","birth":"2023-05-27","parity":"1","lastCalving":"2025-10-10"},{"animalId":"002 1866 3964 6","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-05-03","parity":"","lastCalving":null},{"animalId":"002 1866 3810 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-03-18","parity":"","lastCalving":null},{"animalId":"002 1866 3649 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-03-25","parity":"","lastCalving":null},{"animalId":"002 1866 3642 6","owner":"김준규","sire":"1465","damSire":"1024","damDamSire":"566","birth":"2023-03-26","parity":"1","lastCalving":"2026-12-06"},{"animalId":"002 1866 3635 4","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-03-19","parity":"","lastCalving":null},{"animalId":"002 1866 3557 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-03-21","parity":"","lastCalving":null},{"animalId":"002 1866 3556 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2023-03-21","parity":"","lastCalving":null},{"animalId":"002 1829 9370 1","owner":"김준규","sire":"1203","damSire":"1145","damDamSire":"953","birth":"2022-12-05","parity":"1","lastCalving":"2025-04-29"},{"animalId":"002 1829 9252 7","owner":"김준규","sire":"990","damSire":"950","damDamSire":"656","birth":"2022-11-22","parity":"0","lastCalving":null},{"animalId":"002 1826 4556 8","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-09-18","parity":"","lastCalving":null},{"animalId":"002 1826 4553 3","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-09-11","parity":"","lastCalving":null},{"animalId":"002 1826 4514 6","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-07-14","parity":"","lastCalving":null},{"animalId":"002 1762 2242 6","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-02-23","parity":"","lastCalving":null},{"animalId":"002 1762 2041 6","owner":"김준규","sire":"1456","damSire":"850","damDamSire":"","birth":"2022-04-19","parity":"2","lastCalving":"2025-06-14"},{"animalId":"002 1762 2040 8","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-04-07","parity":"","lastCalving":null},{"animalId":"002 1762 2035 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-05-24","parity":"","lastCalving":null},{"animalId":"002 1720 4187 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-11-03","parity":"","lastCalving":null},{"animalId":"002 1720 4186 2","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-11-01","parity":"","lastCalving":null},{"animalId":"002 1720 4182 0","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-12-26","parity":"","lastCalving":null},{"animalId":"002 1720 3856 1","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-02-11","parity":"","lastCalving":null},{"animalId":"002 1720 3855 3","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2022-02-01","parity":"","lastCalving":null},{"animalId":"002 1720 3854 5","owner":"김준규","sire":"1101","damSire":"1180","damDamSire":"917","birth":"2022-02-04","parity":"2","lastCalving":"2025-07-28"},{"animalId":"002 1720 3852 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-12-04","parity":"","lastCalving":null},{"animalId":"002 1696 4934 7","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2021-08-01","parity":"","lastCalving":null},{"animalId":"002 1657 5259 8","owner":"김준규","sire":"828","damSire":"953","damDamSire":"656","birth":"2021-05-26","parity":"3","lastCalving":"2025-04-18"},{"animalId":"002 1657 5091 4","owner":"김준규","sire":"1203","damSire":"1049","damDamSire":"834","birth":"2021-04-22","parity":"2","lastCalving":"2024-10-08"},{"animalId":"002 1657 5088 3","owner":"김준규","sire":"1448","damSire":"866","damDamSire":"917","birth":"2021-04-21","parity":"2","lastCalving":"2026-03-01"},{"animalId":"002 1616 3412 2","owner":"김준규","sire":"872","damSire":"","damDamSire":"","birth":"2021-04-13","parity":"2","lastCalving":"2024-06-08"},{"animalId":"002 1616 3409 1","owner":"김준규","sire":"1212","damSire":"634","damDamSire":"497","birth":"2021-03-21","parity":"2","lastCalving":"2025-05-08"},{"animalId":"002 1587 4873 5","owner":"김준규","sire":"802","damSire":"950","damDamSire":"656","birth":"2021-01-02","parity":"0","lastCalving":null},{"animalId":"002 1587 4745 3","owner":"김준규","sire":"1281","damSire":"872","damDamSire":"683","birth":"2021-01-08","parity":"2","lastCalving":"2024-11-26"},{"animalId":"002 1587 4624 1","owner":"김준규","sire":"1012","damSire":"1024","damDamSire":"566","birth":"2020-12-04","parity":"2","lastCalving":"2025-10-01"},{"animalId":"002 1561 3143 3","owner":"김준규","sire":"1130","damSire":"950","damDamSire":"855","birth":"2020-09-18","parity":"2","lastCalving":"2023-10-08"},{"animalId":"002 1518 1404 7","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2020-04-16","parity":"","lastCalving":null},{"animalId":"002 1518 1402 2","owner":"김준규","sire":"1115","damSire":"890","damDamSire":"634","birth":"2020-06-17","parity":"4","lastCalving":"2025-06-08"},{"animalId":"002 1488 9259 8","owner":"김준규","sire":"1112","damSire":"850","damDamSire":"","birth":"2020-04-19","parity":"4","lastCalving":"2024-07-21"},{"animalId":"002 1488 9253 9","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2020-03-29","parity":"","lastCalving":null},{"animalId":"002 1477 2962 0","owner":"김준규","sire":"950","damSire":"1024","damDamSire":"566","birth":"2020-01-07","parity":"5","lastCalving":"2025-06-26"},{"animalId":"002 1477 2825 0","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2020-01-08","parity":"","lastCalving":null},{"animalId":"002 1477 2821 7","owner":"김준규","sire":"950","damSire":"872","damDamSire":"683","birth":"2019-12-02","parity":"3","lastCalving":"2024-06-21"},{"animalId":"002 1390 8494 4","owner":"김준규","sire":"","damSire":"","damDamSire":"","birth":"2019-06-15","parity":"","lastCalving":null},{"animalId":"002 1390 8493 6","owner":"김준규","sire":"1145","damSire":"953","damDamSire":"656","birth":"2019-05-12","parity":"4","lastCalving":"2025-03-05"},{"animalId":"002 1390 8162 4","owner":"김준규","sire":"883","damSire":"828","damDamSire":"497","birth":"2019-04-04","parity":"3","lastCalving":"2025-02-19"},{"animalId":"002 1390 8161 6","owner":"김준규","sire":"917","damSire":"912","damDamSire":"1024","birth":"2019-03-12","parity":"2","lastCalving":"2024-03-05"},{"animalId":"002 1866 3633 8","owner":"김준규","sire":"1522","damSire":"1002","damDamSire":"870","birth":"2023-03-18","parity":"2","lastCalving":"2025-02-18"},{"animalId":"002 2056 5187 6","owner":"이종현","sire":"1336","damSire":"","damDamSire":"668","birth":"2024-08-23","parity":"0","lastCalving":null}],"records":[{"id":"김준규-002 3123 4465 3-1","owner":"김준규","animalId":"002 3123 4465 3","examDate":"2026-05-30","estrusDate":null,"aiDate":"2026-05-30 08:00","aiInterval":"","nextEstrusDate":null,"expectedCalving":"2027-03-11 08:00","expectedCycle":"","pregnant":"","estrusSign":"MT 지속적","rectalExam":"난포약간단단","ultrasound":"우난포 12mm","hormoneTreatment":"리셉탈 2.5, 자궁경관 미발달, 도태 고려","notes":"","aiCount":"3","inHouseAi":"1","aiOrder":"25","kpn":"1526","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4465 3-2","owner":"김준규","animalId":"002 3123 4465 3","examDate":"2026-05-25","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우난포 8mm, 좌소난포","hormoneTreatment":"","notes":"18일 이후 황체퇴행되었으나 난포의 느린 성장으로 인한 배란 지연? 혹은 LH surge 부족, 또는 무배란성 난포","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4465 3-3","owner":"김준규","animalId":"002 3123 4465 3","examDate":"2026-05-18","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우황체 20mm, 좌난포 10mm","hormoneTreatment":"","notes":"2주내 발정가능성, 이번 발정에서 강발정아니면 동기화 고려","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4465 3-4","owner":"김준규","animalId":"002 3123 4465 3","examDate":"2026-05-12","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우난포 7mm","hormoneTreatment":"","notes":"","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4465 3-5","owner":"김준규","animalId":"002 3123 4465 3","examDate":"2026-05-07","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"양쪽 소난포들","hormoneTreatment":"","notes":"발정 확인 진료. 7일 후 재진","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4465 3-6","owner":"김준규","animalId":"002 3123 4465 3","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"4/28 CIDR+079","notes":"비정상적 발정주기로 호르몬 처치","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4345 0-7","owner":"김준규","animalId":"002 3123 4345 0","examDate":"2026-05-21","estrusDate":"2026-05-21","aiDate":"2026-05-21","aiInterval":"","nextEstrusDate":"2026-06-11","expectedCalving":"2027-03-02","expectedCycle":"","pregnant":"","estrusSign":"없음","rectalExam":"자궁수축 좋음","ultrasound":"좌난포 10mm","hormoneTreatment":"","notes":"","aiCount":"0","inHouseAi":"1","aiOrder":"20","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4345 0-8","owner":"김준규","animalId":"002 3123 4345 0","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"5/13 CIDR+0567","notes":"","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4342 5-9","owner":"김준규","animalId":"002 3123 4342 5","examDate":"2026-05-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"임신 7개월정도 추정, kpn/수정기록없음","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4341 7-10","owner":"김준규","animalId":"002 3123 4341 7","examDate":"2026-03-31","estrusDate":"2026-03-31 09:00","aiDate":"2026-03-31 23:00","aiInterval":"14시간","nextEstrusDate":"2026-04-21 09:00","expectedCalving":"2027-01-10 23:00","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"2","inHouseAi":"1","aiOrder":"1","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 3123 4341 7-11","owner":"김준규","animalId":"002 3123 4341 7","examDate":"2026-05-28","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"풍선모양자궁","ultrasound":"코틸레돈, 태아낭","hormoneTreatment":"임신감정 : O","notes":"","aiCount":"2","inHouseAi":"1","aiOrder":"1","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2094 5883 1-17","owner":"김준규","animalId":"002 2094 5883 1","examDate":null,"estrusDate":"2026-05-20","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-10","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"MT,ST","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"사장님이 넘김","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2094 5883 1-18","owner":"김준규","animalId":"002 2094 5883 1","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"발정왔었는데 날짜 모름","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"사장님이 넘김","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2056 5537 7-22","owner":"김준규","animalId":"002 2056 5537 7","examDate":"2026-04-29","estrusDate":"2026-04-29 11:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-20 11:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌 : 작은우세난포, 우 : 소난포들","hormoneTreatment":"","notes":"발정 확인 검사. 발정 아님","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2056 5537 7-23","owner":"김준규","animalId":"002 2056 5537 7","examDate":null,"estrusDate":"2026-05-20","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-10","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"발정있었고 21일에 출혈","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"5/18 발정, 5/21 출혈","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2056 5537 7-24","owner":"김준규","animalId":"002 2056 5537 7","examDate":null,"estrusDate":"2026-06-08","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-28","expectedCalving":null,"expectedCycle":"20일","pregnant":"","estrusSign":"6/8일 발정왔었음, MT, 점액","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"5/18 발정, 5/21 출혈","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2029 9407 0-27","owner":"김준규","animalId":"002 2029 9407 0","examDate":"2026-05-31","estrusDate":"2026-05-31","aiDate":"2026-05-31","aiInterval":"","nextEstrusDate":"2026-06-21","expectedCalving":"2027-03-12","expectedCycle":"","pregnant":"","estrusSign":"점액 많이 나옴","rectalExam":"","ultrasound":"좌난포 14mm","hormoneTreatment":"","notes":"동기화 후 AI","aiCount":"0","inHouseAi":"1","aiOrder":"29","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 2029 9407 0-28","owner":"김준규","animalId":"002 2029 9407 0","examDate":"2026-05-22","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"무발정 길었다고 함","rectalExam":"","ultrasound":"좌황체, 우난포 8mm","hormoneTreatment":"5/23 0567","notes":"동기화 권장","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1986 7202 0-30","owner":"김준규","animalId":"002 1986 7202 0","examDate":"2026-05-30","estrusDate":"2026-05-29 15:00","aiDate":"2026-05-30 08:00","aiInterval":"17시간","nextEstrusDate":"2026-06-19 15:00","expectedCalving":"2027-03-11 08:00","expectedCycle":"","pregnant":"","estrusSign":"MT, 점액","rectalExam":"난포 단단","ultrasound":"우난포 10mm","hormoneTreatment":"30일 GnRH 그대로 진행, 연수정 예정","notes":"호르몬처치 후 AI","aiCount":"2","inHouseAi":"1","aiOrder":"28","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1986 7202 0-31","owner":"김준규","animalId":"002 1986 7202 0","examDate":"2026-05-22","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"무발정 길었다고 함","rectalExam":"","ultrasound":"좌황체, 좌난포 10mm","hormoneTreatment":"5/23 0567","notes":"동기화 권장","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1986 7201 1-32","owner":"김준규","animalId":"002 1986 7201 1","examDate":"2026-06-13","estrusDate":"2026-06-13 09:00","aiDate":"2026-06-13 22:00","aiInterval":"13시간","nextEstrusDate":"2026-07-04 09:00","expectedCalving":"2027-03-25 22:00","expectedCycle":"","pregnant":"","estrusSign":"아침9시 MT","rectalExam":"좌난포,우황체 모두 말랑","ultrasound":"좌난포 15, 우황체 12","hormoneTreatment":"","notes":"점액 많았다고 함, 수정하기 좋음","aiCount":"0","inHouseAi":"1","aiOrder":"33","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1986 7188 9-34","owner":"김준규","animalId":"002 1986 7188 9","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"5/30 발정","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 3034 7-35","owner":"김준규","animalId":"002 1959 3034 7","examDate":"2026-05-30","estrusDate":null,"aiDate":"2026-05-30 08:00","aiInterval":"","nextEstrusDate":null,"expectedCalving":"2027-03-11 08:00","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"난포 약간 단단","ultrasound":"좌난포 14mm","hormoneTreatment":"두번째 리셉탈 금일 처치 2.5","notes":"","aiCount":"4","inHouseAi":"1","aiOrder":"26","kpn":"1567","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 3034 7-36","owner":"김준규","animalId":"002 1959 3034 7","examDate":"2026-05-20","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체 10mm, 우난포 7mm","hormoneTreatment":"2026. 5. 20 0567","notes":"","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 3034 7-37","owner":"김준규","animalId":"002 1959 3034 7","examDate":"2026-05-30","estrusDate":"2026-05-29 08:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-19 08:00","expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"빙빙, MT","rectalExam":"","ultrasound":"","hormoneTreatment":"두번째 에스트로벳 처치 28일에 함, 두번째 리셉탈 처치 중단","notes":"","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 3034 7-38","owner":"김준규","animalId":"002 1959 3034 7","examDate":"2026-05-03","estrusDate":"2026-05-02 09:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-23 09:00","expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"발정주기 일정, 보통 AM-PM 수정","rectalExam":"","ultrasound":"오전 8시-소난포들. 배란되었을 가능성","hormoneTreatment":"","notes":"발정 확인 검사. 발정 아님","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 2683 0-39","owner":"김준규","animalId":"002 1959 2683 0","examDate":"2026-06-18","estrusDate":"2026-06-18 08:00","aiDate":"2026-06-18 21:00","aiInterval":"13시간","nextEstrusDate":"2026-07-09 08:00","expectedCalving":"2027-03-30 21:00","expectedCycle":"","pregnant":"","estrusSign":"저녁에 ST, 생식기부종, 자궁경관수축","rectalExam":"자궁좌측하단으로내려가있음","ultrasound":"우난포 15,우난포 13","hormoneTreatment":"","notes":"점액 많았다고 함,수정하기 좋음, 6/11 발정이 아니었다면 3난포파 발정주기일 수 있음.","aiCount":"0","inHouseAi":"1","aiOrder":"34","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1959 2683 0-40","owner":"김준규","animalId":"002 1959 2683 0","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"6/11 발정, MT","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1932 9058 2-41","owner":"김준규","animalId":"002 1932 9058 2","examDate":"2026-05-01","estrusDate":"2026-05-01 09:00","aiDate":"2026-05-01 23:30","aiInterval":"14시간 30분","nextEstrusDate":"2026-05-22 09:00","expectedCalving":"2027-02-10 23:30","expectedCycle":"","pregnant":"","estrusSign":"9시 MT, 점액","rectalExam":"난포 조금 딱딱, 점액 많았음","ultrasound":"좌우성난포 13mm","hormoneTreatment":"GnRH 2.5cc","notes":"발정 확인 검사. AI","aiCount":"1","inHouseAi":"1","aiOrder":"9","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1932 9058 2-42","owner":"김준규","animalId":"002 1932 9058 2","examDate":"2026-05-25","estrusDate":"2026-05-24","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-14","expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"한두번 MT","rectalExam":"","ultrasound":"좌황체 5mm, 우소난포","hormoneTreatment":"","notes":"23일만에 발정, 임신가능성보다는 재발정 가능성 높음","aiCount":"1","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1932 9058 2-43","owner":"김준규","animalId":"002 1932 9058 2","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"양쪽 소난포들","hormoneTreatment":"","notes":"임신감정 = x","aiCount":"1","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1932 8629 4-46","owner":"김준규","animalId":"002 1932 8629 4","examDate":"2026-05-22","estrusDate":null,"aiDate":"2025-09-17","aiInterval":"","nextEstrusDate":null,"expectedCalving":"2026-06-29","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"직장 바로 아래 태아 촉진","ultrasound":"","hormoneTreatment":"","notes":"만삭","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1905 6882 6-49","owner":"김준규","animalId":"002 1905 6882 6","examDate":"2026-05-31","estrusDate":"2026-05-31","aiDate":"2026-05-31","aiInterval":"","nextEstrusDate":"2026-06-21","expectedCalving":"2027-03-12","expectedCycle":"","pregnant":"","estrusSign":"점액 가득","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"0","inHouseAi":"1","aiOrder":"30","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1905 6882 6-50","owner":"김준규","animalId":"002 1905 6882 6","examDate":"2026-05-18","estrusDate":"2026-05-18 08:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-08 08:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"오전 점액, 빙빙","rectalExam":"","ultrasound":"우난포 5mm","hormoneTreatment":"5/22 0567+cidr","notes":"주기가 일정하여 미약발정으로 추정함, 호르몬 처치","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1905 6882 6-51","owner":"김준규","animalId":"002 1905 6882 6","examDate":"2026-05-30","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌난포 8mm","hormoneTreatment":"5/31 재검사 후 수정","notes":"","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1905 6882 6-52","owner":"김준규","animalId":"002 1905 6882 6","examDate":"2026-04-26","estrusDate":"2026-04-26 11:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-17 11:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"11시 활동성증가, 저녁에도 MT","rectalExam":"","ultrasound":"우측 난포 10mm","hormoneTreatment":"","notes":"발정 확인 검사. 발정 아님","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1866 3642 6-56","owner":"김준규","animalId":"002 1866 3642 6","examDate":"2026-05-08","estrusDate":"2026-05-07 13:00","aiDate":"2026-05-08 22:00","aiInterval":"1일 9시간","nextEstrusDate":"2026-05-28 13:00","expectedCalving":"2027-02-17 22:00","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"난포 말랑함","ultrasound":"우난포 13mm","hormoneTreatment":"","notes":"","aiCount":"1","inHouseAi":"1","aiOrder":"15","kpn":"1552","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1829 9370 1-60","owner":"김준규","animalId":"002 1829 9370 1","examDate":"2026-05-07","estrusDate":"2026-05-07","aiDate":"2026-05-08","aiInterval":"","nextEstrusDate":"2026-05-28","expectedCalving":"2027-02-17","expectedCycle":"","pregnant":"","estrusSign":"점액","rectalExam":"","ultrasound":"좌측 12mm 우성난포","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"2","inHouseAi":"1","aiOrder":"11","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1829 9370 1-61","owner":"김준규","animalId":"002 1829 9370 1","examDate":"2026-04-26","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우황체 10mm, 나머지 소난포","hormoneTreatment":"4/28 고나돈+CIDR","notes":"비정상적 발정주기로 호르몬 처치","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1829 9252 7-62","owner":"김준규","animalId":"002 1829 9252 7","examDate":"2026-05-07","estrusDate":"2026-05-07","aiDate":"2026-05-08","aiInterval":"","nextEstrusDate":"2026-05-28","expectedCalving":"2027-02-17","expectedCycle":"","pregnant":"","estrusSign":"점액","rectalExam":"","ultrasound":"우측 15mm 우성난포, 12mm 황체, 좌측 소난포들","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"2","inHouseAi":"1","aiOrder":"12","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1829 9252 7-63","owner":"김준규","animalId":"002 1829 9252 7","examDate":"2026-04-26","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌난포 6-7mm, 나머지 소난포","hormoneTreatment":"4/28 고나돈+CIDR","notes":"비정상적 발정주기로 호르몬 처치","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1762 2041 6-68","owner":"김준규","animalId":"002 1762 2041 6","examDate":"2026-05-21","estrusDate":"2026-05-21","aiDate":"2026-05-21","aiInterval":"","nextEstrusDate":"2026-06-11","expectedCalving":"2027-03-02","expectedCycle":"","pregnant":"","estrusSign":"점액 가득","rectalExam":"자궁수축 좋음","ultrasound":"좌난포 13mm","hormoneTreatment":"","notes":"","aiCount":"2","inHouseAi":"1","aiOrder":"19","kpn":"1697","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1762 2041 6-69","owner":"김준규","animalId":"002 1762 2041 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"5/13 CIDR+0567","notes":"","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1720 3855 3-76","owner":"김준규","animalId":"002 1720 3855 3","examDate":"2026-06-10","estrusDate":"2026-06-10","aiDate":"2026-06-10 11:00","aiInterval":"","nextEstrusDate":"2026-07-01","expectedCalving":"2027-03-22 11:00","expectedCycle":"","pregnant":"","estrusSign":"수정하기 좋음, 점액 많음","rectalExam":"오른쪽 난포 파동감 좋음","ultrasound":"오 15mm, 왼 14mm","hormoneTreatment":"6/2 CIDR 0567","notes":"","aiCount":"","inHouseAi":"1","aiOrder":"1","kpn":"1767","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1720 3855 3-77","owner":"김준규","animalId":"002 1720 3855 3","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"5.11 발정 있었으나 미약하여 패스","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1720 3855 3-78","owner":"김준규","animalId":"002 1720 3855 3","examDate":"2026-05-31","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"소난포들","hormoneTreatment":"동기화 실시","notes":"자연발정주기 맞지 않음. 동기화","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1720 3854 5-79","owner":"김준규","animalId":"002 1720 3854 5","examDate":"2026-05-08","estrusDate":"2026-05-08 09:00","aiDate":"2026-05-08 22:00","aiInterval":"13시간","nextEstrusDate":"2026-05-29 09:00","expectedCalving":"2027-02-17 22:00","expectedCycle":"19일","pregnant":"","estrusSign":"자궁 형태 기형","rectalExam":"난포 약간 단단","ultrasound":"우난포 14mm","hormoneTreatment":"GnRH 2.5cc","notes":"비형성된 자궁, 수태되지 않으면 도태 권장","aiCount":"0","inHouseAi":"1","aiOrder":"14","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1720 3854 5-80","owner":"김준규","animalId":"002 1720 3854 5","examDate":null,"estrusDate":"2026-04-19 09:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-10 09:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"사장님 사정상 발정 넘김","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"0","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5259 8-83","owner":"김준규","animalId":"002 1657 5259 8","examDate":"2026-05-06","estrusDate":"2026-05-06 12:00","aiDate":"2026-05-06 22:00","aiInterval":"10시간","nextEstrusDate":"2026-05-27 12:00","expectedCalving":"2027-02-15 22:00","expectedCycle":"","pregnant":"","estrusSign":"ST","rectalExam":"자궁경관수축","ultrasound":"우난포 13mm","hormoneTreatment":"GnRH 3cc","notes":"발정 확인 검사. AI","aiCount":"3","inHouseAi":"1","aiOrder":"10","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5259 8-84","owner":"김준규","animalId":"002 1657 5259 8","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"26-5-27 재발정옴","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5259 8-85","owner":"김준규","animalId":"002 1657 5259 8","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체 20mm, 좌난포 15mm","hormoneTreatment":"","notes":"임신감정 = x","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5091 4-86","owner":"김준규","animalId":"002 1657 5091 4","examDate":"2026-05-25","estrusDate":"2026-05-25 07:00","aiDate":"2026-05-25 22:00","aiInterval":"15시간","nextEstrusDate":"2026-06-15 07:00","expectedCalving":"2027-03-06 22:00","expectedCycle":"","pregnant":"","estrusSign":"빙빙, 탐지기울림","rectalExam":"좌난포 파동감 좋음","ultrasound":"좌난포 13mm","hormoneTreatment":"","notes":"발정 검사, 수정하기 좋은 개체","aiCount":"4","inHouseAi":"1","aiOrder":"23","kpn":"1544","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5091 4-87","owner":"김준규","animalId":"002 1657 5091 4","examDate":"2026-05-20","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우황체화난포","hormoneTreatment":"PGF 5cc 처치","notes":"","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5091 4-88","owner":"김준규","animalId":"002 1657 5091 4","examDate":"2026-05-06","estrusDate":"2026-05-06 09:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-27 09:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체, 양쪽 소난포들","hormoneTreatment":"","notes":"22시 검사.발정 확인 검사. 발정 아님, 동기화 고려","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5091 4-89","owner":"김준규","animalId":"002 1657 5091 4","examDate":null,"estrusDate":"2026-04-16 06:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-07 06:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"발정증상 미미해서 넘김","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5088 3-90","owner":"김준규","animalId":"002 1657 5088 3","examDate":"2026-05-21","estrusDate":"2026-05-21","aiDate":"2026-05-21 08:00","aiInterval":"","nextEstrusDate":"2026-06-11","expectedCalving":"2027-03-02 08:00","expectedCycle":"","pregnant":"","estrusSign":"점액 가득","rectalExam":"자궁수축 좋음","ultrasound":"좌난포 13mm","hormoneTreatment":"","notes":"동기화, AI","aiCount":"2","inHouseAi":"1","aiOrder":"18","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5088 3-91","owner":"김준규","animalId":"002 1657 5088 3","examDate":"2026-05-07","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체, 우우성난포","hormoneTreatment":"","notes":"난종 회복","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5088 3-92","owner":"김준규","animalId":"002 1657 5088 3","examDate":"2026-04-25","estrusDate":"2026-04-25 10:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-16 10:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"MT","rectalExam":"","ultrasound":"좌난포낭종(30mm)","hormoneTreatment":"GnRH 5cc","notes":"좌측 난포낭종","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1657 5088 3-93","owner":"김준규","animalId":"002 1657 5088 3","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"5/13 CIDR+0567","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1616 3412 2-94","owner":"김준규","animalId":"002 1616 3412 2","examDate":"2026-04-14","estrusDate":"2026-04-14 11:00","aiDate":"2026-04-15 08:00","aiInterval":"21시간","nextEstrusDate":"2026-05-05 11:00","expectedCalving":"2027-01-25 08:00","expectedCycle":"22일","pregnant":"","estrusSign":"약간의 bleeding","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"1","inHouseAi":"1","aiOrder":"5","kpn":"1447","carcass":"530.8","ribeye":"102.8","backfat":"8.8","marbling":"6.5"},{"id":"김준규-002 1616 3412 2-95","owner":"김준규","animalId":"002 1616 3412 2","examDate":"2026-05-27","estrusDate":"2026-05-27 10:00","aiDate":"2026-05-27 22:00","aiInterval":"12시간","nextEstrusDate":"2026-06-17 10:00","expectedCalving":"2027-03-08 22:00","expectedCycle":"","pregnant":"","estrusSign":"빙빙, MT","rectalExam":"우난포 파동감","ultrasound":"우난포 15mm","hormoneTreatment":"리셉탈 2.5","notes":"","aiCount":"2","inHouseAi":"2","aiOrder":"24","kpn":"1701","carcass":"530.8","ribeye":"102.8","backfat":"8.8","marbling":"6.5"},{"id":"김준규-002 1616 3409 1-96","owner":"김준규","animalId":"002 1616 3409 1","examDate":"2026-04-03","estrusDate":"2026-04-03 08:00","aiDate":"2026-04-03 22:00","aiInterval":"14시간","nextEstrusDate":"2026-04-24 08:00","expectedCalving":"2027-01-13 22:00","expectedCycle":"","pregnant":"","estrusSign":"낭종(165750883)에 MT","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"2","inHouseAi":"1","aiOrder":"3","kpn":"1447","carcass":"524.2","ribeye":"106.9","backfat":"15.1","marbling":"7.2"},{"id":"김준규-002 1616 3409 1-97","owner":"김준규","animalId":"002 1616 3409 1","examDate":"2026-05-27","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"비임신","ultrasound":"우난포 11","hormoneTreatment":"임신감정:X","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1616 3409 1-98","owner":"김준규","animalId":"002 1616 3409 1","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우난포 10mm","hormoneTreatment":"6/2 CIDR 0567 했음","notes":"며칠 기다려볼 것","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1616 3409 1-99","owner":"김준규","animalId":"002 1616 3409 1","examDate":"2026-05-18","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"비임신?","hormoneTreatment":"","notes":"","aiCount":"2","inHouseAi":"1","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4873 5-100","owner":"김준규","animalId":"002 1587 4873 5","examDate":"2026-05-07","estrusDate":"2026-05-07","aiDate":"2026-05-08","aiInterval":"1일","nextEstrusDate":"2026-05-28","expectedCalving":"2027-02-17","expectedCycle":"","pregnant":"","estrusSign":"점액","rectalExam":"","ultrasound":"오른쪽 20mm 난포, 좌측 2.5mm 난포","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"3","inHouseAi":"1","aiOrder":"13","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4873 5-101","owner":"김준규","animalId":"002 1587 4873 5","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"4/28 고나돈+CIDR","notes":"비정상적 발정주기로 호르몬 처치","aiCount":"3","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4745 3-102","owner":"김준규","animalId":"002 1587 4745 3","examDate":"2026-06-09","estrusDate":"2026-06-08 18:00","aiDate":"2026-06-09 08:00","aiInterval":"14시간","nextEstrusDate":"2026-06-29 18:00","expectedCalving":"2027-03-21 08:00","expectedCycle":"21일","pregnant":"","estrusSign":"ST, 회색점액가득,건강한자궁","rectalExam":"우난포 파동감","ultrasound":"우난포 13mm","hormoneTreatment":"","notes":"발정여부 검사, AI","aiCount":"1","inHouseAi":"1","aiOrder":"31","kpn":"1767","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4745 3-103","owner":"김준규","animalId":"002 1587 4745 3","examDate":"2026-05-18","estrusDate":"2026-05-18","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-08","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"ST","rectalExam":"파동감있는 난포","ultrasound":"좌우성난포 20mm","hormoneTreatment":"","notes":"발정, 분만 30일정도 되어 다음 발정 기다리기로 함","aiCount":"1","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4624 1-104","owner":"김준규","animalId":"002 1587 4624 1","examDate":"2026-04-25","estrusDate":"2026-04-25 11:00","aiDate":"2026-04-25 23:00","aiInterval":"12시간","nextEstrusDate":"2026-05-16 11:00","expectedCalving":"2027-02-04 23:00","expectedCycle":"","pregnant":"","estrusSign":"ST","rectalExam":"","ultrasound":"우난포 15mm, 좌난포 10mm","hormoneTreatment":"GnRH 2.5cc","notes":"발정 확인 검사. AI","aiCount":"","inHouseAi":"1","aiOrder":"8","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4624 1-105","owner":"김준규","animalId":"002 1587 4624 1","examDate":"2026-05-18","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"ST","rectalExam":"","ultrasound":"우황체","hormoneTreatment":"","notes":"발정의심되어 확인, 황체 확인","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4624 1-106","owner":"김준규","animalId":"002 1587 4624 1","examDate":"2026-06-09","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"MT","rectalExam":"","ultrasound":"양쪽 소난포들","hormoneTreatment":"","notes":"비임신, 4745에 MT, 18일후재검 혹은 동기화","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1587 4624 1-107","owner":"김준규","animalId":"002 1587 4624 1","examDate":"2026-04-18","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"난포낭종-18일 황체화 확인","hormoneTreatment":"","notes":"난포 낭종","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1561 3143 3-108","owner":"김준규","animalId":"002 1561 3143 3","examDate":"2026-05-10","estrusDate":"2026-05-10","aiDate":"2026-05-11","aiInterval":"","nextEstrusDate":"2026-05-31","expectedCalving":"2027-02-20","expectedCycle":"","pregnant":"","estrusSign":"점액 가득, 수정하기 좋은 자궁","rectalExam":"약간 말랑한 난포","ultrasound":"좌측 15mm 찌그러진 난포","hormoneTreatment":"","notes":"발정 확인 검사, AI","aiCount":"2","inHouseAi":"1","aiOrder":"16","kpn":"1624","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1561 3143 3-109","owner":"김준규","animalId":"002 1561 3143 3","examDate":"2026-04-30","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"30일 좌우성난포 10mm 이상, 우소난포","hormoneTreatment":"4/28 고나돈+CIDR, 4/29 저녁 사이더 빠짐","notes":"비정상적 발정주기로 호르몬 처치","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1518 1402 2-111","owner":"김준규","animalId":"002 1518 1402 2","examDate":"2026-05-22","estrusDate":"2026-05-22 08:00","aiDate":"2026-05-22 20:00","aiInterval":"12시간","nextEstrusDate":"2026-06-12 08:00","expectedCalving":"2027-03-03 20:00","expectedCycle":"","pregnant":"","estrusSign":"점액 약간, MT 잠깐함","rectalExam":"","ultrasound":"우난포 13mm","hormoneTreatment":"","notes":"발정 증상 너무 경미함. 농장 사양관리 필요. AI","aiCount":"2","inHouseAi":"1","aiOrder":"22","kpn":"1552","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1518 1402 2-112","owner":"김준규","animalId":"002 1518 1402 2","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"2026-05-27 MT 계속함","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1488 9259 8-113","owner":"김준규","animalId":"002 1488 9259 8","examDate":"2026-04-23","estrusDate":"2026-04-23 13:00","aiDate":"2026-04-24","aiInterval":"11시간","nextEstrusDate":"2026-05-14 13:00","expectedCalving":"2027-02-03","expectedCycle":"","pregnant":"","estrusSign":"옅은 점액, 분만 80일됨","rectalExam":"경관수축, 우난포 파동감","ultrasound":"우난포 16mm, 파동감","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"1","inHouseAi":"1","aiOrder":"6","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1488 9259 8-114","owner":"김준규","animalId":"002 1488 9259 8","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체 20, 우난포 15","hormoneTreatment":"","notes":"임신감정 x","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1477 2962 0-117","owner":"김준규","animalId":"002 1477 2962 0","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"좌측 자궁 부푼 상태","ultrasound":"태아낭관찰, 사산된 상태, 두개골만 보임","hormoneTreatment":"6/2 CIDR 0567 처치함","notes":"PG 5cc, 덱사 20mm 처치","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1477 2821 7-119","owner":"김준규","animalId":"002 1477 2821 7","examDate":"2026-04-14","estrusDate":"2026-04-14 16:00","aiDate":"2026-04-15 08:00","aiInterval":"16시간","nextEstrusDate":"2026-05-05 16:00","expectedCalving":"2027-01-25 08:00","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"맑은 점액 매우 많았음","ultrasound":"","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"1","inHouseAi":"1","aiOrder":"4","kpn":"1614","carcass":"511","ribeye":"147","backfat":"7","marbling":"9"},{"id":"김준규-002 1477 2821 7-120","owner":"김준규","animalId":"002 1477 2821 7","examDate":"2026-06-10","estrusDate":"2026-06-10","aiDate":"2026-06-10 11:00","aiInterval":"","nextEstrusDate":"2026-07-01","expectedCalving":"2027-03-22 11:00","expectedCycle":"","pregnant":"","estrusSign":"점액 약간 있음","rectalExam":"자궁내 체액 및 부종","ultrasound":"우 13mm","hormoneTreatment":"6/2 CIDR 0567","notes":"","aiCount":"2","inHouseAi":"2","aiOrder":"32","kpn":"1701","carcass":"511","ribeye":"147","backfat":"7","marbling":"9"},{"id":"김준규-002 1477 2821 7-121","owner":"김준규","animalId":"002 1477 2821 7","examDate":"2026-05-27","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우난포 10","hormoneTreatment":"임신감정:X","notes":"발정 확인 검사. AI","aiCount":"1","inHouseAi":"1","aiOrder":"","kpn":"","carcass":"511","ribeye":"147","backfat":"7","marbling":"9"},{"id":"김준규-002 1390 8493 6-123","owner":"김준규","animalId":"002 1390 8493 6","examDate":"2026-04-01","estrusDate":"2026-04-01 08:00","aiDate":"2026-04-01 22:00","aiInterval":"14시간","nextEstrusDate":"2026-04-22 08:00","expectedCalving":"2027-01-11 22:00","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"","aiCount":"3","inHouseAi":"1","aiOrder":"2","kpn":"1647","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8493 6-124","owner":"김준규","animalId":"002 1390 8493 6","examDate":"2026-04-23","estrusDate":"2026-04-23 11:00","aiDate":"2026-04-24","aiInterval":"13시간","nextEstrusDate":"2026-05-14 11:00","expectedCalving":"2027-02-03","expectedCycle":"22일","pregnant":"","estrusSign":"저녁까지 MT, 맑은 점액 30-40","rectalExam":"자궁수축 약함","ultrasound":"우난포 12mm","hormoneTreatment":"GnRH 3cc","notes":"발정 확인 검사. AI","aiCount":"4","inHouseAi":"2","aiOrder":"7","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8493 6-125","owner":"김준규","animalId":"002 1390 8493 6","examDate":"2026-05-20","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체 15mm, 우난포 10mm","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8493 6-126","owner":"김준규","animalId":"002 1390 8493 6","examDate":"2026-06-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":"1900-10-11","expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"좌황체 15mm, 우난포 10mm","hormoneTreatment":"","notes":"","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8162 4-127","owner":"김준규","animalId":"002 1390 8162 4","examDate":"2026-05-12","estrusDate":"2026-05-12 09:00","aiDate":"2026-05-12 23:30","aiInterval":"14시간 30분","nextEstrusDate":"2026-06-02 09:00","expectedCalving":"2027-02-21 23:30","expectedCycle":"","pregnant":"","estrusSign":"점액 보임","rectalExam":"난포 파동감","ultrasound":"우황체 15mm로 감소, 우난포 15mm","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"1","inHouseAi":"1","aiOrder":"17","kpn":"1614","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8162 4-128","owner":"김준규","animalId":"002 1390 8162 4","examDate":"2026-05-08","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우황체낭종-30mm, 찌그러진 모양","hormoneTreatment":"PGF2a 5cc","notes":"임신 감정, 비임신, 황체낭종, 3~5일 후 체크","aiCount":"1","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8161 6-129","owner":"김준규","animalId":"002 1390 8161 6","examDate":"2026-05-21","estrusDate":"2026-05-21","aiDate":"2026-05-21","aiInterval":"","nextEstrusDate":"2026-06-11","expectedCalving":"2027-03-02","expectedCycle":"","pregnant":"","estrusSign":"없음","rectalExam":"자궁수축 약함","ultrasound":"우난포 12mm","hormoneTreatment":"","notes":"다음 주기오면 도태 고려","aiCount":"2","inHouseAi":"1","aiOrder":"21","kpn":"1624","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8161 6-130","owner":"김준규","animalId":"002 1390 8161 6","examDate":"2026-05-12","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"양쪽 소난포들","hormoneTreatment":"","notes":"낭포낭종 회복","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8161 6-131","owner":"김준규","animalId":"002 1390 8161 6","examDate":"2026-05-08","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"난포낭종 파쇄","ultrasound":"우난포낭종-25mm","hormoneTreatment":"GnRH 5cc","notes":"임신 감정, 비임신, 난포낭종","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1390 8161 6-132","owner":"김준규","animalId":"002 1390 8161 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"5/13 CIDR+0567","notes":"","aiCount":"2","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1866 3633 8-133","owner":"김준규","animalId":"002 1866 3633 8","examDate":"2026-05-30","estrusDate":null,"aiDate":"2026-05-30 08:00","aiInterval":"","nextEstrusDate":null,"expectedCalving":"2027-03-11 08:00","expectedCycle":"","pregnant":"","estrusSign":"점액 많이 나옴","rectalExam":"난포 파동감","ultrasound":"좌측 13mm","hormoneTreatment":"","notes":"","aiCount":"4","inHouseAi":"1","aiOrder":"27","kpn":"1567","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1866 3633 8-134","owner":"김준규","animalId":"002 1866 3633 8","examDate":"2026-05-14","estrusDate":"2026-05-13 23:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-06-03 23:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"MT, 애매해서 패스하심","rectalExam":"","ultrasound":"","hormoneTreatment":"5/22 0567+cidr","notes":"","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1866 3633 8-135","owner":"김준규","animalId":"002 1866 3633 8","examDate":"2026-05-10","estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"우 공동성황체","hormoneTreatment":"","notes":"발정 주기 추정 검사","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"김준규-002 1866 3633 8-136","owner":"김준규","animalId":"002 1866 3633 8","examDate":"2026-04-22","estrusDate":"2026-04-22 09:00","aiDate":null,"aiInterval":"","nextEstrusDate":"2026-05-13 09:00","expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"점액x, 외음부부종x, MT, 가발정?","rectalExam":"","ultrasound":"우난포 12mm, 좌황체 - 가발정 or 미약한 난포","hormoneTreatment":"","notes":"발정 확인 검사. 발정 아님","aiCount":"4","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"이종현-002 2056 5187 6-1","owner":"이종현","animalId":"002 2056 5187 6","examDate":"2026-06-08","estrusDate":"2026-06-07 08:00","aiDate":"2026-06-08 19:00","aiInterval":"1일 11시간","nextEstrusDate":"2026-06-28 08:00","expectedCalving":"2027-03-20 19:00","expectedCycle":"","pregnant":"","estrusSign":"점액 많이 나옴, 긴 자궁","rectalExam":"난포파동감","ultrasound":"좌난포 13mm","hormoneTreatment":"","notes":"발정 확인 검사. AI","aiCount":"0","inHouseAi":"1","aiOrder":"1","kpn":"1526","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"이종현-002 2056 5187 6-2","owner":"이종현","animalId":"002 2056 5187 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"임신 감정, 비임신, 황체낭종, 3~5일 후 체크","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"이종현-002 2056 5187 6-3","owner":"이종현","animalId":"002 2056 5187 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"다음 주기오면 도태 고려","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"이종현-002 2056 5187 6-4","owner":"이종현","animalId":"002 2056 5187 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"낭포낭종 회복","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""},{"id":"이종현-002 2056 5187 6-5","owner":"이종현","animalId":"002 2056 5187 6","examDate":null,"estrusDate":null,"aiDate":null,"aiInterval":"","nextEstrusDate":null,"expectedCalving":null,"expectedCycle":"","pregnant":"","estrusSign":"","rectalExam":"","ultrasound":"","hormoneTreatment":"","notes":"임신 감정, 비임신, 난포낭종","aiCount":"","inHouseAi":"","aiOrder":"","kpn":"","carcass":"","ribeye":"","backfat":"","marbling":""}],"schedule":[{"id":"김준규-sch-1","owner":"김준규","animalId":"002 1390 8162 4","date":"2026-05-12","note":"발정체크"},{"id":"김준규-sch-2","owner":"김준규","animalId":"002 1390 8162 4","date":"2026-05-13","note":"발정체크"},{"id":"김준규-sch-3","owner":"김준규","animalId":"002 1390 8162 4","date":"2026-05-14","note":"발정체크"},{"id":"김준규-sch-4","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-16","note":"체크필요"},{"id":"김준규-sch-5","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-22","note":"GnRH+CIDR"},{"id":"김준규-sch-6","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-27","note":"PG"},{"id":"김준규-sch-7","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-28","note":"PG"},{"id":"김준규-sch-8","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-29","note":"GnRH"},{"id":"김준규-sch-9","owner":"김준규","animalId":"002 1905 6882 6","date":"2026-05-30","note":"AI"},{"id":"김준규-sch-10","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-20","note":"체크필요"},{"id":"김준규-sch-11","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-22","note":"GnRH"},{"id":"김준규-sch-12","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-27","note":"PG"},{"id":"김준규-sch-13","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-28","note":"PG"},{"id":"김준규-sch-14","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-29","note":"GnRH"},{"id":"김준규-sch-15","owner":"김준규","animalId":"002 1959 3034 7","date":"2026-05-30","note":"AI"},{"id":"김준규-sch-16","owner":"김준규","animalId":"002 2056 5537 7","date":"2026-05-14","note":"체크필요"},{"id":"김준규-sch-17","owner":"김준규","animalId":"002 2056 5537 7","date":"2026-06-09","note":"발정관찰"},{"id":"김준규-sch-18","owner":"김준규","animalId":"002 2056 5537 7","date":"2026-06-10","note":"발정관찰"},{"id":"김준규-sch-19","owner":"김준규","animalId":"002 2056 5537 7","date":"2026-06-11","note":"발정관찰"},{"id":"김준규-sch-20","owner":"김준규","animalId":"002 3123 4465 3","date":"2026-05-18","note":"난포확인"},{"id":"김준규-sch-21","owner":"김준규","animalId":"002 3123 4341 7","date":"2026-05-21","note":"임신감정"},{"id":"김준규-sch-22","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-05-18","note":"임신감정"},{"id":"김준규-sch-23","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-05-28","note":"감정"},{"id":"김준규-sch-24","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-06-02","note":"GnRH + CIDR"},{"id":"김준규-sch-25","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-06-07","note":"PG"},{"id":"김준규-sch-26","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-06-08","note":"PG"},{"id":"김준규-sch-27","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-06-09","note":"GnRH"},{"id":"김준규-sch-28","owner":"김준규","animalId":"002 1616 3409 1","date":"2026-06-10","note":"AI"},{"id":"김준규-sch-29","owner":"김준규","animalId":"002 3123 4345 0","date":"2026-05-13","note":"오후2시 CIDR+079"},{"id":"김준규-sch-30","owner":"김준규","animalId":"002 3123 4345 0","date":"2026-05-18","note":"CIDR제거+PG"},{"id":"김준규-sch-31","owner":"김준규","animalId":"002 3123 4345 0","date":"2026-05-19","note":"PG"},{"id":"김준규-sch-32","owner":"김준규","animalId":"002 3123 4345 0","date":"2026-05-20","note":"GnRH"},{"id":"김준규-sch-33","owner":"김준규","animalId":"002 3123 4345 0","date":"2026-05-21","note":"아침 AI"},{"id":"김준규-sch-34","owner":"김준규","animalId":"002 1390 8161 6","date":"2026-05-13","note":"오후2시 CIDR+079"},{"id":"김준규-sch-35","owner":"김준규","animalId":"002 1390 8161 6","date":"2026-05-18","note":"CIDR제거+PG"},{"id":"김준규-sch-36","owner":"김준규","animalId":"002 1390 8161 6","date":"2026-05-19","note":"PG"},{"id":"김준규-sch-37","owner":"김준규","animalId":"002 1390 8161 6","date":"2026-05-20","note":"GnRH"},{"id":"김준규-sch-38","owner":"김준규","animalId":"002 1390 8161 6","date":"2026-05-21","note":"아침 AI"},{"id":"김준규-sch-39","owner":"김준규","animalId":"002 1657 5088 3","date":"2026-05-13","note":"오후2시 CIDR+079"},{"id":"김준규-sch-40","owner":"김준규","animalId":"002 1657 5088 3","date":"2026-05-18","note":"CIDR제거+PG"},{"id":"김준규-sch-41","owner":"김준규","animalId":"002 1657 5088 3","date":"2026-05-19","note":"PG"},{"id":"김준규-sch-42","owner":"김준규","animalId":"002 1657 5088 3","date":"2026-05-20","note":"GnRH"},{"id":"김준규-sch-43","owner":"김준규","animalId":"002 1657 5088 3","date":"2026-05-21","note":"아침 AI"},{"id":"김준규-sch-44","owner":"김준규","animalId":"002 1762 2041 6","date":"2026-05-13","note":"오후2시 CIDR+079"},{"id":"김준규-sch-45","owner":"김준규","animalId":"002 1762 2041 6","date":"2026-05-18","note":"CIDR제거+PG"},{"id":"김준규-sch-46","owner":"김준규","animalId":"002 1762 2041 6","date":"2026-05-19","note":"PG"},{"id":"김준규-sch-47","owner":"김준규","animalId":"002 1762 2041 6","date":"2026-05-20","note":"GnRH"},{"id":"김준규-sch-48","owner":"김준규","animalId":"002 1762 2041 6","date":"2026-05-21","note":"아침 AI"},{"id":"김준규-sch-49","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-05-21","note":"임신감정"},{"id":"김준규-sch-50","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-10","note":"감정"},{"id":"김준규-sch-51","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-13","note":"GnRH+CIDR"},{"id":"김준규-sch-52","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-18","note":"PG"},{"id":"김준규-sch-53","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-19","note":"PG"},{"id":"김준규-sch-54","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-20","note":"GnRH"},{"id":"김준규-sch-55","owner":"김준규","animalId":"002 1390 8493 6","date":"2026-06-21","note":"AI"},{"id":"김준규-sch-56","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-05-31","note":"발정관찰"},{"id":"김준규-sch-57","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-01","note":"발정관찰"},{"id":"김준규-sch-58","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-02","note":"GnRH + CIDR"},{"id":"김준규-sch-59","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-07","note":"PG"},{"id":"김준규-sch-60","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-08","note":"PG"},{"id":"김준규-sch-61","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-09","note":"GnRH"},{"id":"김준규-sch-62","owner":"김준규","animalId":"002 1720 3855 3","date":"2026-06-10","note":"AI"},{"id":"김준규-sch-63","owner":"김준규","animalId":"002 1657 5091 4","date":"2026-05-23","note":"우난소평가"},{"id":"김준규-sch-64","owner":"김준규","animalId":"002 1866 3633 8","date":"2026-05-22","note":"GnRH+CIDR"},{"id":"김준규-sch-65","owner":"김준규","animalId":"002 1866 3633 8","date":"2026-05-27","note":"PG"},{"id":"김준규-sch-66","owner":"김준규","animalId":"002 1866 3633 8","date":"2026-05-28","note":"PG"},{"id":"김준규-sch-67","owner":"김준규","animalId":"002 1866 3633 8","date":"2026-05-29","note":"GnRH"},{"id":"김준규-sch-68","owner":"김준규","animalId":"002 1866 3633 8","date":"2026-05-30","note":"AI"},{"id":"김준규-sch-69","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-10","note":"감정"},{"id":"김준규-sch-70","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-13","note":"GnRH+CIDR"},{"id":"김준규-sch-71","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-18","note":"PG"},{"id":"김준규-sch-72","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-19","note":"PG"},{"id":"김준규-sch-73","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-20","note":"GnRH"},{"id":"김준규-sch-74","owner":"김준규","animalId":"002 1587 4624 1","date":"2026-06-21","note":"AI"},{"id":"김준규-sch-75","owner":"김준규","animalId":"002 1587 4745 3","date":"2026-06-09","note":"발정관찰"},{"id":"김준규-sch-76","owner":"김준규","animalId":"002 1587 4745 3","date":"2026-06-10","note":"발정관찰"},{"id":"김준규-sch-77","owner":"김준규","animalId":"002 1587 4745 3","date":"2026-06-11","note":"발정관찰"},{"id":"김준규-sch-78","owner":"김준규","animalId":"002 2094 5883 1","date":"2026-06-09","note":"발정관찰"},{"id":"김준규-sch-79","owner":"김준규","animalId":"002 2094 5883 1","date":"2026-06-10","note":"발정관찰"},{"id":"김준규-sch-80","owner":"김준규","animalId":"002 2094 5883 1","date":"2026-06-11","note":"발정관찰"},{"id":"김준규-sch-81","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-05-28","note":"감정"},{"id":"김준규-sch-82","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-06-02","note":"GnRH + CIDR"},{"id":"김준규-sch-83","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-06-07","note":"PG"},{"id":"김준규-sch-84","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-06-08","note":"PG"},{"id":"김준규-sch-85","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-06-09","note":"GnRH"},{"id":"김준규-sch-86","owner":"김준규","animalId":"002 1477 2821 7","date":"2026-06-10","note":"AI"},{"id":"김준규-sch-87","owner":"김준규","animalId":"002 1986 7202 0","date":"2026-05-23","note":"GnRH"},{"id":"김준규-sch-88","owner":"김준규","animalId":"002 1986 7202 0","date":"2026-05-28","note":"PG"},{"id":"김준규-sch-89","owner":"김준규","animalId":"002 1986 7202 0","date":"2026-05-29","note":"PG"},{"id":"김준규-sch-90","owner":"김준규","animalId":"002 1986 7202 0","date":"2026-05-30","note":"GnRH"},{"id":"김준규-sch-91","owner":"김준규","animalId":"002 1986 7202 0","date":"2026-05-31","note":"AI"},{"id":"김준규-sch-92","owner":"김준규","animalId":"002 2029 9407 0","date":"2026-05-23","note":"GnRH"},{"id":"김준규-sch-93","owner":"김준규","animalId":"002 2029 9407 0","date":"2026-05-28","note":"PG"},{"id":"김준규-sch-94","owner":"김준규","animalId":"002 2029 9407 0","date":"2026-05-29","note":"PG"},{"id":"김준규-sch-95","owner":"김준규","animalId":"002 2029 9407 0","date":"2026-05-30","note":"GnRH"},{"id":"김준규-sch-96","owner":"김준규","animalId":"002 2029 9407 0","date":"2026-05-31","note":"AI"},{"id":"김준규-sch-97","owner":"김준규","animalId":"002 1657 5259 8","date":"2026-06-11","note":"GnRH"},{"id":"김준규-sch-98","owner":"김준규","animalId":"002 1657 5259 8","date":"2026-06-18","note":"PG"},{"id":"김준규-sch-99","owner":"김준규","animalId":"002 1657 5259 8","date":"2026-06-20","note":"GnRH"},{"id":"김준규-sch-100","owner":"김준규","animalId":"002 1657 5259 8","date":"2026-06-21","note":"AI"},{"id":"김준규-sch-101","owner":"김준규","animalId":"002 3123 4465 3","date":"2026-05-30","note":"AI"},{"id":"김준규-sch-102","owner":"김준규","animalId":"002 1477 2962 0","date":"2026-06-02","note":"GnRH + CIDR"},{"id":"김준규-sch-103","owner":"김준규","animalId":"002 1477 2962 0","date":"2026-06-07","note":"PG"},{"id":"김준규-sch-104","owner":"김준규","animalId":"002 1477 2962 0","date":"2026-06-08","note":"PG"},{"id":"김준규-sch-105","owner":"김준규","animalId":"002 1477 2962 0","date":"2026-06-09","note":"GnRH"},{"id":"김준규-sch-106","owner":"김준규","animalId":"002 1477 2962 0","date":"2026-06-10","note":"AI"},{"id":"김준규-sch-107","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-10","note":"감정"},{"id":"김준규-sch-108","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-13","note":"GnRH + CIDR"},{"id":"김준규-sch-109","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-18","note":"PG"},{"id":"김준규-sch-110","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-19","note":"PG"},{"id":"김준규-sch-111","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-20","note":"GnRH"},{"id":"김준규-sch-112","owner":"김준규","animalId":"002 1932 9058 2","date":"2026-06-21","note":"AI"},{"id":"김준규-sch-113","owner":"김준규","animalId":"002 1488 9259 8","date":"2026-06-10","note":"감정"},{"id":"김준규-sch-114","owner":"김준규","animalId":"002 1488 9259 8","date":"2026-06-11","note":"GnRH"},{"id":"김준규-sch-115","owner":"김준규","animalId":"002 1488 9259 8","date":"2026-06-18","note":"PG"},{"id":"김준규-sch-116","owner":"김준규","animalId":"002 1488 9259 8","date":"2026-06-20","note":"GnRH"},{"id":"김준규-sch-117","owner":"김준규","animalId":"002 1488 9259 8","date":"2026-06-21","note":"AI"}]}</script>
+<script>
+/* ============================================================
+   ☁️ 휴대폰·PC 동기화 설정 (선택사항)
+   ------------------------------------------------------------
+   아래 6개 값을 Firebase 콘솔(무료)에서 복사해 넣으면,
+   이 페이지를 호스팅했을 때 휴대폰/PC 등 여러 기기에서
+   똑같은 데이터가 자동으로 동기화됩니다.
+
+   비워두면(현재 상태) 이 브라우저에만 데이터가 저장돼요.
+   설정 방법은 함께 전달된 안내문서를 참고해주세요.
+============================================================ */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBtj_LZ5hGZJhuVfX971Kyrb-xkXGS7XGo",
+  authDomain: "aimanager-a36b3.firebaseapp.com",
+  projectId: "aimanager-a36b3",
+  storageBucket: "aimanager-a36b3.firebasestorage.app",
+  messagingSenderId: "24929299448",
+  appId: "1:24929299448:web:8259496a583a451a8d040d"
+};
+</script>
+<script type="module">
+/* Firebase가 설정된 경우에만 동작 (없으면 조용히 비활성화) */
+window.__cloudReady = (async () => {
+  const cfg = window.FIREBASE_CONFIG;
+  if(!cfg || !cfg.apiKey || !cfg.projectId) return false;
+  try{
+    const FB_VER = '10.13.0';
+    const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app.js`);
+    const { getAuth, signInAnonymously } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-auth.js`);
+    const { getFirestore, doc, getDoc, setDoc, onSnapshot } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-firestore.js`);
+    const app = initializeApp(cfg);
+    const auth = getAuth(app);
+    await signInAnonymously(auth);
+    const db = getFirestore(app);
+    const ref = doc(db, 'breedingApp', 'state');
+    window.__cloud = {
+      async get(){
+        const snap = await getDoc(ref);
+        return snap.exists() ? snap.data().json : null;
+      },
+      async set(jsonStr, ts){
+        await setDoc(ref, { json: jsonStr, updatedAt: ts });
+      },
+      subscribe(cb){
+        return onSnapshot(ref, snap => {
+          if(snap.exists()){
+            const data = snap.data();
+            cb(data.json, data.updatedAt);
+          }
+        }, err => console.error('동기화 오류', err));
+      }
+    };
+    return true;
+  }catch(e){
+    console.error('Firebase 초기화 실패 (설정값을 확인해주세요)', e);
+    return false;
+  }
+})();
+</script>
+<script>
+/* ============================================================
+   번식관리 기록부 — 데이터 / 상태
+============================================================ */
+const STORAGE_KEY = 'breeding-records-v1';
+const RAW_INITIAL = JSON.parse(document.getElementById('data-island').textContent);
+
+const QUICK_CODES = ['발정체크','체크필요','발정관찰','GnRH','PG','CIDR','GnRH+CIDR','CIDR제거+PG','AI','감정','임신감정'];
+const SYNC_OPTIONS = ['GnRH','PGF2α','CIDR+GnRH','CIDR제거+PGF2α','CIDR','CIDR제거','AI'];
+const SYNC_STEPS = 7;
+
+let DATA = null;   // { owners, animals, records, schedule, scheduleAnimals, scheduleRange }
+let UI = {
+  owner: null,
+  view: 'animal',        // animal | date | schedule
+  selectedAnimal: null,
+  animalSearch: '',
+  dateMode: 'exam',       // exam | ai
+  dateFrom: '',
+  dateTo: '',
+  dateSearch: '',
+  focusedCell: null,
+  modal: null,            // current modal descriptor
+};
+
+/* ============================================================
+   저장소 — 3가지 모드 자동 감지
+   1) Claude 아티팩트 내부: window.storage 사용 (설정 불필요)
+   2) 독립 호스팅 + Firebase 설정됨: 클라우드 동기화 (여러 기기)
+   3) 독립 호스팅 + Firebase 미설정: 이 브라우저에만 저장
+============================================================ */
+let STORAGE_MODE = 'local';      // 'claude' | 'cloud' | 'local'
+let lastLocalWriteTs = 0;
+
+async function detectStorageMode(){
+  if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
+    return 'claude';
+  }
+  const cloudOk = await window.__cloudReady;
+  if(cloudOk && window.__cloud) return 'cloud';
+  return 'local';
+}
+
+async function loadState(){
+  try{
+    if(STORAGE_MODE==='claude'){
+      const res = await window.storage.get(STORAGE_KEY);
+      if(res && res.value) return JSON.parse(res.value);
+    } else if(STORAGE_MODE==='cloud'){
+      const json = await window.__cloud.get();
+      if(json) return JSON.parse(json);
+    } else {
+      const v = localStorage.getItem(STORAGE_KEY);
+      if(v) return JSON.parse(v);
+    }
+  }catch(e){ console.error('불러오기 실패', e); }
+  return null;
+}
+async function saveState(){
+  try{
+    const payload = JSON.stringify(DATA);
+    if(STORAGE_MODE==='claude'){
+      await window.storage.set(STORAGE_KEY, payload);
+    } else if(STORAGE_MODE==='cloud'){
+      lastLocalWriteTs = Date.now();
+      await window.__cloud.set(payload, lastLocalWriteTs);
+    } else {
+      localStorage.setItem(STORAGE_KEY, payload);
+    }
+  }catch(e){ console.error('저장 실패', e); toast('저장에 실패했어요. 잠시 후 다시 시도해주세요.'); }
+}
+function subscribeRemoteIfNeeded(){
+  if(STORAGE_MODE!=='cloud' || !window.__cloud) return;
+  window.__cloud.subscribe((json, ts)=>{
+    if(!json || ts===lastLocalWriteTs) return;     // 내가 방금 쓴 변경은 무시
+    try{
+      const incoming = JSON.parse(json);
+      DATA = incoming;
+      DATA.owners.forEach(ensureOwnerMeta);
+      if(!DATA.owners.includes(UI.owner)) UI.owner = DATA.owners[0];
+      applyTheme();
+      render();
+      toast('다른 기기에서 변경된 내용을 불러왔어요.');
+    }catch(e){ console.error('동기화 데이터 처리 실패', e); }
+  });
+}
+function storageStatusLabel(){
+  if(STORAGE_MODE==='cloud') return { icon:'☁️', text:'기기 간 동기화 중' };
+  if(STORAGE_MODE==='local') return { icon:'💾', text:'이 브라우저에만 저장' };
+  return null; // Claude 아티팩트 - 배지 숨김
+}
+function buildInitial(){
+  const d = JSON.parse(JSON.stringify(RAW_INITIAL));
+  d.scheduleAnimals = {};
+  d.scheduleRange = {};
+  d.ownerProfiles = {};
+  d.theme = 'light';
+  d.owners.forEach(o=>{
+    const ids = [...new Set(d.schedule.filter(s=>s.owner===o).map(s=>s.animalId))];
+    d.scheduleAnimals[o] = ids;
+    const dates = d.schedule.filter(s=>s.owner===o).map(s=>s.date).sort();
+    if(dates.length){
+      d.scheduleRange[o] = { start: dates[0], end: addDays(dates[dates.length-1], 5) };
+    } else {
+      d.scheduleRange[o] = { start: todayStr(), end: addDays(todayStr(), 30) };
+    }
+    d.ownerProfiles[o] = defaultOwnerProfile();
+  });
+  return d;
+}
+function defaultOwnerProfile(){
+  return { address:'', phone:'', feeds:[], grasses:[], supplements:[] };
+}
+function ensureOwnerMeta(owner){
+  if(!DATA.scheduleAnimals[owner]) DATA.scheduleAnimals[owner] = [];
+  if(!DATA.scheduleRange[owner]) DATA.scheduleRange[owner] = { start: todayStr(), end: addDays(todayStr(),30) };
+  if(!DATA.ownerProfiles) DATA.ownerProfiles = {};
+  if(!DATA.ownerProfiles[owner]) DATA.ownerProfiles[owner] = defaultOwnerProfile();
+  if(!DATA.completedCells) DATA.completedCells = {};
+}
+// completedCells 키: "owner|animalId|date"
+function cellKey(owner, aid, date){ return `${owner}|${aid}|${date}`; }
+function isCellDone(owner, aid, date){ return !!(DATA.completedCells||{})[cellKey(owner,aid,date)]; }
+function toggleCellDone(owner, aid, date){
+  if(!DATA.completedCells) DATA.completedCells = {};
+  const k = cellKey(owner, aid, date);
+  if(DATA.completedCells[k]) delete DATA.completedCells[k];
+  else DATA.completedCells[k] = true;
+  saveState();
+}
+
+/* ============================================================
+   날짜 유틸
+============================================================ */
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function addDays(dateStr, n){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate()+n);
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function dateOnly(str){ return str ? str.slice(0,10) : ''; }
+function timeOnly(str){ return (str && str.length>10) ? str.slice(11,16) : ''; }
+function combineDT(dateVal, timeVal){
+  if(!dateVal) return null;
+  return timeVal ? (dateVal+' '+timeVal) : dateVal;
+}
+function fmtShort(str){
+  if(!str) return '—';
+  const date = str.slice(0,10);
+  const time = str.length>10 ? str.slice(11,16) : '';
+  const [y,m,d] = date.split('-');
+  return `${m}/${d}` + (time ? ' '+time : '');
+}
+function fmtFull(str){ return str || '—'; }
+function ageMonths(birth){
+  if(!birth) return '—';
+  const [y,m,d] = birth.split('-').map(Number);
+  const now = new Date();
+  let months = (now.getFullYear()-y)*12 + (now.getMonth()+1-m);
+  if(now.getDate() < d) months -= 1;
+  return months + '개월';
+}
+function weekdayKr(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  return ['일','월','화','수','목','금','토'][new Date(y,m-1,d).getDay()];
+}
+function isWeekend(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const wd = new Date(y,m-1,d).getDay();
+  return wd===0 || wd===6;
+}
+function dateRangeArray(start,end){
+  const out = [];
+  let cur = start;
+  let guard = 0;
+  while(cur <= end && guard < 400){
+    out.push(cur);
+    cur = addDays(cur,1);
+    guard++;
+  }
+  return out;
+}
+function uid(prefix){
+  return prefix+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+}
+function esc(str){
+  if(str===null || str===undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   렌더 — 최상위
+============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  const status = storageStatusLabel();
+  const isDark = DATA.theme==='dark';
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="title-row">
+        <h1>🐄 번식 진료 기록부</h1>
+        <div class="header-actions">
+          <button class="btn secondary small" data-action="openGrassInfo" style="font-size:12px;">🌿 풀정보</button>
+          <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${isDark?'☀️':'🌙'}</button>
+          ${status?`<span class="status-badge" title="${esc(status.text)}">${status.icon} ${esc(status.text)}</span>`:''}
+        </div>
+      </div>
+      <div class="owner-tabs">${renderOwnerTabs()}</div>
+      <div class="subnav">${renderSubnav()}</div>
+    </header>
+    <main id="main"></main>
+  `;
+  renderMain();
+}
+
+function renderOwnerTabs(){
+  let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">📅 분만예정일</div>`;
+  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">📋 전체스케줄</div>`;
+  html += DATA.owners.map(o => `
+    <div class="owner-tab ${o===UI.owner?'active':''}" data-action="setOwner" data-owner="${esc(o)}">${esc(o)}</div>
+  `).join('');
+  html += `<div class="owner-tab addnew" data-action="addOwner">+ 축주 추가</div>`;
+  return html;
+}
+
+function renderSubnav(){
+  const tabs = [['owner','축주정보'],['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['schedule','스케줄']];
+  return tabs.map(([k,label]) => `
+    <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
+  `).join('');
+}
+
+function renderMain(){
+  const main = document.getElementById('main');
+  if(UI.view==='animal') main.innerHTML = renderAnimalView();
+  else if(UI.view==='date') main.innerHTML = renderDateView();
+  else if(UI.view==='owner') main.innerHTML = renderOwnerInfoView();
+  else if(UI.view==='pregcheck') main.innerHTML = renderPregCheckView();
+  else main.innerHTML = renderScheduleView();
+  if(pendingFocus){
+    const el = document.getElementById(pendingFocus.id);
+    if(el){ el.focus(); try{ el.setSelectionRange(pendingFocus.pos, pendingFocus.pos); }catch(e){} }
+    pendingFocus = null;
+  }
+}
+
+/* ============================================================
+   개체별 보기
+============================================================ */
+function ownerAnimals(){
+  return DATA.animals.filter(a=>a.owner===UI.owner).sort((a,b)=>a.animalId.localeCompare(b.animalId));
+}
+function animalRecords(animalId){
+  return DATA.records.filter(r=>r.owner===UI.owner && r.animalId===animalId)
+    .sort((a,b)=> sortKeyOf(b) - sortKeyOf(a));
+}
+function lastNonEmpty(recs, field){
+  for(const r of recs){ if(r[field]) return r[field]; }
+  return null;
+}
+function sortKeyOf(r){
+  const d = r.examDate || r.aiDate || r.estrusDate;
+  if(!d) return -1;
+  return new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime();
+}
+function lastRecordDate(animalId){
+  const recs = animalRecords(animalId);
+  if(!recs.length) return null;
+  return recs[0].examDate || recs[0].aiDate || recs[0].estrusDate || null;
+}
+
+function renderAnimalView(){
+  const animals = ownerAnimals().filter(a => a.animalId.includes(UI.animalSearch.trim()));
+  if(UI.selectedAnimal && !animals.find(a=>a.animalId===UI.selectedAnimal)){
+    // keep selection even if filtered out of list view by search; just don't auto-clear unless animal truly removed
+    if(!ownerAnimals().find(a=>a.animalId===UI.selectedAnimal)) UI.selectedAnimal = null;
+  }
+  const listHtml = animals.map(a => {
+    const last = lastRecordDate(a.animalId);
+    return `
+    <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
+      <span class="tag-chip sm">${esc(a.animalId)}</span>
+      <span class="animal-meta">
+        <span>산차 ${esc(a.parity||'—')}</span>
+        <span>${ageMonths(a.birth)}</span>
+        <span>최근 ${last?fmtShort(last):'기록없음'}</span>
+      </span>
+    </div>`;
+  }).join('') || `<div class="empty-state">검색 결과가 없어요.</div>`;
+
+  let detailHtml = `<div class="empty-state">왼쪽 목록에서 개체를 선택해주세요.<br>전체 ${animals.length}두</div>`;
+  if(UI.selectedAnimal){
+    const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===UI.selectedAnimal);
+    if(a){
+      const recs = animalRecords(a.animalId);
+      detailHtml = `
+        <button class="btn secondary small mobile-back" data-action="backToList">← 목록으로</button>
+        <div class="animal-detail-head">
+          <span class="tag-chip lg">${esc(a.animalId)}</span>
+          <div class="head-actions">
+            <button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
+            <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
+          <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
+          <div class="field"><label>외외증조부</label><div class="val">${esc(a.damDamSire)||'—'}</div></div>
+          <div class="field"><label>출생</label><div class="val">${esc(a.birth)||'—'}</div></div>
+          <div class="field"><label>개월령</label><div class="val">${ageMonths(a.birth)}</div></div>
+          <div class="field"><label>산차</label><div class="val">${esc(a.parity)||'—'}</div></div>
+          <div class="field"><label>마지막 분만일</label><div class="val">${esc(a.lastCalving)||'—'}</div></div>
+          <div class="field"><label>수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'aiCount'))||'—'}</div></div>
+          <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||'—'}</div></div>
+          <div class="field"><label>수정 난이도</label><div class="val">${a.aiDifficulty?`${'★'.repeat(+a.aiDifficulty)}${'☆'.repeat(5-+a.aiDifficulty)} (${a.aiDifficulty}/5)`:'—'}${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
+        </div>
+        <div class="section-title">
+          <span>진료·수정 기록 (${recs.length})</span>
+          <button class="btn small" data-action="addRecord" data-id="${esc(a.animalId)}">+ 기록 추가</button>
+        </div>
+        ${recs.length ? recs.map(r=>renderRecordCard(r)).join('') : '<div class="empty-state">아직 기록이 없어요.</div>'}
+      `;
+    }
+  }
+
+  return `
+    <div class="animal-layout ${UI.selectedAnimal?'has-selection':''}">
+      <div class="panel list-panel">
+        <div class="panel-head"><h3>개체 목록 (${animals.length}두)</h3></div>
+        <input class="search-input" id="animalSearchInput" placeholder="개체번호 검색..." value="${esc(UI.animalSearch)}">
+        <div class="animal-list">${listHtml}</div>
+        <div style="margin-top:10px;"><button class="btn secondary small" data-action="addAnimal" style="width:100%;">+ 새 개체 등록</button></div>
+      </div>
+      <div class="panel detail-panel">${detailHtml}</div>
+    </div>
+  `;
+}
+
+function estrusSummary(r){
+  const parts = [];
+  if(r.estrusVulvar) parts.push('외음부종창/충혈 '+r.estrusVulvar);
+  if(r.estrusMucus) parts.push('점액 '+r.estrusMucus);
+  if(r.estrusContraction) parts.push('자궁수축 '+r.estrusContraction);
+  if(r.estrusOther) parts.push(r.estrusOther);
+  if(parts.length) return parts.join(' · ');
+  return r.estrusSign || '';
+}
+function rectalSummary(r){
+  const parts = [];
+  if(r.rectalUterus) parts.push('자궁 '+r.rectalUterus);
+  if(r.rectalOvaryL) parts.push('좌난소 '+r.rectalOvaryL);
+  if(r.rectalOvaryR) parts.push('우난소 '+r.rectalOvaryR);
+  if(parts.length) return parts.join(' · ');
+  return r.rectalExam || '';
+}
+function ultraSummary(r){
+  const parts = [];
+  if(r.ultraUterus) parts.push('자궁 '+r.ultraUterus);
+  if(r.ultraOvaryL) parts.push('좌난소 '+r.ultraOvaryL);
+  if(r.ultraOvaryR) parts.push('우난소 '+r.ultraOvaryR);
+  if(parts.length) return parts.join(' · ');
+  return r.ultrasound || '';
+}
+function renderRecordCard(r){
+  const kv = (label, val) => val ? `<span class="kv"><b>${label}</b> ${esc(val)}</span>` : '';
+  return `
+    <div class="record-card">
+      <div class="row1">
+        <div class="record-dates">
+          ${r.examDate?`<span class="date-pill exam">진료 ${fmtShort(r.examDate)}</span>`:''}
+          ${r.estrusDate?`<span class="date-pill estrus">발정 ${fmtShort(r.estrusDate)}</span>`:''}
+          ${r.aiDate?`<span class="date-pill ai">수정 ${fmtShort(r.aiDate)}</span>`:''}
+          ${firstSyncDate(r)?`<span class="date-pill sync">동기화 ${fmtShort(firstSyncDate(r))}</span>`:''}
+        </div>
+        <div>
+          <button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}">수정</button>
+          <button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}">삭제</button>
+        </div>
+      </div>
+      <div class="record-body">
+        ${kv('발정증상', estrusSummary(r))}
+        ${kv('직장검사', rectalSummary(r))}
+        ${kv('초음파', ultraSummary(r))}
+        ${kv('호르몬처치', r.hormoneTreatment)}
+        ${kv('임신여부', r.pregnant)}
+        ${kv('수정횟수', r.aiCount)}
+        ${kv('내수정횟수', r.inHouseAiCount)}
+        ${kv('농가수정횟수', r.farmAiCount)}
+        ${kv('KPN', r.kpn)}
+        ${kv('다음발정일', r.nextEstrusDate?fmtShort(r.nextEstrusDate):'')}
+        ${kv('예상분만일', r.expectedCalving?fmtShort(r.expectedCalving):'')}
+      </div>
+      ${syncSummary(r)?`<div class="record-notes">동기화: ${esc(syncSummary(r))}</div>`:''}
+      ${r.notes?`<div class="record-notes">${esc(r.notes)}</div>`:''}
+    </div>
+  `;
+}
+
+/* ============================================================
+   날짜별 보기
+============================================================ */
+function renderDateView(){
+  const field = UI.dateMode==='exam' ? 'examDate' : 'aiDate';
+  let recs = DATA.records.filter(r=>r.owner===UI.owner && r[field]);
+  if(UI.dateFrom) recs = recs.filter(r=>dateOnly(r[field]) >= UI.dateFrom);
+  if(UI.dateTo) recs = recs.filter(r=>dateOnly(r[field]) <= UI.dateTo);
+  if(UI.dateSearch.trim()) recs = recs.filter(r=>r.animalId.includes(UI.dateSearch.trim()));
+  recs = recs.sort((a,b)=> dateOnly(b[field]).localeCompare(dateOnly(a[field])) || (b[field]>a[field]?1:-1));
+
+  const rows = recs.map(r => `
+    <tr data-action="editRecord" data-id="${esc(r.id)}">
+      <td><span class="tag-chip sm">${esc(r.animalId)}</span></td>
+      <td>${fmtShort(r[field])}</td>
+      <td>${fmtShort(r.examDate)}</td>
+      <td>${fmtShort(r.aiDate)}</td>
+      <td><span class="note-trunc">${esc(estrusSummary(r) || r.notes || ultraSummary(r) || rectalSummary(r) || '')}</span></td>
+      <td class="actions">
+        <button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button>
+        <button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="6"><div class="empty-state">조건에 맞는 기록이 없어요.</div></td></tr>`;
+
+  return `
+    <div class="toolbar">
+      <div class="seg">
+        <button class="${UI.dateMode==='exam'?'active':''}" data-action="setDateMode" data-mode="exam">진료일시 기준</button>
+        <button class="${UI.dateMode==='ai'?'active':''}" data-action="setDateMode" data-mode="ai">수정일시 기준</button>
+      </div>
+      <input type="date" id="dateFromInput" value="${UI.dateFrom}">
+      <span style="color:var(--ink-soft);font-size:13px;">~</span>
+      <input type="date" id="dateToInput" value="${UI.dateTo}">
+      <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}">
+      <button class="btn secondary small" data-action="resetDateFilters">필터 초기화</button>
+      <button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>
+    </div>
+    <table class="data-table">
+      <thead><tr>
+        <th>개체번호</th><th>${UI.dateMode==='exam'?'진료일시':'수정일시'}</th><th>진료일시</th><th>수정일시</th><th>비고</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+/* ============================================================
+   스케줄 보기
+============================================================ */
+/* 진료기록 기반 자동 스케줄 계산 */
+function buildAutoSchedule(owner){
+  // { animalId: { date: [note, ...] } }
+  const result = {};
+  const add = (aid, date, note) => {
+    if(!date) return;
+    if(!result[aid]) result[aid] = {};
+    if(!result[aid][date]) result[aid][date] = [];
+    if(!result[aid][date].includes(note)) result[aid][date].push(note);
+  };
+
+  DATA.records.filter(r=>r.owner===owner).forEach(rec => {
+    // 동기화 단계 자동 추가
+    for(let i=1;i<=SYNC_STEPS;i++){
+      const type = rec['sync'+i+'Type'];
+      const date = dateOnly(rec['sync'+i+'Date']);
+      if(type && date) add(rec.animalId, date, type);
+    }
+  });
+  return result;
+}
+
+function renderScheduleView(){
+  ensureOwnerMeta(UI.owner);
+  const range = DATA.scheduleRange[UI.owner];
+  const dates = dateRangeArray(range.start, range.end);
+  const animalIds = DATA.scheduleAnimals[UI.owner];
+  const today = todayStr();
+
+  // 자동생성 스케줄 계산 (진료기록 동기화 단계만)
+  const auto = buildAutoSchedule(UI.owner);
+
+  const header = `<th class="corner">개체번호</th>` + dates.map(d => `
+    <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
+  `).join('');
+
+  const bodyRows = animalIds.map(aid => {
+    const safeId = aid.replace(/\s+/g,'_');
+    const cells = dates.map(d => {
+      const manual = DATA.schedule.find(s=>s.owner===UI.owner && s.animalId===aid && s.date===d);
+      const autoEntries = (auto[aid]||{})[d] || [];
+      const autoText = autoEntries.join(' / ');
+      const displayVal = manual ? manual.note : autoText;
+      const isAuto = !manual && !!autoText;
+      const done = isCellDone(UI.owner, aid, d);
+      const hasContent = !!(displayVal);
+      return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''}">
+        <div class="sched-cell-inner">
+          <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
+          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="toggleCellDone" data-aid="${esc(aid)}" data-date="${d}" title="${done?'완료취소':'완료처리'}">✓</button>`:''}
+        </div>
+      </td>`;
+    }).join('');
+    return `<tr>
+      <td class="rowhead">
+        <div class="rowhead-inner">
+          <span class="tag-chip sm">${esc(aid)}</span>
+          <button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">✕</button>
+        </div>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('') || `<tr><td class="rowhead">—</td><td colspan="${dates.length}"><div class="empty-state" style="padding:14px;">개체를 추가해주세요</div></td></tr>`;
+
+  const existingIds = ownerAnimals().map(a=>a.animalId);
+
+  return `
+    <div class="chip-row">${QUICK_CODES.map(c=>`<button class="quick-chip" data-action="insertChip" data-code="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+    <div class="sched-toolbar">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn secondary small" data-action="shiftRange" data-dir="-7">◀ 7일</button>
+        <span style="font-size:12px;color:var(--ink-soft);font-weight:700;">${range.start} ~ ${range.end}</span>
+        <button class="btn secondary small" data-action="shiftRange" data-dir="7">7일 ▶</button>
+        <button class="btn secondary small" data-action="extendRange">+ 7일 연장</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <input class="search-input" id="scheduleAddInput" list="animalIdList" placeholder="개체번호 입력 후 추가" style="margin-bottom:0;width:200px;">
+        <datalist id="animalIdList">${existingIds.map(id=>`<option value="${esc(id)}">`).join('')}</datalist>
+        <button class="btn small" data-action="addScheduleAnimal">+ 개체 추가</button>
+        <button class="btn danger small" data-action="clearAllSchedule">전체 삭제</button>
+      </div>
+    </div>
+    <div class="sched-wrap">
+      <table class="sched-table">
+        <thead><tr>${header}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   임신감정 보기
+============================================================ */
+function renderPregCheckView(){
+  const today = todayStr();
+  const animals = ownerAnimals();
+  const rows = [];
+  animals.forEach(a => {
+    const allRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
+    const aiRecs = allRecs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+    if(!aiRecs.length) return;
+    const aiRec = aiRecs[0];
+    const aiD = dateOnly(aiRec.aiDate);
+    const days = Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000);
+    const aiTs = sortKeyOf(aiRec);
+    const diagRecs = allRecs.filter(r=>r.pregnant && sortKeyOf(r) >= aiTs).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+    const pregnant = diagRecs.length ? diagRecs[0].pregnant : '';
+    const recordForEdit = diagRecs.length ? diagRecs[0] : aiRec;
+    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant });
+  });
+  rows.sort((x,y)=> y.days - x.days);
+
+  const pregnant = rows.filter(r => (r.pregnant||'').trim().toUpperCase() === 'O');
+  const active   = rows.filter(r => (r.pregnant||'').trim().toUpperCase() !== 'O');
+
+  const renderRow = row => {
+    const preg = (row.pregnant||'').trim().toUpperCase();
+    const isNotPregnant = preg==='X';
+    const isPregnant = preg==='O';
+    const needsCheck = !row.pregnant && row.days>=30;
+    let rowClass = '';
+    let badge = '';
+    if(isNotPregnant){ rowClass='notpregnant'; badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`; }
+    else if(needsCheck){ rowClass='overdue'; badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`; }
+    else if(isPregnant){ rowClass='confirmed'; badge = `<span class="pregcheck-badge confirmed">✅ 임신중</span>`; }
+    return `
+    <div class="pregcheck-row ${rowClass}" data-action="editRecord" data-id="${esc(row.record.id)}">
+      <span class="tag-chip">${esc(row.animalId)}</span>
+      <span class="pregcheck-date">수정일 ${fmtShort(row.aiDate)}</span>
+      <span class="pregcheck-days">${row.days}일 경과</span>
+      ${row.pregnant?`<span class="pregcheck-status">임신여부 ${esc(row.pregnant)}</span>`:''}
+      ${badge}
+    </div>
+  `;
+  };
+
+  const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
+  const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
+
+  return `
+    <div class="panel">
+      <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
+      <div class="pregcheck-list">${activeHtml}</div>
+      <div class="section-title" style="margin-top:26px;"><span>🐄 임신중 (${pregnant.length}두)</span></div>
+      <div class="pregcheck-list">${pregnantHtml}</div>
+    </div>
+  `;
+}
+
+const KV_CATS = [
+  ['feeds','사료','예: TMR 단미사료','예: 10kg/일'],
+  ['grasses','풀(조사료)','예: 볏짚, 청보리','예: 3kg/일'],
+  ['supplements','영양제','예: 미네랄 보충제','예: 50g/일'],
+];
+
+/* ============================================================
+   축주 정보 보기
+============================================================ */
+function renderOwnerInfoView(){
+  ensureOwnerMeta(UI.owner);
+  const p = DATA.ownerProfiles[UI.owner] || defaultOwnerProfile();
+  const kvBlock = (cat, label) => {
+    const items = p[cat] || [];
+    const rows = items.length
+      ? items.map(it => `
+          <div class="kv-display-row">
+            <span class="kv-display-name">${esc(it.name)||'—'}</span>
+            <span class="kv-display-amount">${esc(it.amount)||'—'}</span>
+          </div>`).join('')
+      : `<div class="empty-state" style="padding:14px;">등록된 정보가 없어요.</div>`;
+    return `
+      <div class="section-title"><span>${label}</span></div>
+      <div class="kv-display-list">${rows}</div>
+    `;
+  };
+
+  return `
+    <div class="panel">
+      <div class="animal-detail-head">
+        <span class="tag-chip lg">${esc(UI.owner)}</span>
+        <div class="head-actions">
+          <button class="btn secondary small" data-action="editOwnerProfile">축주 정보 수정</button>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="field"><label>주소</label><div class="val">${esc(p.address)||'—'}</div></div>
+        <div class="field">
+          <label>전화번호</label>
+          <div class="val">
+            ${esc(p.phone)||'—'}
+            ${p.phone ? `<a class="btn ghost small" style="margin-left:8px;" href="tel:${esc(p.phone.replace(/[^0-9+]/g,''))}">전화하기</a>` : ''}
+          </div>
+        </div>
+      </div>
+      ${kvBlock('feeds','사료')}
+      ${kvBlock('grasses','풀(조사료)')}
+      ${kvBlock('supplements','영양제')}
+    </div>
+  `;
+}
+
+function renderKvRows(cat, items){
+  if(!items.length) return `<div class="empty-state" style="padding:10px;">아직 항목이 없어요. 아래 버튼으로 추가하세요.</div>`;
+  return items.map((it, i) => `
+    <div class="kv-row" data-idx="${i}">
+      <input type="text" class="kv-name" id="kv_${cat}_name_${i}" placeholder="이름" value="${esc(it.name)}">
+      <input type="text" class="kv-amount" id="kv_${cat}_amount_${i}" placeholder="급여량" value="${esc(it.amount)}">
+      <button type="button" class="iconbtn" data-action="removeKvRow" data-cat="${cat}" data-idx="${i}">✕</button>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   모달 시스템
+============================================================ */
+let modalCtx = {};
+let pendingConfirmAction = null;
+let pendingFocus = null;
+
+function openModal(html){
+  closeModal();
+  const div = document.createElement('div');
+  div.id = 'modalRoot';
+  div.className = 'modal-overlay';
+  div.innerHTML = html;
+  div.addEventListener('mousedown', e=>{ if(e.target===div) closeModal(); });
+  document.body.appendChild(div);
+}
+function closeModal(){
+  const el = document.getElementById('modalRoot');
+  if(el) el.remove();
+}
+function toast(msg){
+  const old = document.querySelector('.toast');
+  if(old) old.remove();
+  const div = document.createElement('div');
+  div.className = 'toast';
+  div.textContent = msg;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(), 2200);
+}
+function openConfirm(message, fn){
+  pendingConfirmAction = fn;
+  openModal(`
+    <div class="modal confirm-modal">
+      <h2>확인</h2>
+      <p>${esc(message)}</p>
+      <div class="modal-actions" style="justify-content:center;">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn danger" data-action="confirmYes">삭제</button>
+      </div>
+    </div>
+  `);
+}
+
+/* ---------- 폼 필드 헬퍼 ---------- */
+function dtField(label, key, val){
+  return `<div class="field">
+    <label>${label}</label>
+    <div class="field-pair">
+      <input type="date" id="f_${key}_date" value="${dateOnly(val)}">
+      <input type="time" id="f_${key}_time" value="${timeOnly(val)}">
+    </div>
+  </div>`;
+}
+function dateOnlyField(label, key, val){
+  return `<div class="field">
+    <label>${label}</label>
+    <input type="date" id="f_${key}" value="${dateOnly(val)}">
+  </div>`;
+}
+function textField(label, key, val, placeholder){
+  return `<div class="field"><label>${label}</label><input type="text" id="f_${key}" value="${esc(val||'')}" placeholder="${esc(placeholder||'')}"></div>`;
+}
+function textareaField(label, key, val){
+  return `<div class="field"><label>${label}</label><textarea id="f_${key}">${esc(val||'')}</textarea></div>`;
+}
+function oxField(label, key, val){
+  return `<div class="field">
+    <label>${label}</label>
+    <input type="text" id="f_${key}" value="${esc(val||'')}">
+    <div class="chips-inline">
+      <button type="button" data-action="fillField" data-target="f_${key}" data-val="O">O</button>
+      <button type="button" data-action="fillField" data-target="f_${key}" data-val="X">X</button>
+    </div>
+  </div>`;
+}
+function syncRow(i, type, date){
+  const opts = SYNC_OPTIONS.map(o => `<option value="${esc(o)}" ${type===o?'selected':''}>${esc(o)}</option>`).join('');
+  return `<div class="sync-row">
+    <span class="sync-num">${i}</span>
+    <select id="f_sync${i}Type">
+      <option value="" ${!type?'selected':''}>선택 안 함</option>
+      ${opts}
+    </select>
+    <input type="date" id="f_sync${i}Date" value="${dateOnly(date)}">
+    <input type="time" id="f_sync${i}Time" value="${timeOnly(date)}">
+  </div>`;
+}
+function syncSummary(r){
+  const parts = [];
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const type = r['sync'+i+'Type'];
+    const date = r['sync'+i+'Date'];
+    if(type) parts.push(`${i}) ${type}${date?' '+fmtShort(date):''}`);
+  }
+  return parts.join(' · ');
+}
+function firstSyncDate(r){
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const type = r['sync'+i+'Type'];
+    const date = r['sync'+i+'Date'];
+    if(type && date) return date;
+  }
+  return null;
+}
+function parseDT(str){
+  if(!str) return null;
+  const datePart = str.slice(0,10);
+  const timePart = str.length>10 ? str.slice(11,16) : '00:00';
+  const [y,m,d] = datePart.split('-').map(Number);
+  const [hh,mm] = timePart.split(':').map(Number);
+  return new Date(y, m-1, d, hh, mm);
+}
+function ownerAnimalsFor(owner){
+  return DATA.animals.filter(a=>a.owner===owner).sort((a,b)=>a.animalId.localeCompare(b.animalId));
+}
+function ensureAnimalExists(owner, animalId){
+  if(!DATA.animals.find(a=>a.owner===owner && a.animalId===animalId)){
+    DATA.animals.push({animalId, owner, sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null});
+  }
+}
+
+/* ---------- 기록 모달 ---------- */
+function openRecordModal(record, owner, presetAnimalId){
+  const isNew = !record;
+  modalCtx = { type:'record', id: record?record.id:null, owner, presetAnimalId: presetAnimalId||null,
+    legacy: { estrusSign: record?(record.estrusSign||''):'', rectalExam: record?(record.rectalExam||''):'', ultrasound: record?(record.ultrasound||''):'',
+      aiOrder: record?(record.aiOrder||''):'', inHouseAi: record?(record.inHouseAi||''):'',
+      recordParity: record?(record.recordParity||''):'',
+      carcass: record?(record.carcass||''):'', ribeye: record?(record.ribeye||''):'',
+      backfat: record?(record.backfat||''):'', marbling: record?(record.marbling||''):'',
+      rectalHorn: record?(record.rectalHorn||''):'', ultraHorn: record?(record.ultraHorn||''):'' } };
+  const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiInterval:'',
+    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', estrusSign:'', rectalExam:'',
+    ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
+    carcass:'', ribeye:'', backfat:'', marbling:'',
+    estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusOther:'',
+    rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
+    ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
+    sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
+    sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
+    sync7Type:'', sync7Date:null };
+  const lockAnimalId = !isNew || !!presetAnimalId;
+  const animalIdField = lockAnimalId
+    ? `<div class="field"><label>개체번호</label><div style="padding:7px 0;"><span class="tag-chip">${esc(r.animalId)}</span></div></div>`
+    : `<div class="field"><label>개체번호 *</label><input type="text" id="f_animalId" list="modalAnimalList" value="${esc(r.animalId)}" placeholder="개체번호 입력">
+       <datalist id="modalAnimalList">${ownerAnimalsFor(owner).map(a=>`<option value="${esc(a.animalId)}">`).join('')}</datalist></div>`;
+
+  openModal(`
+    <div class="modal">
+      <h2>${isNew?'새 기록 추가':'기록 수정'}</h2>
+      <div class="modal-sub">축주: ${esc(owner)}</div>
+      <div class="form-grid">${animalIdField}</div>
+
+      <div class="fieldset-title">날짜 정보</div>
+      <div class="form-grid">
+        ${dateOnlyField('진료일시','examDate',r.examDate)}
+        ${dtField('발정일시','estrusDate',r.estrusDate)}
+        ${dtField('수정일시','aiDate',r.aiDate)}
+        <div class="field">
+          <label>수정간격</label>
+          <input type="text" id="f_aiInterval" value="${esc(r.aiInterval)}">
+          <div class="chips-inline"><button type="button" data-action="calcInterval">발정~수정 간격 계산</button></div>
+        </div>
+        ${dateOnlyField('다음발정일','nextEstrusDate', r.nextEstrusDate || (r.estrusDate ? addDays(dateOnly(r.estrusDate), 21) : (r.aiDate ? addDays(dateOnly(r.aiDate), 21) : null)))}
+        ${dateOnlyField('예상분만일','expectedCalving',r.expectedCalving)}
+        ${textField('예상발정주기','expectedCycle',r.expectedCycle,'예: 21일')}
+      </div>
+
+      <div class="fieldset-title">동기화</div>
+      <div class="sync-list">
+        ${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1, r['sync'+(i+1)+'Type'], r['sync'+(i+1)+'Date'])).join('')}
+      </div>
+
+      <div class="fieldset-title">임신감정</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>임신여부</label>
+          <input type="text" id="f_pregnant" value="${esc(r.pregnant)}">
+          <div class="chips-inline">
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="O">O (임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="X">X (비임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="재검필요">재검필요</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fieldset-title">발정증상</div>
+      <div class="form-grid">
+        ${oxField('외음부 종창 및 충혈','estrusVulvar',r.estrusVulvar)}
+        ${oxField('점액','estrusMucus',r.estrusMucus)}
+        ${oxField('자궁수축','estrusContraction',r.estrusContraction)}
+        ${textField('기타','estrusOther',r.estrusOther)}
+      </div>
+      ${r.estrusSign ? `<div class="legacy-note">이전 기록(발정특징): ${esc(r.estrusSign)}</div>` : ''}
+
+      <div class="fieldset-title">직장검사</div>
+      <div class="form-grid">
+        ${textField('자궁','rectalUterus',r.rectalUterus)}
+        ${textField('좌난소','rectalOvaryL',r.rectalOvaryL)}
+        ${textField('우난소','rectalOvaryR',r.rectalOvaryR)}
+      </div>
+      ${r.rectalExam ? `<div class="legacy-note">이전 기록(직장검사): ${esc(r.rectalExam)}</div>` : ''}
+
+      <div class="fieldset-title">초음파</div>
+      <div class="form-grid">
+        ${textField('자궁','ultraUterus',r.ultraUterus)}
+        ${textField('좌난소','ultraOvaryL',r.ultraOvaryL)}
+        ${textField('우난소','ultraOvaryR',r.ultraOvaryR)}
+      </div>
+      ${r.ultrasound ? `<div class="legacy-note">이전 기록(초음파): ${esc(r.ultrasound)}</div>` : ''}
+
+      <div class="fieldset-title">호르몬 처치</div>
+      <div class="form-grid">
+        ${textField('호르몬 처치','hormoneTreatment',r.hormoneTreatment)}
+      </div>
+
+      <div class="fieldset-title">진료 메모</div>
+      <div class="form-grid full">${textareaField('진료 메모','notes',r.notes)}</div>
+
+      <div class="fieldset-title">수정 상세정보</div>
+      <div class="form-grid">
+        ${textField('수정횟수','aiCount',r.aiCount)}
+        ${textField('내수정횟수','inHouseAiCount',r.inHouseAiCount)}
+        ${textField('농가수정횟수','farmAiCount',r.farmAiCount)}
+        ${textField('KPN','kpn',r.kpn)}
+      </div>
+
+      <div class="modal-actions">
+        ${!isNew?'<button class="btn danger left" data-action="deleteRecordInModal">삭제</button>':''}
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveRecord">저장</button>
+      </div>
+    </div>
+  `);
+}
+
+function actionCalcInterval(){
+  const sd = combineDT(document.getElementById('f_estrusDate_date').value, document.getElementById('f_estrusDate_time').value);
+  const ad = combineDT(document.getElementById('f_aiDate_date').value, document.getElementById('f_aiDate_time').value);
+  if(!sd || !ad){ toast('발정일시와 수정일시를 먼저 입력해주세요.'); return; }
+  const t1 = parseDT(sd), t2 = parseDT(ad);
+  let diffMin = Math.round((t2-t1)/60000);
+  const neg = diffMin<0; diffMin = Math.abs(diffMin);
+  const days = Math.floor(diffMin/1440), hours = Math.floor((diffMin%1440)/60), mins = diffMin%60;
+  const parts = [];
+  if(days) parts.push(days+'일');
+  if(hours) parts.push(hours+'시간');
+  if(!days && mins) parts.push(mins+'분');
+  document.getElementById('f_aiInterval').value = (neg?'-':'') + (parts.join(' ') || '0분');
+}
+
+function actionSaveRecord(){
+  const owner = modalCtx.owner;
+  const animalId = (modalCtx.presetAnimalId || (document.getElementById('f_animalId')||{}).value || '').trim();
+  if(!animalId){ toast('개체번호를 입력해주세요.'); return; }
+  const g = id => document.getElementById(id);
+  const rec = {
+    id: modalCtx.id || uid(owner+'-rec'),
+    owner, animalId,
+    examDate: g('f_examDate').value || null,
+    estrusDate: combineDT(g('f_estrusDate_date').value, g('f_estrusDate_time').value),
+    aiDate: combineDT(g('f_aiDate_date').value, g('f_aiDate_time').value),
+    aiInterval: g('f_aiInterval').value.trim(),
+    nextEstrusDate: g('f_nextEstrusDate').value || null,
+    expectedCalving: g('f_expectedCalving').value || null,
+    expectedCycle: g('f_expectedCycle').value.trim(),
+    pregnant: g('f_pregnant').value.trim(),
+    estrusVulvar: g('f_estrusVulvar').value.trim(),
+    estrusMucus: g('f_estrusMucus').value.trim(),
+    estrusContraction: g('f_estrusContraction').value.trim(),
+    estrusOther: g('f_estrusOther').value.trim(),
+    rectalUterus: g('f_rectalUterus').value.trim(),
+    rectalHorn: modalCtx.legacy.rectalHorn,
+    rectalOvaryL: g('f_rectalOvaryL').value.trim(),
+    rectalOvaryR: g('f_rectalOvaryR').value.trim(),
+    ultraUterus: g('f_ultraUterus').value.trim(),
+    ultraHorn: modalCtx.legacy.ultraHorn,
+    ultraOvaryL: g('f_ultraOvaryL').value.trim(),
+    ultraOvaryR: g('f_ultraOvaryR').value.trim(),
+    estrusSign: modalCtx.legacy.estrusSign,
+    rectalExam: modalCtx.legacy.rectalExam,
+    ultrasound: modalCtx.legacy.ultrasound,
+    hormoneTreatment: g('f_hormoneTreatment').value.trim(),
+    notes: g('f_notes').value.trim(),
+    recordParity: modalCtx.legacy.recordParity,
+    aiCount: g('f_aiCount').value.trim(),
+    inHouseAiCount: g('f_inHouseAiCount').value.trim(),
+    farmAiCount: g('f_farmAiCount').value.trim(),
+    kpn: g('f_kpn').value.trim(),
+    aiOrder: modalCtx.legacy.aiOrder,
+    inHouseAi: modalCtx.legacy.inHouseAi,
+    carcass: modalCtx.legacy.carcass,
+    ribeye: modalCtx.legacy.ribeye,
+    backfat: modalCtx.legacy.backfat,
+    marbling: modalCtx.legacy.marbling,
+  };
+  for(let i=1;i<=SYNC_STEPS;i++){
+    rec['sync'+i+'Type'] = g('f_sync'+i+'Type').value;
+    rec['sync'+i+'Date'] = combineDT(g('f_sync'+i+'Date').value, g('f_sync'+i+'Time').value);
+  }
+  ensureAnimalExists(owner, animalId);
+  const idx = DATA.records.findIndex(x=>x.id===rec.id);
+  if(idx>-1) DATA.records[idx] = rec; else DATA.records.push(rec);
+  saveState();
+  closeModal();
+  UI.selectedAnimal = animalId;
+  renderMain();
+  toast('기록을 저장했어요.');
+}
+
+function actionDeleteRecord(id){
+  openConfirm('이 기록을 삭제할까요? 되돌릴 수 없어요.', ()=>{
+    DATA.records = DATA.records.filter(r=>r.id!==id);
+    saveState();
+    renderMain();
+    toast('기록을 삭제했어요.');
+  });
+}
+
+/* ---------- 개체 모달 ---------- */
+function openAnimalModal(animal){
+  const isNew = !animal;
+  modalCtx = { type:'animal', owner: animal?animal.owner:UI.owner, originalId: animal?animal.animalId:null };
+  const a = animal || { animalId:'', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'' };
+  const diffOpts = [1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${n}</option>`).join('');
+  openModal(`
+    <div class="modal">
+      <h2>${isNew?'새 개체 등록':'개체정보 수정'}</h2>
+      <div class="modal-sub">축주: ${esc(modalCtx.owner)}</div>
+      <div class="form-grid">
+        <div class="field"><label>개체번호 *</label><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0"></div>
+        ${textField('부','sire',a.sire)}
+        ${textField('외조부','damSire',a.damSire)}
+        ${textField('외외증조부','damDamSire',a.damDamSire)}
+        <div class="field"><label>출생</label><input type="date" id="f_birth" value="${dateOnly(a.birth)}"></div>
+        ${textField('산차','parity',a.parity)}
+        <div class="field"><label>마지막 분만일</label><input type="date" id="f_lastCalving" value="${dateOnly(a.lastCalving)}"></div>
+        <div class="field">
+          <label>수정 난이도 (1~5)</label>
+          <select id="f_aiDifficulty">
+            <option value="" ${!a.aiDifficulty?'selected':''}>선택 안 함</option>
+            ${diffOpts}
+          </select>
+        </div>
+        ${textField('수정 난이도 메모','aiDifficultyNote',a.aiDifficultyNote)}
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveAnimal">저장</button>
+      </div>
+    </div>
+  `);
+}
+
+function actionSaveAnimal(){
+  const owner = modalCtx.owner;
+  const newId = document.getElementById('f_animalId').value.trim();
+  if(!newId){ toast('개체번호를 입력해주세요.'); return; }
+  const oldId = modalCtx.originalId;
+  const dup = DATA.animals.find(a=>a.owner===owner && a.animalId===newId && a.animalId!==oldId);
+  if(dup){ toast('이미 존재하는 개체번호예요.'); return; }
+  const fields = {
+    sire: document.getElementById('f_sire').value.trim(),
+    damSire: document.getElementById('f_damSire').value.trim(),
+    damDamSire: document.getElementById('f_damDamSire').value.trim(),
+    birth: document.getElementById('f_birth').value || null,
+    parity: document.getElementById('f_parity').value.trim(),
+    lastCalving: document.getElementById('f_lastCalving').value || null,
+    aiDifficulty: document.getElementById('f_aiDifficulty').value,
+    aiDifficultyNote: document.getElementById('f_aiDifficultyNote').value.trim(),
+  };
+  if(oldId===null){
+    DATA.animals.push({ animalId:newId, owner, ...fields });
+    UI.selectedAnimal = newId;
+  } else {
+    const a = DATA.animals.find(x=>x.owner===owner && x.animalId===oldId);
+    Object.assign(a, fields);
+    if(newId!==oldId){
+      a.animalId = newId;
+      DATA.records.forEach(r=>{ if(r.owner===owner && r.animalId===oldId) r.animalId=newId; });
+      DATA.schedule.forEach(s=>{ if(s.owner===owner && s.animalId===oldId) s.animalId=newId; });
+      const sidx = DATA.scheduleAnimals[owner].indexOf(oldId);
+      if(sidx>-1) DATA.scheduleAnimals[owner][sidx]=newId;
+      if(UI.selectedAnimal===oldId) UI.selectedAnimal=newId;
+    }
+  }
+  saveState();
+  closeModal();
+  renderMain();
+  toast('개체정보를 저장했어요.');
+}
+
+function actionDeleteAnimal(ds){
+  const owner = UI.owner, id = ds.id;
+  openConfirm('이 개체와 관련된 모든 진료·수정 기록, 스케줄이 함께 삭제돼요. 계속할까요?', ()=>{
+    DATA.animals = DATA.animals.filter(a=>!(a.owner===owner && a.animalId===id));
+    DATA.records = DATA.records.filter(r=>!(r.owner===owner && r.animalId===id));
+    DATA.schedule = DATA.schedule.filter(s=>!(s.owner===owner && s.animalId===id));
+    DATA.scheduleAnimals[owner] = (DATA.scheduleAnimals[owner]||[]).filter(x=>x!==id);
+    if(UI.selectedAnimal===id) UI.selectedAnimal = null;
+    saveState();
+    renderMain();
+    toast('개체를 삭제했어요.');
+  });
+}
+
+/* ---------- 분만예정일 조회 계산기 ---------- */
+function fmtCalcDate(d){
+  if(!d) return '—';
+  return `${d} (${weekdayKr(d)})`;
+}
+function openGrassInfo(){
+  openModal(`
+    <div class="modal" style="max-width:860px;">
+      <h2>🌿 조사료(풀·짚) 정보</h2>
+      <div class="modal-sub">소에게 급여하는 풀과 짚의 종류별 영양성분·특성 요약</div>
+
+      <div class="grass-legend">
+        <span class="grass-tag" style="background:#FFF3CD;color:#7A5A00;">TDN — 소화 가능한 에너지 비율. 높을수록 같은 양으로 더 많은 에너지 공급</span>
+        <span class="grass-tag" style="background:#D5EDD8;color:#1C5C34;">CP — 조단백질(%). 번식·근육·면역에 직결</span>
+      </div>
+
+      <!-- 짚류 -->
+      <div class="grass-section-title">📦 짚류 — 저질 조사료 (반추위 충전재 역할)</div>
+      <div class="grass-grid">
+        <div class="grass-card straw">
+          <div class="grass-name">볏짚</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#C8A44A;"></span>황갈색 건조 줄기</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 43.6</span><span class="stat-cp">CP 5.0%</span><span class="stat-price p1">💰 ~130원/kg (국내 최저)</span></div>
+          <div class="grass-desc">국내 가장 흔한 기본 조사료. 영양은 낮지만 반추위 pH 안정에 기여. 단독 급여 시 번식 성적 저하 주의.</div>
+          <div class="grass-sim">🔁 유사: 밀짚·보리짚</div>
+        </div>
+        <div class="grass-card straw">
+          <div class="grass-name">밀짚 / 보리짚</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#D4B85A;"></span>연한 황색, 볏짚과 흡사</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 44~46</span><span class="stat-cp">CP 4~5%</span><span class="stat-price p1">💰 ~130~140원/kg</span></div>
+          <div class="grass-desc">볏짚과 거의 같은 영양·물리적 특성. 볏짚 가격 오를 때 대체재로 활용. 급여 방법 동일.</div>
+          <div class="grass-sim">🔁 유사: 볏짚</div>
+        </div>
+      </div>
+
+      <!-- 국내 양질 조사료 -->
+      <div class="grass-section-title">🌾 국내 생산 양질 조사료 (봄 수확 중심)</div>
+      <div class="grass-grid">
+        <div class="grass-card quality">
+          <div class="grass-name">이탈리안라이그라스 (IRG) ⭐</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#4A8A40;"></span>짙은 녹색, 얇고 부드러운 잎</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58~62</span><span class="stat-cp">CP 10~14%</span><span class="stat-price p2">💰💰 ~150~160원/kg (국산)</span></div>
+          <div class="grass-desc">국내 1순위 양질 조사료. 봄 수확, 소가 가장 즐겨 먹음. 번식우에 특히 권장. 사일리지로 연중 급여 가능.</div>
+          <div class="grass-sim">🔁 유사: 라이그라스 건초, 오차드그라스</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">총체보리 (청보리)</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#78B540;"></span>녹황색, 부드러운 이삭 포함</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 59.5</span><span class="stat-cp">CP 9.0%</span><span class="stat-price p2">💰💰 ~150~180원/kg (국산)</span></div>
+          <div class="grass-desc">국내 자급률 높고 가격 안정적. 이른 봄 수확, 기호성 우수. 사일리지 제조 후 연중 급여. 번식우에 좋은 기본 조사료.</div>
+          <div class="grass-sim">🔁 유사: IRG 사일리지, 호밀</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">옥수수 사일리지</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#A0A830;"></span>황록색, 굵은 줄기+이삭</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 62.0</span><span class="stat-cp">CP 8.7%</span><span class="stat-price p2">💰💰 ~150~200원/kg (국산)</span></div>
+          <div class="grass-desc">에너지 함량 조사료 중 최고. 비육우에 특히 유리. 발효 보존으로 연중 급여. CP가 낮아 단백질 보충 필요.<br><span style="font-size:11px;color:var(--primary);font-weight:700;">💡 사일리지: 풀을 공기 차단 후 유산균 발효 저장 — "풀로 만든 김치". 수개월~1년 보관 가능.</span></div>
+          <div class="grass-sim">🔁 유사: 총체벼 사일리지</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">총체벼</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#8AAA30;"></span>연두~황색, 이삭 포함</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 54~57</span><span class="stat-cp">CP 7~9%</span><span class="stat-price p2">💰💰 ~160~200원/kg (국산)</span></div>
+          <div class="grass-desc">벼를 알곡이 여물기 전(유숙기)에 이삭·줄기·잎 통째로 베어 사료화. 볏짚보다 영양 훨씬 높음. 논을 그대로 활용 가능. 사일리지로 저장 후 연중 급여. 쌀 수확을 포기하는 대신 사료용으로 전환하는 방식.</div>
+          <div class="grass-sim">🔁 유사: 옥수수 사일리지, 청보리 사일리지</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">연맥 (귀리)</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#C8C860;"></span>연한 황금색, 처진 이삭·부드러운 줄기</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">CP 8~11%</span><span class="stat-price p2">💰💰 ~150~200원/kg (국산)</span></div>
+          <div class="grass-desc">오트밀로 아는 귀리를 알곡 전에 통째로 베어 건초·사일리지로 이용. IRG·청보리와 영양 유사. <b>기호성 매우 좋음</b> — 입 까다로운 소, 분만 직후 식욕 저하 소에게 효과적. 수입산(호주·캐나다)도 많이 유통.</div>
+          <div class="grass-sim">🔁 유사: IRG, 청보리, 호밀 (봄수확 양질 조사료 군)</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">호밀</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#3A7A30;"></span>진한 녹색, 넓은 잎폭</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 52~56</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p2">💰💰 ~150~180원/kg (국산)</span></div>
+          <div class="grass-desc">겨울~봄 재배. IRG와 함께 가을 파종. 내한성 강하고 조기 수확 가능. IRG보다 기호성은 약간 낮음.</div>
+          <div class="grass-sim">🔁 유사: 청보리, IRG, 연맥</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">수단그라스</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#5A9040;"></span>녹색, 굵은 줄기</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">8~10%</span><span class="stat-price p1">💰 ~130~160원/kg (국산, 저렴)</span></div>
+          <div class="grass-desc">여름 재배. 볏짚보다 저렴하고 기호성 양호. 발효제 살포 후 원형베일 사일리지로 이용. 제주피와 혼합 급여 많음.</div>
+          <div class="grass-sim">🔁 유사: 제주피(피 건초)</div>
+        </div>
+        <div class="grass-card quality">
+          <div class="grass-name">제주피 (피 건초)</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#6A9848;"></span>녹색~황록색</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58.8</span><span class="stat-cp">CP 12.9%</span><span class="stat-price p1">💰 ~140~180원/kg (국산)</span></div>
+          <div class="grass-desc">영양성분이 라이그라스와 흡사하면서 가격은 낮아 실용적. 수단그라스와 혼합 유통 多. 기호성 우수.</div>
+          <div class="grass-sim">🔁 유사: IRG, 라이그라스 건초</div>
+        </div>
+      </div>
+
+      <!-- 수입 건초 -->
+      <div class="grass-section-title">✈️ 수입 건초 (품질 안정적, 비용 높음)</div>
+      <div class="grass-grid">
+        <div class="grass-card import">
+          <div class="grass-name">알팔파 ⭐ (번식·단백질)</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#2A6E22;"></span>짙은 녹색, 잎이 풍성한 두과목초</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58~65</span><span class="stat-cp">CP 14%+</span><span class="stat-price p4">💰💰💰💰 ~500~550원/kg (수입)</span></div>
+          <div class="grass-desc">단백질 함량 조사료 중 최고. 분만 전후·수태율 저하 시 단기 보강 효과 큼. 다량 급여 시 고창증 주의. 송아지 첫 섬유질 사료로도 사용.</div>
+          <div class="grass-sim">🔁 유사: 오차드그라스 (단백질 군)</div>
+        </div>
+        <div class="grass-card import">
+          <div class="grass-name">티모시 ⭐ (기호성 최고)</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#90C060;"></span>연녹~황록색, 가늘고 부드러운 원통형 이삭</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~60</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p5">💰💰💰💰💰 ~640~660원/kg (수입 최고가)</span></div>
+          <div class="grass-desc">소가 가장 좋아하는 건초. 일본·캐나다 수입. 입이 까다롭거나 컨디션 저하 소에게 효과적. 섭취량이 늘어나는 것 자체가 회복에 도움.</div>
+          <div class="grass-sim">🔁 유사: 오차드그라스 (질감·색상 비슷)</div>
+        </div>
+      </div>
+
+      <!-- 방목지·다년생 목초 -->
+      <div class="grass-section-title">🌱 방목지·다년생 목초 (한번 심으면 오래 지속)</div>
+      <div class="grass-grid">
+        <div class="grass-card import">
+          <div class="grass-name">오차드그라스</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#507840;"></span>진녹색, 납작하고 넓은 잎</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 56~62</span><span class="stat-cp">CP 9~13%</span><span class="stat-price p3">💰💰💰 ~380~460원/kg (수입)</span></div>
+          <div class="grass-desc">티모시보다 CP 약간 높음. 사계절 생산 가능하고 재생력 강함. 티모시 대비 저렴. 영양과 기호성 균형이 좋아 범용으로 쓰임.</div>
+          <div class="grass-sim">🔁 유사: 티모시, IRG 건초</div>
+        </div>
+        <div class="grass-card import" style="border-left-color:#B05A30;">
+          <div class="grass-name">톨페스큐 ⚠️ 번식우 주의</div>
+          <div class="grass-meta"><span class="grass-color-dot" style="background:#608050;"></span>짙은 녹색, 잎이 거칠고 뻣뻣함</div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~500원/kg (수입)</span></div>
+          <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">⚠️ 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
+          <div class="grass-sim">🔁 유사: 오차드그라스 (영양 수준), 볏짚 (기호성 낮음 공통점)</div>
+        </div>
+      </div>
+
+      <!-- 번식우 -->
+      <div class="grass-section-title">🐄 번식우 급여 가이드</div>
+      <div class="grass-rec-grid">
+        <div class="grass-rec">
+          <div class="grass-rec-title">📌 기본 원칙</div>
+          <ul>
+            <li>CP <b>10~12% 이상</b> 확보 목표</li>
+            <li>TDN <b>55 이상</b>이면 번식에 유리</li>
+            <li><b>볏짚 단독 급여 = 번식 성적 저하 주원인</b></li>
+          </ul>
+        </div>
+        <div class="grass-rec">
+          <div class="grass-rec-title">🥇 추천 조합</div>
+          <ul>
+            <li><b>IRG + 볏짚</b> — 가성비 최고, 번식농가 기본 조합</li>
+            <li><b>청보리 사일리지</b> — 균형 좋고 연중 급여 가능</li>
+            <li><b>알팔파 보강</b> — 분만 전후·수태율 저하 시 단기 집중</li>
+            <li><b>티모시</b> — 컨디션 저하·식욕 없는 소에게</li>
+          </ul>
+        </div>
+        <div class="grass-rec">
+          <div class="grass-rec-title">📅 시기별 포인트</div>
+          <ul>
+            <li><b>분만 전 60일</b> — 알팔파 or IRG + 배합사료</li>
+            <li><b>분만 직후</b> — 티모시·IRG (기호성 우선, 먹어야 회복)</li>
+            <li><b>수정 준비기</b> — IRG·청보리 자유채식 → 발정 정상화</li>
+            <li><b>임신 중기</b> — 볏짚 비율 높여도 됨 (과비육 주의)</li>
+          </ul>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- 시세 -->
+      <div class="grass-section-title">💰 가격 안내 (2025년 기준, kg당)</div>
+      <div class="grass-rec-grid">
+        <div class="grass-rec">
+          <div class="grass-rec-title">국내산 (저렴)</div>
+          <ul>
+            <li><b>볏짚·밀짚·보리짚</b> — 약 130~140원</li>
+            <li><b>수단그라스·제주피</b> — 약 130~180원</li>
+            <li><b>IRG·청보리·호밀·옥수수 사일리지</b> — 약 150~210원</li>
+            <li><b>총체벼·연맥(국산)</b> — 약 160~200원</li>
+          </ul>
+        </div>
+        <div class="grass-rec">
+          <div class="grass-rec-title">수입산 (비쌈)</div>
+          <ul>
+            <li><b>연맥(수입)</b> — 약 380~400원</li>
+            <li><b>라이그라스 건초(수입)</b> — 약 350~380원</li>
+            <li><b>톨페스큐</b> — 약 450~500원</li>
+            <li><b>알팔파</b> — 약 500~550원</li>
+            <li><b>티모시</b> — 약 640~660원 <span style="color:var(--accent);font-weight:800;">(최고가)</span></li>
+          </ul>
+        </div>
+        <div class="grass-rec">
+          <div class="grass-rec-title">📌 참고</div>
+          <ul>
+            <li>가격은 환율·작황·계절에 따라 크게 달라짐</li>
+            <li>수입산은 국내산 대비 <b>2~5배</b> 비쌈</li>
+            <li>볏짚 단독 급여는 가장 저렴하지만 번식 성적 저하 주원인</li>
+            <li>티모시·알팔파는 컨디션 저하·분만 전후 단기 집중 활용 추천</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">닫기</button>
+      </div>
+    </div>
+  `);
+}
+
+function openDueDateCalc(){
+  renderDueDateCalc(todayStr());
+}
+function openAllSchedule(){
+  openModal(`
+    <div class="modal" style="max-width:660px;">
+      <h2>📋 전체 스케줄</h2>
+      <div class="modal-sub">모든 축주의 스케줄 — 최근 7일 ~ 이후 45일</div>
+      <div class="allsched-list" id="allschedList">${allOwnersScheduleHtml()}</div>
+      <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
+    </div>
+  `);
+}
+function allOwnersScheduleHtml(){
+  const today = todayStr();
+  const range = { start: addDays(today,-7), end: addDays(today, 45) };
+  const dates = dateRangeArray(range.start, range.end);
+  const allRows = [];
+  DATA.owners.forEach(owner => {
+    ensureOwnerMeta(owner);
+    const auto = buildAutoSchedule(owner);
+    const ids = DATA.scheduleAnimals[owner] || [];
+    ids.forEach(aid => {
+      dates.forEach(d => {
+        const manual = DATA.schedule.find(s=>s.owner===owner && s.animalId===aid && s.date===d);
+        const autoEntries = (auto[aid]||{})[d] || [];
+        const note = manual ? manual.note : autoEntries.join(' / ');
+        if(!note) return;
+        const done = isCellDone(owner, aid, d);
+        allRows.push({ owner, aid, date:d, note, done, isAuto:!manual&&!!autoEntries.length });
+      });
+    });
+  });
+  allRows.sort((a,b)=>a.date.localeCompare(b.date)||(a.aid.localeCompare(b.aid)));
+  if(!allRows.length) return `<div class="empty-state">표시할 스케줄이 없어요.</div>`;
+  let html = '';
+  let lastDate = '';
+  allRows.forEach(row => {
+    if(row.date !== lastDate){
+      lastDate = row.date;
+      const isToday = row.date === today;
+      html += `<div class="allsched-date ${isToday?'allsched-today':''}">${row.date} (${weekdayKr(row.date)})</div>`;
+    }
+    const done = row.done;
+    html += `<div class="allsched-item ${done?'done':''} ${row.isAuto?'auto':''}">
+      <span class="tag-chip sm">${esc(row.aid)}</span>
+      <span class="allsched-owner">${esc(row.owner)}</span>
+      <span class="allsched-note">${esc(row.note)}</span>
+      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="${done?'완료취소':'완료처리'}">✓</button>
+    </div>`;
+  });
+  return html;
+}
+function renderDueDateCalc(aiDateStr){
+  const nextEstrus = addDays(aiDateStr, 21);
+  const calving = addDays(aiDateStr, 285);
+  openModal(`
+    <div class="modal" style="max-width:420px;">
+      <h2>📅 분만예정일</h2>
+      <div class="modal-sub">수정일을 입력하면 다음 발정 예정일과 분만 예정일을 바로 계산해줘요.</div>
+      <div class="form-grid full">
+        <div class="field"><label>수정일</label><input type="date" id="calc_aiDate" value="${aiDateStr}"></div>
+      </div>
+      <div class="info-grid" style="margin-top:18px;">
+        <div class="field"><label>다음 발정 예정일</label><div class="val" id="calc_nextEstrus">${fmtCalcDate(nextEstrus)}</div></div>
+        <div class="field"><label>분만 예정일</label><div class="val" id="calc_calving" style="color:var(--accent);">${fmtCalcDate(calving)}</div></div>
+      </div>
+      <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
+    </div>
+  `);
+}
+function actionCalcDateChange(value){
+  if(!value) return;
+  document.getElementById('calc_nextEstrus').textContent = fmtCalcDate(addDays(value, 21));
+  document.getElementById('calc_calving').textContent = fmtCalcDate(addDays(value, 285));
+}
+
+/* ---------- 축주 모달 ---------- */
+function openOwnerModal(){
+  modalCtx = { type:'owner' };
+  openModal(`
+    <div class="modal">
+      <h2>축주 추가</h2>
+      <div class="form-grid full">
+        <div class="field"><label>축주 이름 *</label><input type="text" id="f_ownerName" placeholder="예: 박농부"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveOwner">추가</button>
+      </div>
+    </div>
+  `);
+}
+function actionSaveOwner(){
+  const name = document.getElementById('f_ownerName').value.trim();
+  if(!name){ toast('축주 이름을 입력해주세요.'); return; }
+  if(DATA.owners.includes(name)){ toast('이미 있는 축주예요.'); return; }
+  DATA.owners.push(name);
+  ensureOwnerMeta(name);
+  UI.owner = name;
+  UI.view = 'animal';
+  UI.selectedAnimal = null;
+  saveState();
+  closeModal();
+  render();
+  toast(`'${name}' 축주를 추가했어요.`);
+}
+
+/* ---------- 축주 기본정보 모달 (주소/전화/사료/풀/영양제) ---------- */
+function openOwnerProfileModal(){
+  ensureOwnerMeta(UI.owner);
+  const profile = DATA.ownerProfiles[UI.owner] || defaultOwnerProfile();
+  modalCtx = {
+    type: 'ownerProfile',
+    owner: UI.owner,
+    draft: JSON.parse(JSON.stringify(profile)),
+  };
+  renderOwnerProfileModal();
+}
+function renderOwnerProfileModal(){
+  const owner = modalCtx.owner;
+  const d = modalCtx.draft;
+  openModal(`
+    <div class="modal">
+      <h2>축주 정보 수정</h2>
+      <div class="modal-sub">축주: ${esc(owner)}</div>
+      <div class="form-grid">
+        <div class="field"><label>주소</label><input type="text" id="f_opAddress" value="${esc(d.address)}" placeholder="농장 주소"></div>
+        <div class="field"><label>전화번호</label><input type="text" id="f_opPhone" value="${esc(d.phone)}" placeholder="010-0000-0000"></div>
+      </div>
+      ${KV_CATS.map(([cat,label,namePh,amountPh]) => `
+        <div class="fieldset-title">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>${label}</span>
+            <button type="button" class="btn secondary small" data-action="addKvRow" data-cat="${cat}">+ ${label} 추가</button>
+          </div>
+        </div>
+        <div id="kvRows_${cat}" class="kv-row-list">${renderKvRows(cat, d[cat])}</div>
+      `).join('')}
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveOwnerProfile">저장</button>
+      </div>
+    </div>
+  `);
+}
+function syncKvDraftFromDom(cat){
+  const container = document.getElementById('kvRows_'+cat);
+  if(!container) return;
+  const rows = [...container.querySelectorAll('.kv-row')];
+  modalCtx.draft[cat] = rows.map(r => {
+    const nameEl = r.querySelector('.kv-name');
+    const amountEl = r.querySelector('.kv-amount');
+    return { name: nameEl?nameEl.value:'', amount: amountEl?amountEl.value:'' };
+  });
+}
+function actionAddKvRow(cat){
+  syncKvDraftFromDom(cat);
+  modalCtx.draft[cat].push({ name:'', amount:'' });
+  document.getElementById('kvRows_'+cat).innerHTML = renderKvRows(cat, modalCtx.draft[cat]);
+}
+function actionRemoveKvRow(cat, idx){
+  syncKvDraftFromDom(cat);
+  modalCtx.draft[cat].splice(idx, 1);
+  document.getElementById('kvRows_'+cat).innerHTML = renderKvRows(cat, modalCtx.draft[cat]);
+}
+function actionSaveOwnerProfile(){
+  KV_CATS.forEach(([cat]) => syncKvDraftFromDom(cat));
+  const owner = modalCtx.owner;
+  const cleaned = {
+    address: document.getElementById('f_opAddress').value.trim(),
+    phone: document.getElementById('f_opPhone').value.trim(),
+    feeds: modalCtx.draft.feeds.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
+    grasses: modalCtx.draft.grasses.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
+    supplements: modalCtx.draft.supplements.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
+  };
+  DATA.ownerProfiles[owner] = cleaned;
+  saveState();
+  closeModal();
+  renderMain();
+  toast('축주 정보를 저장했어요.');
+}
+
+/* ---------- 스케줄 액션 ---------- */
+function updateScheduleCell(animalId, date, value){
+  value = (value||'').trim();
+  const idx = DATA.schedule.findIndex(s=>s.owner===UI.owner && s.animalId===animalId && s.date===date);
+  if(value===''){
+    if(idx>-1) DATA.schedule.splice(idx,1);
+  } else {
+    if(idx>-1) DATA.schedule[idx].note = value;
+    else DATA.schedule.push({ id:uid(UI.owner+'-sch'), owner:UI.owner, animalId, date, note:value });
+  }
+  saveState();
+}
+function actionAddScheduleAnimal(){
+  const input = document.getElementById('scheduleAddInput');
+  const id = input.value.trim();
+  if(!id){ toast('개체번호를 입력해주세요.'); return; }
+  ensureAnimalExists(UI.owner, id);
+  ensureOwnerMeta(UI.owner);
+  if(!DATA.scheduleAnimals[UI.owner].includes(id)) DATA.scheduleAnimals[UI.owner].push(id);
+  saveState();
+  renderMain();
+  toast('스케줄에 추가했어요.');
+}
+function actionRemoveScheduleAnimal(id){
+  openConfirm('이 개체의 스케줄 일정을 모두 삭제할까요?', ()=>{
+    DATA.scheduleAnimals[UI.owner] = DATA.scheduleAnimals[UI.owner].filter(x=>x!==id);
+    DATA.schedule = DATA.schedule.filter(s=>!(s.owner===UI.owner && s.animalId===id));
+    saveState();
+    renderMain();
+  });
+}
+function actionInsertChip(code){
+  if(!UI.focusedCell){ toast('먼저 스케줄 칸을 클릭한 다음 코드를 선택해주세요.'); return; }
+  const el = document.getElementById(UI.focusedCell.id);
+  if(!el){ toast('칸을 다시 선택해주세요.'); return; }
+  el.value = code;
+  updateScheduleCell(UI.focusedCell.aid, UI.focusedCell.date, code);
+}
+
+/* ============================================================
+   액션 매핑 & 이벤트 위임
+============================================================ */
+const ACTIONS = {
+  setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
+  addOwner: ()=>openOwnerModal(),
+  toggleTheme: ()=>{ DATA.theme = DATA.theme==='dark' ? 'light' : 'dark'; applyTheme(); saveState(); render(); },
+  openDueDateCalc: ()=>openDueDateCalc(),
+  openGrassInfo: ()=>openGrassInfo(),
+  openAllSchedule: ()=>openAllSchedule(),
+  setView: ds=>{ UI.view=ds.view; render(); },
+  selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
+  backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
+  addAnimal: ()=>openAnimalModal(null),
+  editAnimal: ds=>{ const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
+  deleteAnimal: ds=>actionDeleteAnimal(ds),
+  addRecord: ds=>openRecordModal(null, UI.owner, ds.id),
+  addRecordGeneric: ()=>openRecordModal(null, UI.owner, null),
+  editRecord: ds=>{ const r=DATA.records.find(x=>x.id===ds.id); if(r) openRecordModal(r, r.owner, r.animalId); },
+  deleteRecord: ds=>actionDeleteRecord(ds.id),
+  deleteRecordInModal: ()=>{ closeModal(); actionDeleteRecord(modalCtx.id); },
+  setDateMode: ds=>{ UI.dateMode=ds.mode; renderMain(); },
+  resetDateFilters: ()=>{ UI.dateFrom=''; UI.dateTo=''; UI.dateSearch=''; renderMain(); },
+  shiftRange: ds=>{ const r=DATA.scheduleRange[UI.owner]; const n=parseInt(ds.dir,10); r.start=addDays(r.start,n); r.end=addDays(r.end,n); saveState(); renderMain(); },
+  extendRange: ()=>{ const r=DATA.scheduleRange[UI.owner]; r.end=addDays(r.end,7); saveState(); renderMain(); },
+  addScheduleAnimal: ()=>actionAddScheduleAnimal(),
+  removeScheduleAnimal: ds=>actionRemoveScheduleAnimal(ds.id),
+  clearAllSchedule: ()=>openConfirm('이 축주의 스케줄과 개체 목록을 전부 삭제할까요? 진료기록은 유지돼요.', ()=>{
+    DATA.schedule = DATA.schedule.filter(s=>s.owner!==UI.owner);
+    DATA.scheduleAnimals[UI.owner] = [];
+    saveState(); renderMain(); toast('스케줄을 모두 삭제했어요.');
+  }),
+  toggleCellDone: ds=>{ toggleCellDone(UI.owner, ds.aid, ds.date); renderMain(); },
+  toggleCellDoneAll: ds=>{ toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
+  insertChip: ds=>actionInsertChip(ds.code),
+  fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; },
+  calcInterval: ()=>actionCalcInterval(),
+  closeModal: ()=>closeModal(),
+  saveRecord: ()=>actionSaveRecord(),
+  saveAnimal: ()=>actionSaveAnimal(),
+  saveOwner: ()=>actionSaveOwner(),
+  editOwnerProfile: ()=>openOwnerProfileModal(),
+  addKvRow: ds=>actionAddKvRow(ds.cat),
+  removeKvRow: ds=>actionRemoveKvRow(ds.cat, parseInt(ds.idx,10)),
+  saveOwnerProfile: ()=>actionSaveOwnerProfile(),
+  confirmYes: ()=>{ const fn=pendingConfirmAction; pendingConfirmAction=null; closeModal(); if(fn) fn(); },
+};
+
+function initEvents(){
+  document.addEventListener('click', e=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    if(ACTIONS[action]) ACTIONS[action](el.dataset, e);
+  });
+  document.addEventListener('input', e=>{
+    const t = e.target;
+    if(t.id==='animalSearchInput'){ UI.animalSearch=t.value; pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+    else if(t.id==='dateSearchInput'){ UI.dateSearch=t.value; pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+  });
+  document.addEventListener('change', e=>{
+    const t = e.target;
+    if(t.matches && t.matches('.sched-cell input')){ updateScheduleCell(t.dataset.aid, t.dataset.date, t.value); }
+    else if(t.id==='dateFromInput'){ UI.dateFrom=t.value; renderMain(); }
+    else if(t.id==='dateToInput'){ UI.dateTo=t.value; renderMain(); }
+    else if(t.id==='calc_aiDate'){ actionCalcDateChange(t.value); }
+    else if(t.id==='f_estrusDate_date' || t.id==='f_aiDate_date'){
+      const nextEl = document.getElementById('f_nextEstrusDate');
+      if(nextEl && t.value){ nextEl.value = addDays(t.value, 21); }
+    }
+  });
+  document.addEventListener('focusin', e=>{
+    if(e.target.matches && e.target.matches('.sched-cell input')){
+      UI.focusedCell = { id:e.target.id, aid:e.target.dataset.aid, date:e.target.dataset.date };
+    }
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape') closeModal();
+  });
+}
+
+/* ============================================================
+   초기화
+============================================================ */
+function applyTheme(){
+  if(!DATA.theme) DATA.theme = 'light';
+  document.documentElement.setAttribute('data-theme', DATA.theme==='dark' ? 'dark' : 'light');
+}
+async function init(){
+  STORAGE_MODE = await detectStorageMode();
+  const stored = await loadState();
+  DATA = stored || buildInitial();
+  if(!stored) await saveState();
+  DATA.owners.forEach(ensureOwnerMeta);
+  UI.owner = DATA.owners[0];
+  applyTheme();
+  initEvents();
+  render();
+  subscribeRemoteIfNeeded();
+}
+init();
+</script>
+</body>
+</html>
