@@ -3,78 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>번식 진료 기록부</title>
+<title>Reproduction Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg:#E9E6DE;
+  --bg:#E5E2D6;
   --surface:#FFFFFF;
-  --surface-alt:#F2EFE8;
-  --ink:#1C2422;
-  --ink-soft:#6A7570;
-  --primary:#1B6660;
-  --primary-dark:#0F4440;
-  --accent:#E07B35;
-  --accent-soft:#FAEBD8;
-  --tag-yellow:#FFC83D;
-  --tag-ink:#241900;
-  --line:#CEC9BC;
+  --surface-alt:#F0EDE5;
+  --ink:#1A1E1C;
+  --ink-soft:#8A9490;
+  --primary:#1A8070;
+  --primary-dark:#0E5244;
+  --accent:#E07A35;
+  --accent-soft:#FDF0E6;
+  --tag-yellow:#F5C132;
+  --tag-ink:#1A1200;
+  --line:#D4CFC4;
   --today:#FFE49A;
-  --green-soft:#D8EDE8;
-  --estrus-soft:#DCE8F5;
+  --green-soft:#EAF5F0;
+  --estrus-soft:#EAF0FC;
   --ai-text:#8A3A10;
-  --sync-bg:#EAE3F5;
-  --sync-text:#4B3478;
+  --sync-bg:#EDE8F8;
+  --sync-text:#5040A0;
   --estrus-text:#1E4D7A;
-  --notpregnant-bg:#A06A1E;
-  --notpregnant-row-bg:#FBF0DA;
-  --notpregnant-row-border:#D9A33B;
-  --overdue-days-text:#8A3A10;
-  --active-item-bg:#FFF0D8;
-  --today-cell-bg:#FFF3D6;
-  --radius:14px;
+  --notpregnant-bg:#B07020;
+  --notpregnant-row-bg:#FDF5E0;
+  --notpregnant-row-border:#DFB040;
+  --overdue-days-text:#903A10;
+  --active-item-bg:#FFF4E0;
+  --today-cell-bg:#FFF8E0;
+  --radius:12px;
 }
 html[data-theme="dark"]{
-  --bg:#111816;
-  --surface:#1C2724;
-  --surface-alt:#243330;
-  --ink:#E8EDEB;
-  --ink-soft:#8AA5A0;
-  --primary:#2A9B8A;
-  --primary-dark:#7BE3D0;
-  --accent:#FF8B4A;
-  --accent-soft:#3D2010;
-  --tag-yellow:#FFC83D;
-  --tag-ink:#241900;
-  --line:#2E3E3A;
+  --bg:#111C1A;
+  --surface:#1C3430;
+  --surface-alt:#234540;
+  --ink:#E0EDEA;
+  --ink-soft:#7A9C98;
+  --primary:#25A888;
+  --primary-dark:#80DEC8;
+  --accent:#FF8C45;
+  --accent-soft:#3A1E08;
+  --tag-yellow:#F5C132;
+  --tag-ink:#1A1200;
+  --line:#2A4440;
   --today:#5C4A1E;
-  --green-soft:#1A3530;
-  --estrus-soft:#1A2F45;
+  --green-soft:#162E28;
+  --estrus-soft:#162440;
   --ai-text:#FFB088;
-  --sync-bg:#332A47;
-  --sync-text:#D6C7F0;
-  --estrus-text:#9FCBF2;
-  --notpregnant-bg:#C98A33;
-  --notpregnant-row-bg:#3A2E14;
-  --notpregnant-row-border:#9C7426;
-  --overdue-days-text:#FF8F66;
-  --active-item-bg:#3A3010;
-  --today-cell-bg:#3A2E14;
+  --sync-bg:#28204A;
+  --sync-text:#C0B0F0;
+  --estrus-text:#88BCEE;
+  --notpregnant-bg:#C08020;
+  --notpregnant-row-bg:#342A08;
+  --notpregnant-row-border:#906020;
+  --overdue-days-text:#FF9060;
+  --active-item-bg:#342E08;
+  --today-cell-bg:#302808;
 }
 html[data-theme="dark"] body{background:var(--bg);}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
-    repeating-radial-gradient(ellipse 120px 60px at 30% 40%, transparent 0, transparent 58px, rgba(100,110,100,.04) 59px, transparent 60px),
-    repeating-radial-gradient(ellipse 180px 90px at 70% 60%, transparent 0, transparent 86px, rgba(80,100,80,.03) 87px, transparent 88px),
-    repeating-radial-gradient(ellipse 90px 45px at 50% 80%, transparent 0, transparent 43px, rgba(90,105,90,.035) 44px, transparent 45px);
+    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(120,100,70,.06) 77px, transparent 78px),
+    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(110,90,60,.045) 107px, transparent 108px),
+    repeating-radial-gradient(ellipse 100px 50px at 55% 78%, transparent 0, transparent 48px, rgba(130,110,75,.05) 49px, transparent 50px),
+    repeating-radial-gradient(ellipse 130px 65px at 80% 20%, transparent 0, transparent 62px, rgba(115,95,65,.04) 63px, transparent 64px);
 }
 html[data-theme="dark"] body::before{
   background-image:
-    repeating-radial-gradient(ellipse 120px 60px at 30% 40%, transparent 0, transparent 58px, rgba(50,80,70,.06) 59px, transparent 60px),
-    repeating-radial-gradient(ellipse 180px 90px at 70% 60%, transparent 0, transparent 86px, rgba(40,70,60,.04) 87px, transparent 88px);
+    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(30,70,60,.08) 77px, transparent 78px),
+    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(25,60,50,.06) 107px, transparent 108px);
 }
 .app{position:relative;z-index:1;}
 button{font-family:inherit;}
@@ -125,7 +127,7 @@ main{flex:1;padding:18px 20px 70px;}
 .iconbtn:hover{background:var(--surface-alt);color:var(--accent);}
 
 /* ---------- panels ---------- */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 2px 16px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);}
 .search-input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;margin-bottom:10px;font-family:inherit;background:var(--bg);}
 .search-input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 
@@ -598,12 +600,13 @@ function render(){
   app.innerHTML = `
     <header class="topbar">
       <div class="title-row">
-        <h1>🐄 번식 진료 기록부</h1>
+        <h1>🐄 번식진료 기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
         <div class="header-actions">
           ${isAdmin()
             ? `<button class="btn small" style="background:#E07B35;color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
             : `<button class="btn secondary small" data-action="openAdminLogin">🔒 관리자</button>`
           }
+          <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">📊 엑셀내보내기</button>
           <button class="btn secondary small" data-action="openGrassInfo" style="font-size:12px;">🌿 풀정보</button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${isDark?'☀️':'🌙'}</button>
           ${status?`<span class="status-badge" title="${esc(status.text)}">${status.icon} ${esc(status.text)}</span>`:''}
@@ -1907,6 +1910,7 @@ const ACTIONS = {
   openDueDateCalc: ()=>openDueDateCalc(),
   openAdminLogin: ()=>openAdminLogin(),
   logoutAdmin: ()=>logoutAdmin(),
+  exportExcel: ()=>exportExcel(),
   openGrassInfo: ()=>openGrassInfo(),
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
@@ -2003,7 +2007,7 @@ async function init(){
 /* ============================================================
    뷰어 / 관리자 모드
 ============================================================ */
-const ADMIN_PASSWORD = '0523'; // ← 원하는 비밀번호로 바꾸세요
+const ADMIN_PASSWORD = '0918'; // ← 원하는 비밀번호로 바꾸세요
 const ADMIN_KEY = 'breeding-admin';
 
 // 현재 관리자 모드인지 여부
@@ -2060,6 +2064,80 @@ function logoutAdmin(){
 
 function noAdminToast(){
   toast('🔒 관리자 모드에서만 수정할 수 있어요.');
+}
+
+/* ============================================================
+   엑셀 내보내기
+============================================================ */
+function exportExcel(){
+  if(typeof XLSX === 'undefined'){
+    toast('엑셀 라이브러리 로딩 중이에요. 잠시 후 다시 시도해주세요.'); return;
+  }
+  const wb = XLSX.utils.book_new();
+
+  // ── 시트 1: 진료·수정 기록 ──
+  const recHeaders = [
+    '축주','개체번호','진료일','발정일시','수정일시','수정간격',
+    '다음발정일','예상분만일','예상발정주기','임신여부',
+    '발정증상(외음부)','발정증상(점액)','발정증상(자궁수축)','발정증상(기타)',
+    '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
+    '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
+    '호르몬처치','수정횟수','내수정횟수','농가수정횟수','KPN','진료메모',
+    '동기화1','동기화1날짜','동기화2','동기화2날짜','동기화3','동기화3날짜',
+    '동기화4','동기화4날짜','동기화5','동기화5날짜','동기화6','동기화6날짜',
+    '동기화7','동기화7날짜',
+  ];
+  const recRows = DATA.records.map(r => {
+    const row = [
+      r.owner, r.animalId,
+      r.examDate ? r.examDate.slice(0,10) : '',
+      r.estrusDate || '', r.aiDate || '', r.aiInterval || '',
+      r.nextEstrusDate ? r.nextEstrusDate.slice(0,10) : '',
+      r.expectedCalving ? r.expectedCalving.slice(0,10) : '',
+      r.expectedCycle || '', r.pregnant || '',
+      r.estrusVulvar || '', r.estrusMucus || '', r.estrusContraction || '', r.estrusOther || '',
+      r.rectalUterus || '', r.rectalOvaryL || '', r.rectalOvaryR || '',
+      r.ultraUterus || '', r.ultraOvaryL || '', r.ultraOvaryR || '',
+      r.hormoneTreatment || '', r.aiCount || '', r.inHouseAiCount || '',
+      r.farmAiCount || '', r.kpn || '', r.notes || '',
+    ];
+    for(let i=1;i<=7;i++){
+      row.push(r['sync'+i+'Type']||'');
+      const sd = r['sync'+i+'Date'];
+      row.push(sd ? sd.slice(0,10) : '');
+    }
+    return row;
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet([recHeaders, ...recRows]);
+  // 열 너비 자동 설정
+  ws1['!cols'] = recHeaders.map((_,i) => ({ wch: i<2 ? 10 : i<10 ? 14 : 12 }));
+  XLSX.utils.book_append_sheet(wb, ws1, '진료·수정 기록');
+
+  // ── 시트 2: 개체 정보 ──
+  const animalHeaders = ['축주','개체번호','부','외조부','외외증조부','출생일','산차','마지막분만일','수정난이도','수정난이도메모'];
+  const animalRows = DATA.animals.map(a => [
+    a.owner, a.animalId, a.sire||'', a.damSire||'', a.damDamSire||'',
+    a.birth||'', a.parity||'', a.lastCalving||'',
+    a.aiDifficulty||'', a.aiDifficultyNote||'',
+  ]);
+  const ws2 = XLSX.utils.aoa_to_sheet([animalHeaders, ...animalRows]);
+  ws2['!cols'] = animalHeaders.map(h => ({ wch: h.length > 6 ? 14 : 10 }));
+  XLSX.utils.book_append_sheet(wb, ws2, '개체 정보');
+
+  // ── 시트 3: 스케줄 ──
+  const schedHeaders = ['축주','개체번호','날짜','내용','완료여부'];
+  const schedRows = DATA.schedule.map(s => [
+    s.owner, s.animalId, s.date, s.note||'',
+    DATA.completedCells && DATA.completedCells[`${s.owner}|${s.animalId}|${s.date}`] ? '완료' : '',
+  ]);
+  const ws3 = XLSX.utils.aoa_to_sheet([schedHeaders, ...schedRows]);
+  ws3['!cols'] = [{ wch:10 },{ wch:18 },{ wch:12 },{ wch:20 },{ wch:8 }];
+  XLSX.utils.book_append_sheet(wb, ws3, '스케줄');
+
+  // 파일명: 날짜 포함
+  const today = todayStr().replace(/-/g,'');
+  XLSX.writeFile(wb, `번식진료기록부_${today}.xlsx`);
+  toast('엑셀 파일이 다운로드됐어요.');
 }
 
 init();
