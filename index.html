@@ -349,12 +349,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
    설정 방법은 함께 전달된 안내문서를 참고해주세요.
 ============================================================ */
 window.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBtj_LZ5hGZJhuVfX971Kyrb-xkXGS7XGo",
-  authDomain: "aimanager-a36b3.firebaseapp.com",
-  projectId: "aimanager-a36b3",
-  storageBucket: "aimanager-a36b3.firebasestorage.app",
-  messagingSenderId: "24929299448",
-  appId: "1:24929299448:web:8259496a583a451a8d040d"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 </script>
 <script type="module">
@@ -483,9 +483,7 @@ function subscribeRemoteIfNeeded(){
   });
 }
 function storageStatusLabel(){
-  if(STORAGE_MODE==='cloud') return { icon:'☁️', text:'기기 간 동기화 중' };
-  if(STORAGE_MODE==='local') return { icon:'💾', text:'이 브라우저에만 저장' };
-  return null; // Claude 아티팩트 - 배지 숨김
+  return null; // 배지 숨김
 }
 function buildInitial(){
   const d = JSON.parse(JSON.stringify(RAW_INITIAL));
@@ -602,6 +600,10 @@ function render(){
       <div class="title-row">
         <h1>🐄 번식 진료 기록부</h1>
         <div class="header-actions">
+          ${isAdmin()
+            ? `<button class="btn small" style="background:#E07B35;color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
+            : `<button class="btn secondary small" data-action="openAdminLogin">🔒 관리자</button>`
+          }
           <button class="btn secondary small" data-action="openGrassInfo" style="font-size:12px;">🌿 풀정보</button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${isDark?'☀️':'🌙'}</button>
           ${status?`<span class="status-badge" title="${esc(status.text)}">${status.icon} ${esc(status.text)}</span>`:''}
@@ -626,7 +628,8 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['owner','축주정보'],['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['schedule','스케줄']];
+  if(isAdmin()) tabs.unshift(['owner','축사정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
   `).join('');
@@ -700,8 +703,8 @@ function renderAnimalView(){
         <div class="animal-detail-head">
           <span class="tag-chip lg">${esc(a.animalId)}</span>
           <div class="head-actions">
-            <button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
-            <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>
+            ${isAdmin()?`<button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
+            <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
           </div>
         </div>
         <div class="info-grid">
@@ -718,7 +721,7 @@ function renderAnimalView(){
         </div>
         <div class="section-title">
           <span>진료·수정 기록 (${recs.length})</span>
-          <button class="btn small" data-action="addRecord" data-id="${esc(a.animalId)}">+ 기록 추가</button>
+          ${isAdmin()?`<button class="btn small" data-action="addRecord" data-id="${esc(a.animalId)}">+ 기록 추가</button>`:''}
         </div>
         ${recs.length ? recs.map(r=>renderRecordCard(r)).join('') : '<div class="empty-state">아직 기록이 없어요.</div>'}
       `;
@@ -775,8 +778,7 @@ function renderRecordCard(r){
           ${firstSyncDate(r)?`<span class="date-pill sync">동기화 ${fmtShort(firstSyncDate(r))}</span>`:''}
         </div>
         <div>
-          <button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}">수정</button>
-          <button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}">삭제</button>
+          ${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}">삭제</button>`:''}
         </div>
       </div>
       <div class="record-body">
@@ -817,8 +819,7 @@ function renderDateView(){
       <td>${fmtShort(r.aiDate)}</td>
       <td><span class="note-trunc">${esc(estrusSummary(r) || r.notes || ultraSummary(r) || rectalSummary(r) || '')}</span></td>
       <td class="actions">
-        <button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button>
-        <button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>
+        ${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>`:''}
       </td>
     </tr>
   `).join('') || `<tr><td colspan="6"><div class="empty-state">조건에 맞는 기록이 없어요.</div></td></tr>`;
@@ -834,7 +835,7 @@ function renderDateView(){
       <input type="date" id="dateToInput" value="${UI.dateTo}">
       <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}">
       <button class="btn secondary small" data-action="resetDateFilters">필터 초기화</button>
-      <button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>
+      ${isAdmin()?'<button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>':''}
     </div>
     <table class="data-table">
       <thead><tr>
@@ -897,7 +898,7 @@ function renderScheduleView(){
       return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''}">
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
-          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="toggleCellDone" data-aid="${esc(aid)}" data-date="${d}" title="${done?'완료취소':'완료처리'}">✓</button>`:''}
+          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="${done?'완료취소':'완료처리'}">✓</button>`:''}
         </div>
       </td>`;
     }).join('');
@@ -1901,46 +1902,48 @@ function actionInsertChip(code){
 ============================================================ */
 const ACTIONS = {
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
-  addOwner: ()=>openOwnerModal(),
+  addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
   toggleTheme: ()=>{ DATA.theme = DATA.theme==='dark' ? 'light' : 'dark'; applyTheme(); saveState(); render(); },
   openDueDateCalc: ()=>openDueDateCalc(),
+  openAdminLogin: ()=>openAdminLogin(),
+  logoutAdmin: ()=>logoutAdmin(),
   openGrassInfo: ()=>openGrassInfo(),
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
   backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
   addAnimal: ()=>openAnimalModal(null),
-  editAnimal: ds=>{ const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
-  deleteAnimal: ds=>actionDeleteAnimal(ds),
-  addRecord: ds=>openRecordModal(null, UI.owner, ds.id),
-  addRecordGeneric: ()=>openRecordModal(null, UI.owner, null),
-  editRecord: ds=>{ const r=DATA.records.find(x=>x.id===ds.id); if(r) openRecordModal(r, r.owner, r.animalId); },
-  deleteRecord: ds=>actionDeleteRecord(ds.id),
-  deleteRecordInModal: ()=>{ closeModal(); actionDeleteRecord(modalCtx.id); },
+  editAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
+  deleteAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionDeleteAnimal(ds); },
+  addRecord: ds=>{ if(!isAdmin()) return noAdminToast(); openRecordModal(null, UI.owner, ds.id); },
+  addRecordGeneric: ()=>{ if(!isAdmin()) return noAdminToast(); openRecordModal(null, UI.owner, null); },
+  editRecord: ds=>{ if(!isAdmin()) return noAdminToast(); const r=DATA.records.find(x=>x.id===ds.id); if(r) openRecordModal(r, r.owner, r.animalId); },
+  deleteRecord: ds=>{ if(!isAdmin()) return noAdminToast(); actionDeleteRecord(ds.id); },
+  deleteRecordInModal: ()=>{ if(!isAdmin()) return noAdminToast(); closeModal(); actionDeleteRecord(modalCtx.id); },
   setDateMode: ds=>{ UI.dateMode=ds.mode; renderMain(); },
   resetDateFilters: ()=>{ UI.dateFrom=''; UI.dateTo=''; UI.dateSearch=''; renderMain(); },
   shiftRange: ds=>{ const r=DATA.scheduleRange[UI.owner]; const n=parseInt(ds.dir,10); r.start=addDays(r.start,n); r.end=addDays(r.end,n); saveState(); renderMain(); },
   extendRange: ()=>{ const r=DATA.scheduleRange[UI.owner]; r.end=addDays(r.end,7); saveState(); renderMain(); },
-  addScheduleAnimal: ()=>actionAddScheduleAnimal(),
-  removeScheduleAnimal: ds=>actionRemoveScheduleAnimal(ds.id),
-  clearAllSchedule: ()=>openConfirm('이 축주의 스케줄과 개체 목록을 전부 삭제할까요? 진료기록은 유지돼요.', ()=>{
+  addScheduleAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionAddScheduleAnimal(); },
+  removeScheduleAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionRemoveScheduleAnimal(ds.id); },
+  clearAllSchedule: ()=>{ if(!isAdmin()) return noAdminToast(); openConfirm('이 축주의 스케줄과 개체 목록을 전부 삭제할까요? 진료기록은 유지돼요.', ()=>{
     DATA.schedule = DATA.schedule.filter(s=>s.owner!==UI.owner);
     DATA.scheduleAnimals[UI.owner] = [];
     saveState(); renderMain(); toast('스케줄을 모두 삭제했어요.');
-  }),
-  toggleCellDone: ds=>{ toggleCellDone(UI.owner, ds.aid, ds.date); renderMain(); },
-  toggleCellDoneAll: ds=>{ toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
+  }); },
+  cellDoneToggle: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(UI.owner, ds.aid, ds.date); renderMain(); },
+  toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
   insertChip: ds=>actionInsertChip(ds.code),
   fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; },
   calcInterval: ()=>actionCalcInterval(),
   closeModal: ()=>closeModal(),
-  saveRecord: ()=>actionSaveRecord(),
-  saveAnimal: ()=>actionSaveAnimal(),
+  saveRecord: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveRecord(); },
+  saveAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveAnimal(); },
   saveOwner: ()=>actionSaveOwner(),
   editOwnerProfile: ()=>openOwnerProfileModal(),
   addKvRow: ds=>actionAddKvRow(ds.cat),
   removeKvRow: ds=>actionRemoveKvRow(ds.cat, parseInt(ds.idx,10)),
-  saveOwnerProfile: ()=>actionSaveOwnerProfile(),
+  saveOwnerProfile: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveOwnerProfile(); },
   confirmYes: ()=>{ const fn=pendingConfirmAction; pendingConfirmAction=null; closeModal(); if(fn) fn(); },
 };
 
@@ -1958,7 +1961,7 @@ function initEvents(){
   });
   document.addEventListener('change', e=>{
     const t = e.target;
-    if(t.matches && t.matches('.sched-cell input')){ updateScheduleCell(t.dataset.aid, t.dataset.date, t.value); }
+    if(t.matches && t.matches('.sched-cell input')){ if(!isAdmin()){ t.value = DATA.schedule.find(s=>s.owner===UI.owner&&s.animalId===t.dataset.aid&&s.date===t.dataset.date)?.note||''; return noAdminToast(); } updateScheduleCell(t.dataset.aid, t.dataset.date, t.value); }
     else if(t.id==='dateFromInput'){ UI.dateFrom=t.value; renderMain(); }
     else if(t.id==='dateToInput'){ UI.dateTo=t.value; renderMain(); }
     else if(t.id==='calc_aiDate'){ actionCalcDateChange(t.value); }
@@ -1996,6 +1999,69 @@ async function init(){
   render();
   subscribeRemoteIfNeeded();
 }
+
+/* ============================================================
+   뷰어 / 관리자 모드
+============================================================ */
+const ADMIN_PASSWORD = '0523'; // ← 원하는 비밀번호로 바꾸세요
+const ADMIN_KEY = 'breeding-admin';
+
+// 현재 관리자 모드인지 여부
+function isAdmin(){
+  return sessionStorage.getItem(ADMIN_KEY) === 'ok';
+}
+
+// 관리자 비밀번호 모달 열기
+function openAdminLogin(){
+  openModal(`
+    <div class="modal" style="max-width:340px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">🔐</div>
+      <h2 style="margin:0 0 4px;">관리자 모드</h2>
+      <div class="modal-sub" style="margin-bottom:20px;">비밀번호를 입력하면 수정·추가·삭제가 가능해요.</div>
+      <input id="admin-pw" type="password" placeholder="비밀번호" style="
+        width:100%;box-sizing:border-box;padding:12px 16px;font-size:17px;
+        border:1.5px solid var(--line);border-radius:10px;background:var(--surface-alt);
+        color:var(--ink);font-family:inherit;text-align:center;letter-spacing:4px;outline:none;margin-bottom:8px;
+      ">
+      <div id="admin-err" style="height:16px;font-size:12px;color:var(--accent);margin-bottom:12px;"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" id="admin-login-btn">입력</button>
+      </div>
+    </div>
+  `);
+  const pw = document.getElementById('admin-pw');
+  const btn = document.getElementById('admin-login-btn');
+  const err = document.getElementById('admin-err');
+  const attempt = () => {
+    if(pw.value === ADMIN_PASSWORD){
+      sessionStorage.setItem(ADMIN_KEY, 'ok');
+      closeModal();
+      render();
+      toast('관리자 모드로 전환됐어요.');
+    } else {
+      err.textContent = '비밀번호가 틀렸어요.';
+      pw.value = '';
+      pw.focus();
+      setTimeout(()=>{ err.textContent=''; }, 1500);
+    }
+  };
+  btn.addEventListener('click', attempt);
+  pw.addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+  setTimeout(()=>pw.focus(), 100);
+}
+
+function logoutAdmin(){
+  sessionStorage.removeItem(ADMIN_KEY);
+  if(UI.view === 'owner') UI.view = 'animal';
+  render();
+  toast('뷰어 모드로 전환됐어요.');
+}
+
+function noAdminToast(){
+  toast('🔒 관리자 모드에서만 수정할 수 있어요.');
+}
+
 init();
 </script>
 </body>
