@@ -169,6 +169,13 @@ main{flex:1;padding:18px 20px 70px;}
 .kv-row{display:flex;gap:8px;align-items:center;}
 
 /* 동기화 */
+.sync-proto-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 4px;}
+.sync-proto-label{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-right:2px;}
+.sync-proto-btn{border:1px solid var(--primary);background:var(--green-soft);color:var(--primary-dark);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;}
+.sync-proto-btn:hover{background:var(--primary);color:#fff;}
+.sync-proto-btn.clear{border-color:var(--line);background:var(--surface-alt);color:var(--ink-soft);font-weight:700;}
+.sync-proto-btn.clear:hover{background:var(--line);color:var(--ink);}
+.sync-proto-hint{font-size:11.5px;color:var(--ink-soft);margin:2px 0 8px;}
 .sync-list{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
 .sync-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .sync-row select{min-width:140px;}
@@ -286,6 +293,16 @@ html[data-theme="dark"] .stat-price.p5{background:#3A0A00;color:#FF9070;}
 .grass-rec-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px;}
 .grass-rec ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:5px;}
 .grass-rec li{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+
+/* 풀정보 접이식 섹션 */
+.grass-acc{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--surface);overflow:hidden;}
+.grass-acc[open]{box-shadow:0 1px 8px rgba(0,0,0,.06);}
+.grass-acc-sum{list-style:none;cursor:pointer;font-size:13.5px;font-weight:800;color:var(--primary-dark);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.grass-acc-sum::-webkit-details-marker{display:none;}
+.grass-acc-sum::after{content:'▾';font-size:12px;color:var(--ink-soft);transition:transform .15s;flex-shrink:0;}
+.grass-acc[open] .grass-acc-sum::after{transform:rotate(180deg);}
+.grass-acc-sum:hover{background:var(--surface-alt);}
+.grass-acc .grass-grid,.grass-acc .grass-rec-grid{padding:2px 14px 14px;}
 html[data-theme="dark"] .stat-tdn{background:#4A3A10;color:#FFD870;}
 html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .allsched-list{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
@@ -297,19 +314,21 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .allsched-item.auto .allsched-note{font-style:italic;color:var(--primary);}
 .allsched-owner{font-size:11px;color:var(--ink-soft);font-weight:600;}
 .allsched-note{flex:1;font-size:13px;font-weight:600;}
-@media (max-width:600px){
-  /* 모바일: 풀정보 모달이 화면에 맞도록 1열 + 여백 축소 */
-  .modal-overlay{padding:10px;}
-  .grass-grid,.grass-rec-grid{grid-template-columns:1fr;gap:8px;}
+@media (max-width:768px){
+  /* 모바일: 풀정보 모달 1열 + 카드 안 정보(TDN/CP/가격)도 전부 세로로 쌓기 */
+  .modal-overlay{padding:8px;}
+  .grass-grid,.grass-rec-grid{grid-template-columns:1fr;gap:10px;}
   .grass-legend{flex-direction:column;gap:6px;}
   .grass-tag{width:100%;font-size:12px;line-height:1.5;}
-  .grass-card{padding:11px 13px;}
-  .grass-stats{gap:5px;}
-  .grass-stats span{font-size:11px;white-space:normal;}
-  .grass-section-title{font-size:13px;margin:16px 0 8px;}
-  .grass-name{font-size:14.5px;}
-  .grass-desc{font-size:12.5px;}
-  .grass-rec{padding:12px 14px;}
+  .grass-card{padding:13px 15px;}
+  .grass-meta{flex-wrap:wrap;}
+  .grass-stats{flex-direction:column;align-items:flex-start;gap:5px;}
+  .grass-stats span{font-size:11.5px;white-space:normal;width:fit-content;max-width:100%;}
+  .grass-section-title{font-size:13.5px;margin:16px 0 8px;}
+  .grass-name{font-size:15px;}
+  .grass-desc{font-size:13px;line-height:1.55;}
+  .grass-rec{padding:13px 15px;}
+  .grass-rec li{font-size:13px;}
 }
 .sched-cell input{width:100%;height:38px;border:none;background:transparent;text-align:center;font-size:11px;font-family:inherit;padding:2px;color:var(--ink);}
 .sched-cell input:focus{background:var(--surface);outline:2px solid var(--tag-yellow);position:relative;z-index:1;}
@@ -321,8 +340,8 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .sched-agenda .allsched-item{border:1px solid var(--line);}
 .sched-agenda .allsched-date{padding:12px 2px 4px;}
 
-/* 모바일: 스케줄 표 모드 압축 + 빠른코드 가로 스크롤 */
-@media (max-width:600px){
+/* 모바일: 스케줄 표 모드 압축 + 빠른코드 가로 스크롤 + 목록 줄바꿈 */
+@media (max-width:768px){
   .sched-table th.corner,.sched-table td.rowhead{min-width:92px;}
   .sched-table th,.sched-table td{min-width:48px;}
   .sched-table thead th{font-size:10px;padding:6px 2px;}
@@ -334,6 +353,10 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
   .sched-toolbar{gap:8px;}
   .sched-toolbar > div{flex-wrap:wrap;}
   #scheduleAddInput{width:150px !important;}
+  /* 목록 항목: 긴 귀표에 눌리지 않게 내용을 아래 줄로 */
+  .sched-agenda .allsched-item{flex-wrap:wrap;padding:9px 10px;}
+  .sched-agenda .allsched-note{flex:1 1 100%;order:3;margin-top:5px;font-size:13.5px;line-height:1.4;}
+  .sched-agenda .done-btn{margin-left:auto;}
 }
 
 /* ---------- modal ---------- */
@@ -428,6 +451,13 @@ window.__cloudReady = (async () => {
 const QUICK_CODES = ['발정체크','체크필요','발정관찰','GnRH','PG','CIDR','GnRH+CIDR','CIDR제거+PG','AI','감정','임신감정'];
 const SYNC_OPTIONS = ['GnRH','PGF2α','CIDR+GnRH','CIDR제거+PGF2α','CIDR','CIDR제거','AI'];
 const SYNC_STEPS = 7;
+/* 동기화 프로토콜: 1번 날짜 기준으로 각 단계 type + 일수 오프셋 자동 입력 */
+const SYNC_PROTOCOLS = {
+  'Ovsynch':      { steps:['GnRH','PGF2α','GnRH','AI'],                 offsets:[0,7,9,10] },
+  'Ovsynch+CIDR': { steps:['CIDR+GnRH','CIDR제거+PGF2α','GnRH','AI'],   offsets:[0,7,9,10] },
+  'GPPG':         { steps:['GnRH','PGF2α','PGF2α','GnRH','AI'],         offsets:[0,5,6,7,8] },
+  'GPPG+CIDR':    { steps:['CIDR+GnRH','CIDR제거+PGF2α','PGF2α','GnRH','AI'], offsets:[0,5,6,7,8] },
+};
 
 let DATA = null;   // { owners, animals, records, schedule, scheduleAnimals, scheduleRange }
 let UI = {
@@ -441,6 +471,7 @@ let UI = {
   dateTo: '',
   dateSearch: '',
   focusedCell: null,
+  activeSyncProtocol: null,
   modal: null,            // current modal descriptor
 };
 
@@ -896,7 +927,7 @@ function buildAutoSchedule(owner){
 }
 
 function isMobileWidth(){
-  return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:600px)').matches;
+  return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:768px)').matches;
 }
 
 function renderScheduleView(){
@@ -1245,6 +1276,48 @@ function syncRow(i, type, date){
     <input type="time" id="f_sync${i}Time" value="${timeOnly(date)}">
   </div>`;
 }
+/* 프로토콜 버튼: 단계별 type 채우고, 1번 날짜가 있으면 오프셋 날짜 자동 계산 */
+function applySyncProtocol(name){
+  const p = SYNC_PROTOCOLS[name];
+  if(!p) return;
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const typeEl = document.getElementById('f_sync'+i+'Type');
+    const dateEl = document.getElementById('f_sync'+i+'Date');
+    const timeEl = document.getElementById('f_sync'+i+'Time');
+    if(!typeEl) continue;
+    if(i <= p.steps.length){
+      typeEl.value = p.steps[i-1];
+    } else {
+      typeEl.value = '';
+      if(dateEl) dateEl.value = '';
+      if(timeEl) timeEl.value = '';
+    }
+  }
+  UI.activeSyncProtocol = name;
+  const base = (document.getElementById('f_sync1Date')||{}).value || '';
+  if(base) fillSyncProtocolDates(name, base);
+  toast(`${name} 적용 — 1번 날짜를 넣으면 나머지가 자동 계산돼요.`);
+}
+function fillSyncProtocolDates(name, base){
+  const p = SYNC_PROTOCOLS[name];
+  if(!p || !base) return;
+  for(let i=1;i<=p.steps.length;i++){
+    const dateEl = document.getElementById('f_sync'+i+'Date');
+    if(dateEl) dateEl.value = addDays(base, p.offsets[i-1]);
+  }
+}
+function clearSyncSteps(){
+  UI.activeSyncProtocol = null;
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const typeEl = document.getElementById('f_sync'+i+'Type');
+    const dateEl = document.getElementById('f_sync'+i+'Date');
+    const timeEl = document.getElementById('f_sync'+i+'Time');
+    if(typeEl) typeEl.value = '';
+    if(dateEl) dateEl.value = '';
+    if(timeEl) timeEl.value = '';
+  }
+  toast('동기화 단계를 모두 비웠어요.');
+}
 function syncSummary(r){
   const parts = [];
   for(let i=1;i<=SYNC_STEPS;i++){
@@ -1282,6 +1355,7 @@ function ensureAnimalExists(owner, animalId){
 /* ---------- 기록 모달 ---------- */
 function openRecordModal(record, owner, presetAnimalId){
   const isNew = !record;
+  UI.activeSyncProtocol = null;
   modalCtx = { type:'record', id: record?record.id:null, owner, presetAnimalId: presetAnimalId||null,
     legacy: { estrusSign: record?(record.estrusSign||''):'', rectalExam: record?(record.rectalExam||''):'', ultrasound: record?(record.ultrasound||''):'',
       aiOrder: record?(record.aiOrder||''):'', inHouseAi: record?(record.inHouseAi||''):'',
@@ -1327,6 +1401,15 @@ function openRecordModal(record, owner, presetAnimalId){
       </div>
 
       <div class="fieldset-title">동기화</div>
+      <div class="sync-proto-row">
+        <span class="sync-proto-label">프로토콜 자동입력:</span>
+        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="Ovsynch">Ovsynch</button>
+        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="Ovsynch+CIDR">Ovsynch+CIDR</button>
+        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="GPPG">GPPG</button>
+        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="GPPG+CIDR">GPPG+CIDR</button>
+        <button type="button" class="sync-proto-btn clear" data-action="clearSyncSteps">초기화</button>
+      </div>
+      <div class="sync-proto-hint">버튼을 누른 뒤 <b>1번 날짜</b>를 입력하면 나머지 날짜가 자동 계산돼요.</div>
       <div class="sync-list">
         ${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1, r['sync'+(i+1)+'Type'], r['sync'+(i+1)+'Date'])).join('')}
       </div>
@@ -1459,6 +1542,17 @@ function actionSaveRecord(){
     rec['sync'+i+'Date'] = combineDT(g('f_sync'+i+'Date').value, g('f_sync'+i+'Time').value);
   }
   ensureAnimalExists(owner, animalId);
+  // 동기화 단계가 있으면 스케줄에 보이도록 개체 등록 + 기간 확장
+  const syncDates = [];
+  for(let i=1;i<=SYNC_STEPS;i++){
+    if(rec['sync'+i+'Type'] && rec['sync'+i+'Date']) syncDates.push(dateOnly(rec['sync'+i+'Date']));
+  }
+  if(syncDates.length){
+    ensureOwnerMeta(owner);
+    if(!DATA.scheduleAnimals[owner].includes(animalId)) DATA.scheduleAnimals[owner].push(animalId);
+    const rng = DATA.scheduleRange[owner];
+    syncDates.forEach(d => { if(d < rng.start) rng.start = d; if(d > rng.end) rng.end = d; });
+  }
   const idx = DATA.records.findIndex(x=>x.id===rec.id);
   if(idx>-1) DATA.records[idx] = rec; else DATA.records.push(rec);
   saveState();
@@ -1729,8 +1823,6 @@ function openGrassInfo(){
         </div>
       </div>
 
-      </div>
-
       <!-- 시세 -->
       <div class="grass-section-title">💰 가격 안내 (2025년 기준, kg당)</div>
       <div class="grass-rec-grid">
@@ -1769,6 +1861,30 @@ function openGrassInfo(){
       </div>
     </div>
   `);
+  groupGrassSections();
+}
+
+/* 풀정보: 섹션 제목 + 카드를 접이식(아코디언)으로 묶기 — 모바일에서 목차부터 보이게 */
+function groupGrassSections(){
+  const root = document.getElementById('modalRoot');
+  if(!root) return;
+  const titles = [...root.querySelectorAll('.grass-section-title')];
+  titles.forEach(title => {
+    const details = document.createElement('details');
+    details.className = 'grass-acc';
+    details.open = false;          // 기본 접힘 → 목차처럼 보임
+    const summary = document.createElement('summary');
+    summary.className = 'grass-acc-sum';
+    summary.innerHTML = title.innerHTML;
+    details.appendChild(summary);
+    title.replaceWith(details);
+    let node = details.nextElementSibling;
+    while(node && !node.classList.contains('grass-section-title') && !node.classList.contains('modal-actions')){
+      const next = node.nextElementSibling;
+      details.appendChild(node);
+      node = next;
+    }
+  });
 }
 
 function openDueDateCalc(){
@@ -2103,6 +2219,8 @@ const ACTIONS = {
   deleteSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionDeleteSchedItem(); },
   fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; },
   calcInterval: ()=>actionCalcInterval(),
+  applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
+  clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
   closeModal: ()=>closeModal(),
   saveRecord: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveRecord(); },
   saveAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveAnimal(); },
@@ -2135,6 +2253,9 @@ function initEvents(){
     else if(t.id==='f_estrusDate_date' || t.id==='f_aiDate_date'){
       const nextEl = document.getElementById('f_nextEstrusDate');
       if(nextEl && t.value){ nextEl.value = addDays(t.value, 21); }
+    }
+    else if(t.id==='f_sync1Date' && UI.activeSyncProtocol){
+      fillSyncProtocolDates(UI.activeSyncProtocol, t.value);
     }
   });
   document.addEventListener('focusin', e=>{
