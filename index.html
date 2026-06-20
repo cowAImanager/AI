@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#E5E2D6;
@@ -359,51 +362,36 @@ window.FIREBASE_CONFIG = {
   appId: "1:24929299448:web:8259496a583a451a8d040d"
 };
 </script>
-<script type="module">
-/* Firebase가 설정된 경우에만 동작 (없으면 조용히 비활성화) */
-window.__cloudReady = (async () => {
-  const cfg = window.FIREBASE_CONFIG;
-  if(!cfg || !cfg.apiKey || !cfg.projectId) return false;
-  try{
-    const FB_VER = '10.13.0';
-    const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app.js`);
-    const { getAuth, signInAnonymously } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-auth.js`);
-    const { getFirestore, doc, getDoc, setDoc, onSnapshot } = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-firestore.js`);
-    const app = initializeApp(cfg);
-    const auth = getAuth(app);
-    await signInAnonymously(auth);
-    const db = getFirestore(app);
-    const ref = doc(db, 'breedingApp', 'state');
-    window.__cloud = {
-      async get(){
-        const snap = await getDoc(ref);
-        return snap.exists() ? snap.data().json : null;
-      },
-      async set(jsonStr, ts){
-        await setDoc(ref, { json: jsonStr, updatedAt: ts });
-      },
-      subscribe(cb){
-        return onSnapshot(ref, snap => {
-          if(snap.exists()){
-            const data = snap.data();
-            cb(data.json, data.updatedAt);
-          }
-        }, err => console.error('동기화 오류', err));
-      }
-    };
-    return true;
-  }catch(e){
-    console.error('Firebase 초기화 실패 (설정값을 확인해주세요)', e);
-    return false;
-  }
-})();
-</script>
 <script>
 /* ============================================================
    번식관리 기록부 — 데이터 / 상태
 ============================================================ */
 const STORAGE_KEY = 'breeding-records-v1';
 const RAW_INITIAL = JSON.parse(document.getElementById('data-island').textContent);
+
+/* Firebase 초기화 (동기화 가능하면 연결, 아니면 로컬 폴백) */
+window.__cloudReady = (async () => {
+  const cfg = window.FIREBASE_CONFIG;
+  if(!cfg || !cfg.apiKey || !cfg.projectId) return false;
+  if(typeof firebase === 'undefined') return false;
+  try{
+    firebase.initializeApp(cfg);
+    const auth = firebase.auth();
+    await auth.signInAnonymously();
+    const db = firebase.firestore();
+    const ref = db.collection('breedingApp').doc('state');
+    window.__cloud = {
+      async get(){ const snap = await ref.get(); return snap.exists ? snap.data().json : null; },
+      async set(jsonStr, ts){ await ref.set({ json: jsonStr, updatedAt: ts }); },
+      subscribe(cb){ return ref.onSnapshot(snap => { if(snap.exists){ const d=snap.data(); cb(d.json, d.updatedAt); } }, err=>console.error('동기화 오류',err)); }
+    };
+    console.log('✅ Firebase 연결 성공');
+    return true;
+  }catch(e){
+    console.error('Firebase 초기화 실패', e);
+    return false;
+  }
+})();
 
 const QUICK_CODES = ['발정체크','체크필요','발정관찰','GnRH','PG','CIDR','GnRH+CIDR','CIDR제거+PG','AI','감정','임신감정'];
 const SYNC_OPTIONS = ['GnRH','PGF2α','CIDR+GnRH','CIDR제거+PGF2α','CIDR','CIDR제거','AI'];
