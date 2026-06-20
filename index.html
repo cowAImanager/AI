@@ -2628,7 +2628,20 @@ const ACTIONS = {
     DATA.scheduleAnimals[UI.owner] = [];
     saveState(); renderMain(); toast('스케줄을 모두 삭제했어요.');
   }); },
-  cellDoneToggle: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(UI.owner, ds.aid, ds.date); renderMain(); },
+  cellDoneToggle: (ds, e)=>{
+    if(!isAdmin()) return noAdminToast();
+    toggleCellDone(UI.owner, ds.aid, ds.date);
+    const btn = e && e.target ? e.target.closest('.done-btn') : null;
+    if(btn){
+      const nowDone = isCellDone(UI.owner, ds.aid, ds.date);
+      btn.classList.toggle('is-done', nowDone);
+      btn.title = nowDone ? '완료취소' : '완료처리';
+      const cell = btn.closest('.sched-cell') || btn.closest('.allsched-item');
+      if(cell) cell.classList.toggle('done', nowDone);
+    } else {
+      renderMain();
+    }
+  },
   toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
   insertChip: ds=>actionInsertChip(ds.code),
   setSchedMode: ds=>{ UI.schedMode=ds.mode; renderMain(); },
