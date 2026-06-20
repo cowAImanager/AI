@@ -12,21 +12,21 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
-  --bg:#E5E2D6;
+  --bg:#F8F6EF;
   --surface:#FFFFFF;
-  --surface-alt:#F0EDE5;
-  --ink:#1A1E1C;
-  --ink-soft:#8A9490;
-  --primary:#1A8070;
-  --primary-dark:#0E5244;
-  --accent:#E07A35;
-  --accent-soft:#FDF0E6;
-  --tag-yellow:#F5C132;
+  --surface-alt:#F1EEE4;
+  --ink:#20211C;
+  --ink-soft:#8B857A;
+  --primary:#1AA086;
+  --primary-dark:#0E6B57;
+  --accent:#ED7A33;
+  --accent-soft:#FBEEE1;
+  --tag-yellow:#F7C843;
   --tag-ink:#1A1200;
-  --line:#D4CFC4;
+  --line:#E6E0D3;
   --today:#FFE49A;
-  --green-soft:#EAF5F0;
-  --estrus-soft:#EAF0FC;
+  --green-soft:#E9F3EE;
+  --estrus-soft:#E8F0FC;
   --ai-text:#8A3A10;
   --sync-bg:#EDE8F8;
   --sync-text:#5040A0;
@@ -40,20 +40,20 @@
   --radius:12px;
 }
 html[data-theme="dark"]{
-  --bg:#111C1A;
-  --surface:#1C3430;
-  --surface-alt:#234540;
-  --ink:#E0EDEA;
-  --ink-soft:#7A9C98;
-  --primary:#25A888;
-  --primary-dark:#80DEC8;
-  --accent:#FF8C45;
-  --accent-soft:#3A1E08;
-  --tag-yellow:#F5C132;
+  --bg:#1A1A17;
+  --surface:#25241F;
+  --surface-alt:#2F2E27;
+  --ink:#ECE8DF;
+  --ink-soft:#9A9385;
+  --primary:#2CC0A2;
+  --primary-dark:#84E6CF;
+  --accent:#FF9152;
+  --accent-soft:#3A2410;
+  --tag-yellow:#F7C843;
   --tag-ink:#1A1200;
-  --line:#2A4440;
+  --line:#3A382F;
   --today:#5C4A1E;
-  --green-soft:#162E28;
+  --green-soft:#1C2C24;
   --estrus-soft:#162440;
   --ai-text:#FFB088;
   --sync-bg:#28204A;
@@ -71,15 +71,14 @@ html[data-theme="dark"] body{background:var(--bg);}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
-    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(120,100,70,.06) 77px, transparent 78px),
-    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(110,90,60,.045) 107px, transparent 108px),
-    repeating-radial-gradient(ellipse 100px 50px at 55% 78%, transparent 0, transparent 48px, rgba(130,110,75,.05) 49px, transparent 50px),
-    repeating-radial-gradient(ellipse 130px 65px at 80% 20%, transparent 0, transparent 62px, rgba(115,95,65,.04) 63px, transparent 64px);
+    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(26,160,134,.022) 77px, transparent 78px),
+    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(26,160,134,.018) 107px, transparent 108px),
+    repeating-radial-gradient(ellipse 130px 65px at 80% 20%, transparent 0, transparent 62px, rgba(26,160,134,.016) 63px, transparent 64px);
 }
 html[data-theme="dark"] body::before{
   background-image:
-    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(30,70,60,.08) 77px, transparent 78px),
-    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(25,60,50,.06) 107px, transparent 108px);
+    repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(44,192,162,.06) 77px, transparent 78px),
+    repeating-radial-gradient(ellipse 220px 110px at 72% 58%, transparent 0, transparent 106px, rgba(44,192,162,.045) 107px, transparent 108px);
 }
 .app{position:relative;z-index:1;}
 button{font-family:inherit;}
@@ -154,9 +153,46 @@ main{flex:1;padding:18px 20px 70px;}
 
 .animal-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
 .head-actions{display:flex;gap:6px;flex-wrap:wrap;}
-.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:12px 18px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
-.info-grid .field label{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;letter-spacing:.02em;}
-.info-grid .field .val{font-size:14px;font-weight:600;}
+.info-grid{display:flex;flex-direction:column;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+.info-groups{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.info-panel{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:13px;position:relative;overflow:hidden;}
+.info-panel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+.info-panel.pedigree{background:var(--green-soft);}
+.info-panel.pedigree::before{background:var(--primary);}
+.info-panel.breeding{background:var(--accent-soft);}
+.info-panel.breeding::before{background:var(--accent);}
+.info-panel-title{font-size:11.5px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:5px;}
+.info-panel.pedigree .info-panel-title{color:var(--primary-dark);}
+.info-panel.breeding .info-panel-title{color:var(--ai-text);}
+.info-row{display:grid;gap:12px 18px;}
+.info-row.cols2{grid-template-columns:repeat(2,minmax(0,1fr));}
+.info-row.cols3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.info-row.cols4{grid-template-columns:repeat(4,minmax(0,1fr));}
+@media (max-width:520px){
+  .info-row.cols3,.info-row.cols4{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+.info-row .field label{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;letter-spacing:.02em;}
+.info-row .field .val{font-size:14px;font-weight:600;}
+
+/* 좌측 목록 품종 그림 */
+.list-id-row{display:flex;align-items:center;gap:6px;}
+.breed-emoji{font-size:16px;line-height:1;flex-shrink:0;}
+
+/* 수정난이도 별 */
+.diff-stars .on{color:var(--tag-yellow);letter-spacing:1px;}
+.diff-stars .off{color:var(--line);letter-spacing:1px;}
+.diff-num{font-size:12px;color:var(--ink-soft);font-weight:600;}
+
+/* 분만예정일 계산 결과 카드 */
+.calc-results{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+.calc-result{background:var(--green-soft);border:1px solid var(--line);border-radius:12px;padding:13px 15px;}
+.calc-result.accent{background:var(--accent-soft);}
+.calc-result-label{font-size:11px;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+.calc-result-val{font-size:15.5px;font-weight:800;color:var(--primary-dark);line-height:1.3;}
+.calc-result.accent .calc-result-val{color:var(--accent);}
+@media (max-width:480px){
+  .calc-results{grid-template-columns:1fr;}
+}
 
 .section-title{font-size:13px;font-weight:700;color:var(--ink-soft);margin:22px 0 8px;display:flex;justify-content:space-between;align-items:center;}
 
@@ -270,6 +306,12 @@ main{flex:1;padding:18px 20px 70px;}
 .grass-card.quality{border-left:4px solid #4A8A40;}
 .grass-card.import{border-left:4px solid var(--primary-dark);}
 .grass-name{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.grass-alias{font-weight:600;color:var(--ink-soft);font-size:12px;margin-left:3px;}
+.grass-badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;white-space:nowrap;}
+.grass-badge.rec{background:#E8F5E8;color:#2A6A2A;}
+.grass-badge.warn{background:#FFE5D0;color:#9A3810;}
+html[data-theme="dark"] .grass-badge.rec{background:#1A3A1A;color:#7ACD7A;}
+html[data-theme="dark"] .grass-badge.warn{background:#3A1A08;color:#FF9070;}
 .grass-meta{font-size:11.5px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
 .grass-color-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.15);}
 .grass-stats{display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
@@ -303,6 +345,9 @@ html[data-theme="dark"] .stat-price.p5{background:#3A0A00;color:#FF9070;}
 .grass-acc[open] .grass-acc-sum::after{transform:rotate(180deg);}
 .grass-acc-sum:hover{background:var(--surface-alt);}
 .grass-acc .grass-grid,.grass-acc .grass-rec-grid{padding:2px 14px 14px;}
+.gst-wrap{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.gst-main{font-size:13.5px;font-weight:800;color:var(--primary-dark);line-height:1.3;}
+.gst-sub{font-size:11px;font-weight:600;color:var(--ink-soft);line-height:1.3;}
 html[data-theme="dark"] .stat-tdn{background:#4A3A10;color:#FFD870;}
 html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .allsched-list{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
@@ -614,6 +659,13 @@ function ageMonths(birth){
   if(now.getDate() < d) months -= 1;
   return months + '개월';
 }
+/* 품종 그림/배지 + 수정난이도 별 꾸밈 */
+function breedIcon(breed){ return breed==='젖소' ? '🐄' : '🐂'; }
+function difficultyStars(level){
+  if(!level) return '—';
+  const n = Math.max(0, Math.min(5, +level));
+  return `<span class="diff-stars"><span class="on">${'★'.repeat(n)}</span><span class="off">${'☆'.repeat(5-n)}</span></span> <span class="diff-num">(${n}/5)</span>`;
+}
 function weekdayKr(dateStr){
   const [y,m,d] = dateStr.split('-').map(Number);
   return ['일','월','화','수','목','금','토'][new Date(y,m-1,d).getDay()];
@@ -652,10 +704,10 @@ function render(){
   app.innerHTML = `
     <header class="topbar">
       <div class="title-row">
-        <h1>🐄 번식진료 기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
+        <h1>🐂🐄 번식진료 기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
         <div class="header-actions">
           ${isAdmin()
-            ? `<button class="btn small" style="background:#E07B35;color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
+            ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
             : `<button class="btn secondary small" data-action="openAdminLogin">🔒 관리자</button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">📊 엑셀내보내기</button>
@@ -739,7 +791,7 @@ function renderAnimalView(){
     const last = lastRecordDate(a.animalId);
     return `
     <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
-      <span class="tag-chip sm">${esc(a.animalId)}</span>
+      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span><span class="tag-chip sm">${esc(a.animalId)}</span></span>
       <span class="animal-meta">
         <span>산차 ${esc(a.parity||'—')}</span>
         <span>${ageMonths(a.birth)}</span>
@@ -762,17 +814,33 @@ function renderAnimalView(){
             <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
           </div>
         </div>
-        <div class="info-grid">
-          <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
-          <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
-          <div class="field"><label>외외증조부</label><div class="val">${esc(a.damDamSire)||'—'}</div></div>
-          <div class="field"><label>출생</label><div class="val">${esc(a.birth)||'—'}</div></div>
-          <div class="field"><label>개월령</label><div class="val">${ageMonths(a.birth)}</div></div>
-          <div class="field"><label>산차</label><div class="val">${esc(a.parity)||'—'}</div></div>
-          <div class="field"><label>마지막 분만일</label><div class="val">${esc(a.lastCalving)||'—'}</div></div>
-          <div class="field"><label>수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'aiCount'))||'—'}</div></div>
-          <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||'—'}</div></div>
-          <div class="field"><label>수정 난이도</label><div class="val">${a.aiDifficulty?`${'★'.repeat(+a.aiDifficulty)}${'☆'.repeat(5-+a.aiDifficulty)} (${a.aiDifficulty}/5)`:'—'}${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
+        <div class="info-groups">
+          <div class="info-panel pedigree">
+            <div class="info-panel-title">🧬 혈통 · 기본정보</div>
+            <div class="info-row cols3">
+              <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
+              <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
+              <div class="field"><label>외외증조부</label><div class="val">${esc(a.damDamSire)||'—'}</div></div>
+            </div>
+            <div class="info-row cols3">
+              <div class="field"><label>품종</label><div class="val">${breedIcon(a.breed)} ${esc(a.breed)||'한우'}</div></div>
+              <div class="field"><label>출생</label><div class="val">${esc(a.birth)||'—'}</div></div>
+              <div class="field"><label>개월령</label><div class="val">${ageMonths(a.birth)}</div></div>
+            </div>
+          </div>
+          <div class="info-panel breeding">
+            <div class="info-panel-title">📋 번식 정보</div>
+            <div class="info-row cols4">
+              <div class="field"><label>산차</label><div class="val">${esc(a.parity)||'—'}</div></div>
+              <div class="field"><label>마지막 분만일</label><div class="val">${esc(a.lastCalving)||'—'}</div></div>
+              <div class="field"><label>수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'aiCount'))||'—'}</div></div>
+              <div class="field"><label>내 수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'inHouseAiCount'))||'—'}</div></div>
+            </div>
+            <div class="info-row cols2">
+              <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||'—'}</div></div>
+              <div class="field"><label>수정 난이도</label><div class="val">${difficultyStars(a.aiDifficulty)}${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
+            </div>
+          </div>
         </div>
         <div class="section-title">
           <span>진료·수정 기록 (${recs.length})</span>
@@ -1162,12 +1230,14 @@ function renderOwnerInfoView(){
         </div>
       </div>
       <div class="info-grid">
-        <div class="field"><label>주소</label><div class="val">${esc(p.address)||'—'}</div></div>
-        <div class="field">
-          <label>전화번호</label>
-          <div class="val">
-            ${esc(p.phone)||'—'}
-            ${p.phone ? `<a class="btn ghost small" style="margin-left:8px;" href="tel:${esc(p.phone.replace(/[^0-9+]/g,''))}">전화하기</a>` : ''}
+        <div class="info-row cols2">
+          <div class="field"><label>주소</label><div class="val">${esc(p.address)||'—'}</div></div>
+          <div class="field">
+            <label>전화번호</label>
+            <div class="val">
+              ${esc(p.phone)||'—'}
+              ${p.phone ? `<a class="btn ghost small" style="margin-left:8px;" href="tel:${esc(p.phone.replace(/[^0-9+]/g,''))}">전화하기</a>` : ''}
+            </div>
           </div>
         </div>
       </div>
@@ -1348,7 +1418,7 @@ function ownerAnimalsFor(owner){
 }
 function ensureAnimalExists(owner, animalId){
   if(!DATA.animals.find(a=>a.owner===owner && a.animalId===animalId)){
-    DATA.animals.push({animalId, owner, sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null});
+    DATA.animals.push({animalId, owner, breed:'한우', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null});
   }
 }
 
@@ -1575,14 +1645,17 @@ function actionDeleteRecord(id){
 function openAnimalModal(animal){
   const isNew = !animal;
   modalCtx = { type:'animal', owner: animal?animal.owner:UI.owner, originalId: animal?animal.animalId:null };
-  const a = animal || { animalId:'', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'' };
+  const a = animal || { animalId:'', breed:'한우', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'' };
   const diffOpts = [1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${n}</option>`).join('');
+  const breedVal = a.breed || '한우';
+  const breedOpts = ['한우','젖소'].map(b=>`<option value="${b}" ${breedVal===b?'selected':''}>${b}</option>`).join('');
   openModal(`
     <div class="modal">
       <h2>${isNew?'새 개체 등록':'개체정보 수정'}</h2>
       <div class="modal-sub">축주: ${esc(modalCtx.owner)}</div>
       <div class="form-grid">
         <div class="field"><label>개체번호 *</label><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0"></div>
+        <div class="field"><label>품종</label><select id="f_breed">${breedOpts}</select></div>
         ${textField('부','sire',a.sire)}
         ${textField('외조부','damSire',a.damSire)}
         ${textField('외외증조부','damDamSire',a.damDamSire)}
@@ -1614,6 +1687,7 @@ function actionSaveAnimal(){
   const dup = DATA.animals.find(a=>a.owner===owner && a.animalId===newId && a.animalId!==oldId);
   if(dup){ toast('이미 존재하는 개체번호예요.'); return; }
   const fields = {
+    breed: (document.getElementById('f_breed')||{}).value || '한우',
     sire: document.getElementById('f_sire').value.trim(),
     damSire: document.getElementById('f_damSire').value.trim(),
     damDamSire: document.getElementById('f_damDamSire').value.trim(),
@@ -1675,7 +1749,7 @@ function openGrassInfo(){
       </div>
 
       <!-- 짚류 -->
-      <div class="grass-section-title">📦 짚류 — 저질 조사료 (반추위 충전재 역할)</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">📦 짚류</span><span class="gst-sub">저질 조사료 · 반추위 충전재</span></span></div>
       <div class="grass-grid">
         <div class="grass-card straw">
           <div class="grass-name">볏짚</div>
@@ -1685,7 +1759,7 @@ function openGrassInfo(){
           <div class="grass-sim">🔁 유사: 밀짚·보리짚</div>
         </div>
         <div class="grass-card straw">
-          <div class="grass-name">밀짚 / 보리짚</div>
+          <div class="grass-name">밀짚·보리짚</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#D4B85A;"></span>연한 황색, 볏짚과 흡사</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 44~46</span><span class="stat-cp">CP 4~5%</span><span class="stat-price p1">💰 ~130~140원/kg</span></div>
           <div class="grass-desc">볏짚과 거의 같은 영양·물리적 특성. 볏짚 가격 오를 때 대체재로 활용. 급여 방법 동일.</div>
@@ -1694,17 +1768,17 @@ function openGrassInfo(){
       </div>
 
       <!-- 국내 양질 조사료 -->
-      <div class="grass-section-title">🌾 국내 생산 양질 조사료 (봄 수확 중심)</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🌾 국내 양질 조사료</span><span class="gst-sub">봄 수확 중심 · 국내 생산</span></span></div>
       <div class="grass-grid">
         <div class="grass-card quality">
-          <div class="grass-name">이탈리안라이그라스 (IRG) ⭐</div>
+          <div class="grass-name">이탈리안라이그라스<span class="grass-alias">(IRG)</span><span class="grass-badge rec">⭐ 추천</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#4A8A40;"></span>짙은 녹색, 얇고 부드러운 잎</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 58~62</span><span class="stat-cp">CP 10~14%</span><span class="stat-price p2">💰💰 ~150~160원/kg (국산)</span></div>
           <div class="grass-desc">국내 1순위 양질 조사료. 봄 수확, 소가 가장 즐겨 먹음. 번식우에 특히 권장. 사일리지로 연중 급여 가능.</div>
           <div class="grass-sim">🔁 유사: 라이그라스 건초, 오차드그라스</div>
         </div>
         <div class="grass-card quality">
-          <div class="grass-name">총체보리 (청보리)</div>
+          <div class="grass-name">총체보리<span class="grass-alias">(청보리)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#78B540;"></span>녹황색, 부드러운 이삭 포함</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 59.5</span><span class="stat-cp">CP 9.0%</span><span class="stat-price p2">💰💰 ~150~180원/kg (국산)</span></div>
           <div class="grass-desc">국내 자급률 높고 가격 안정적. 이른 봄 수확, 기호성 우수. 사일리지 제조 후 연중 급여. 번식우에 좋은 기본 조사료.</div>
@@ -1725,7 +1799,7 @@ function openGrassInfo(){
           <div class="grass-sim">🔁 유사: 옥수수 사일리지, 청보리 사일리지</div>
         </div>
         <div class="grass-card quality">
-          <div class="grass-name">연맥 (귀리)</div>
+          <div class="grass-name">연맥<span class="grass-alias">(귀리)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#C8C860;"></span>연한 황금색, 처진 이삭·부드러운 줄기</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">CP 8~11%</span><span class="stat-price p2">💰💰 ~150~200원/kg (국산)</span></div>
           <div class="grass-desc">오트밀로 아는 귀리를 알곡 전에 통째로 베어 건초·사일리지로 이용. IRG·청보리와 영양 유사. <b>기호성 매우 좋음</b> — 입 까다로운 소, 분만 직후 식욕 저하 소에게 효과적. 수입산(호주·캐나다)도 많이 유통.</div>
@@ -1746,7 +1820,7 @@ function openGrassInfo(){
           <div class="grass-sim">🔁 유사: 제주피(피 건초)</div>
         </div>
         <div class="grass-card quality">
-          <div class="grass-name">제주피 (피 건초)</div>
+          <div class="grass-name">제주피<span class="grass-alias">(피 건초)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#6A9848;"></span>녹색~황록색</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 58.8</span><span class="stat-cp">CP 12.9%</span><span class="stat-price p1">💰 ~140~180원/kg (국산)</span></div>
           <div class="grass-desc">영양성분이 라이그라스와 흡사하면서 가격은 낮아 실용적. 수단그라스와 혼합 유통 多. 기호성 우수.</div>
@@ -1755,17 +1829,17 @@ function openGrassInfo(){
       </div>
 
       <!-- 수입 건초 -->
-      <div class="grass-section-title">✈️ 수입 건초 (품질 안정적, 비용 높음)</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">✈️ 수입 건초</span><span class="gst-sub">품질 안정 · 비용 높음</span></span></div>
       <div class="grass-grid">
         <div class="grass-card import">
-          <div class="grass-name">알팔파 ⭐ (번식·단백질)</div>
+          <div class="grass-name">알팔파<span class="grass-badge rec">⭐ 번식·단백질</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#2A6E22;"></span>짙은 녹색, 잎이 풍성한 두과목초</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 58~65</span><span class="stat-cp">CP 14%+</span><span class="stat-price p4">💰💰💰💰 ~500~550원/kg (수입)</span></div>
           <div class="grass-desc">단백질 함량 조사료 중 최고. 분만 전후·수태율 저하 시 단기 보강 효과 큼. 다량 급여 시 고창증 주의. 송아지 첫 섬유질 사료로도 사용.</div>
           <div class="grass-sim">🔁 유사: 오차드그라스 (단백질 군)</div>
         </div>
         <div class="grass-card import">
-          <div class="grass-name">티모시 ⭐ (기호성 최고)</div>
+          <div class="grass-name">티모시<span class="grass-badge rec">⭐ 기호성 최고</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#90C060;"></span>연녹~황록색, 가늘고 부드러운 원통형 이삭</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 55~60</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p5">💰💰💰💰💰 ~640~660원/kg (수입 최고가)</span></div>
           <div class="grass-desc">소가 가장 좋아하는 건초. 일본·캐나다 수입. 입이 까다롭거나 컨디션 저하 소에게 효과적. 섭취량이 늘어나는 것 자체가 회복에 도움.</div>
@@ -1774,7 +1848,7 @@ function openGrassInfo(){
       </div>
 
       <!-- 방목지·다년생 목초 -->
-      <div class="grass-section-title">🌱 방목지·다년생 목초 (한번 심으면 오래 지속)</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🌱 방목지·다년생 목초</span><span class="gst-sub">한번 심으면 오래 지속</span></span></div>
       <div class="grass-grid">
         <div class="grass-card import">
           <div class="grass-name">오차드그라스</div>
@@ -1784,7 +1858,7 @@ function openGrassInfo(){
           <div class="grass-sim">🔁 유사: 티모시, IRG 건초</div>
         </div>
         <div class="grass-card import" style="border-left-color:#B05A30;">
-          <div class="grass-name">톨페스큐 ⚠️ 번식우 주의</div>
+          <div class="grass-name">톨페스큐<span class="grass-badge warn">⚠️ 번식우 주의</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#608050;"></span>짙은 녹색, 잎이 거칠고 뻣뻣함</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~500원/kg (수입)</span></div>
           <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">⚠️ 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
@@ -1793,7 +1867,7 @@ function openGrassInfo(){
       </div>
 
       <!-- 번식우 -->
-      <div class="grass-section-title">🐄 번식우 급여 가이드</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🐄 번식우 급여 가이드</span><span class="gst-sub">시기별 급여 포인트</span></span></div>
       <div class="grass-rec-grid">
         <div class="grass-rec">
           <div class="grass-rec-title">📌 기본 원칙</div>
@@ -1824,7 +1898,7 @@ function openGrassInfo(){
       </div>
 
       <!-- 시세 -->
-      <div class="grass-section-title">💰 가격 안내 (2025년 기준, kg당)</div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">💰 가격 안내</span><span class="gst-sub">2025년 기준 · kg당</span></span></div>
       <div class="grass-rec-grid">
         <div class="grass-rec">
           <div class="grass-rec-title">국내산 (저렴)</div>
@@ -1950,9 +2024,15 @@ function renderDueDateCalc(aiDateStr){
       <div class="form-grid full">
         <div class="field"><label>수정일</label><input type="date" id="calc_aiDate" value="${aiDateStr}"></div>
       </div>
-      <div class="info-grid" style="margin-top:18px;">
-        <div class="field"><label>다음 발정 예정일</label><div class="val" id="calc_nextEstrus">${fmtCalcDate(nextEstrus)}</div></div>
-        <div class="field"><label>분만 예정일</label><div class="val" id="calc_calving" style="color:var(--accent);">${fmtCalcDate(calving)}</div></div>
+      <div class="calc-results">
+        <div class="calc-result">
+          <div class="calc-result-label">다음 발정 예정일</div>
+          <div class="calc-result-val" id="calc_nextEstrus">${fmtCalcDate(nextEstrus)}</div>
+        </div>
+        <div class="calc-result accent">
+          <div class="calc-result-label">분만 예정일</div>
+          <div class="calc-result-val" id="calc_calving">${fmtCalcDate(calving)}</div>
+        </div>
       </div>
       <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
     </div>
@@ -2398,9 +2478,9 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(wb, ws1, '진료·수정 기록');
 
   // ── 시트 2: 개체 정보 ──
-  const animalHeaders = ['축주','개체번호','부','외조부','외외증조부','출생일','산차','마지막분만일','수정난이도','수정난이도메모'];
+  const animalHeaders = ['축주','개체번호','품종','부','외조부','외외증조부','출생일','산차','마지막분만일','수정난이도','수정난이도메모'];
   const animalRows = DATA.animals.map(a => [
-    a.owner, a.animalId, a.sire||'', a.damSire||'', a.damDamSire||'',
+    a.owner, a.animalId, a.breed||'한우', a.sire||'', a.damSire||'', a.damDamSire||'',
     a.birth||'', a.parity||'', a.lastCalving||'',
     a.aiDifficulty||'', a.aiDifficultyNote||'',
   ]);
