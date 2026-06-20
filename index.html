@@ -1291,17 +1291,19 @@ function renderPregCheckView(){
   animals.forEach(a => {
     const allRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
     const aiRecs = allRecs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    if(!aiRecs.length) return;
-    const aiRec = aiRecs[0];
-    const aiD = dateOnly(aiRec.aiDate);
-    const days = Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000);
-    const aiTs = sortKeyOf(aiRec);
-    const diagRecs = allRecs.filter(r=>r.pregnant && sortKeyOf(r) >= aiTs).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    const pregnant = diagRecs.length ? diagRecs[0].pregnant : '';
-    const recordForEdit = diagRecs.length ? diagRecs[0] : aiRec;
-    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant });
+    // 임신여부가 적힌 기록 중 가장 최근 것 (날짜 없는 기록도 인정)
+    const pregRecs = allRecs.filter(r => (r.pregnant||'').trim()).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+    const pregRec = pregRecs[0] || null;
+    const pregnant = pregRec ? pregRec.pregnant : '';
+    // 수정기록도 없고 임신표기도 없으면 제외
+    if(!aiRecs.length && !pregnant) return;
+    const aiRec = aiRecs[0] || null;
+    const aiD = aiRec ? dateOnly(aiRec.aiDate) : '';
+    const days = aiD ? Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000) : null;
+    const recordForEdit = pregRec || aiRec;
+    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days, pregnant });
   });
-  rows.sort((x,y)=> y.days - x.days);
+  rows.sort((x,y)=> (y.days==null?-1:y.days) - (x.days==null?-1:x.days));
 
   const pregnant = rows.filter(r => (r.pregnant||'').trim().toUpperCase() === 'O');
   const active   = rows.filter(r => (r.pregnant||'').trim().toUpperCase() !== 'O');
@@ -1310,7 +1312,7 @@ function renderPregCheckView(){
     const preg = (row.pregnant||'').trim().toUpperCase();
     const isNotPregnant = preg==='X';
     const isPregnant = preg==='O';
-    const needsCheck = !row.pregnant && row.days>=30;
+    const needsCheck = !row.pregnant && row.days!=null && row.days>=30;
     let rowClass = '';
     let badge = '';
     if(isNotPregnant){ rowClass='notpregnant'; badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`; }
@@ -1319,8 +1321,8 @@ function renderPregCheckView(){
     return `
     <div class="pregcheck-row ${rowClass}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip">${esc(row.animalId)}</span>
-      <span class="pregcheck-date">수정일 ${fmtShort(row.aiDate)}</span>
-      <span class="pregcheck-days">${row.days}일 경과</span>
+      <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
+      ${row.days!=null?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
       ${row.pregnant?`<span class="pregcheck-status">임신여부 ${esc(row.pregnant)}</span>`:''}
       ${badge}
     </div>
