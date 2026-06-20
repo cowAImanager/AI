@@ -563,21 +563,20 @@ async function detectStorageMode(){
 }
 
 async function loadState(){
-  try{
-    if(STORAGE_MODE==='claude'){
-      const res = await window.storage.get(STORAGE_KEY);
-      if(res && res.value) return JSON.parse(res.value);
-    } else if(STORAGE_MODE==='cloud'){
-      const json = await window.__cloud.get();
-      if(json) return JSON.parse(json);
-    } else {
-      const v = localStorage.getItem(STORAGE_KEY);
-      if(v) return JSON.parse(v);
-    }
-  }catch(e){ console.error('불러오기 실패', e); }
-  return null;
+  if(STORAGE_MODE==='claude'){
+    const res = await window.storage.get(STORAGE_KEY);
+    return (res && res.value) ? JSON.parse(res.value) : null;
+  } else if(STORAGE_MODE==='cloud'){
+    const json = await window.__cloud.get();
+    return json ? JSON.parse(json) : null;
+  } else {
+    const v = localStorage.getItem(STORAGE_KEY);
+    return v ? JSON.parse(v) : null;
+  }
 }
+let SAVE_LOCKED = false;   // 불러오기 실패 시 켜짐 — 시드로 실제 저장소를 덮어쓰지 않도록 잠금
 async function saveState(){
+  if(SAVE_LOCKED){ console.warn('저장 잠금 상태 — 쓰기 건너뜀'); return; }
   try{
     const payload = JSON.stringify(DATA);
     if(STORAGE_MODE==='claude'){
@@ -606,7 +605,10 @@ function subscribeRemoteIfNeeded(){
   });
 }
 function storageStatusLabel(){
-  return null; // 배지 숨김
+  if(SAVE_LOCKED) return { icon:'⛔', text:'저장 잠금(읽기 실패)' };
+  if(STORAGE_MODE==='cloud') return { icon:'☁️', text:'클라우드 저장' };
+  if(STORAGE_MODE==='claude') return { icon:'🧩', text:'아티팩트 저장' };
+  return { icon:'💾', text:'이 브라우저에만 저장' };
 }
 function buildInitial(){
   const d = JSON.parse(JSON.stringify(RAW_INITIAL));
@@ -735,6 +737,7 @@ function render(){
             : `<button class="btn secondary small" data-action="openAdminLogin">🔒 관리자</button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">📊 엑셀내보내기</button>
+          ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">💾 백업</button>`:''}
           <button class="btn secondary small" data-action="openGrassInfo" style="font-size:12px;">🌿 풀정보</button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${isDark?'☀️':'🌙'}</button>
           ${status?`<span class="status-badge" title="${esc(status.text)}">${status.icon} ${esc(status.text)}</span>`:''}
@@ -2525,6 +2528,71 @@ function actionDeleteSchedItem(){
 /* ============================================================
    액션 매핑 & 이벤트 위임
 ============================================================ */
+/* ============================================================
+   데이터 백업 / 복원 (JSON)
+============================================================ */
+function exportData(){
+  try{
+    const payload = JSON.stringify(DATA, null, 2);
+    const blob = new Blob([payload], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `번식기록부_백업_${todayStr()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast('백업 파일을 내려받았어요.');
+  }catch(e){ console.error(e); toast('백업 내보내기에 실패했어요.'); }
+}
+function handleImportFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const obj = JSON.parse(reader.result);
+      if(!obj || !Array.isArray(obj.owners) || !Array.isArray(obj.animals) || !Array.isArray(obj.records)){
+        toast('형식이 올바른 백업 파일이 아니에요.'); return;
+      }
+      const cnt = `축주 ${obj.owners.length} · 개체 ${obj.animals.length} · 기록 ${obj.records.length}`;
+      if(!confirm(`이 백업으로 현재 데이터를 모두 교체할까요?\n(${cnt})\n현재 내용은 사라집니다.`)) return;
+      DATA = obj;
+      SAVE_LOCKED = false;                 // 복원하면 저장 잠금 해제
+      DATA.owners.forEach(ensureOwnerMeta);
+      if(!DATA.owners.includes(UI.owner)) UI.owner = DATA.owners[0];
+      saveState();
+      applyTheme();
+      const banner = document.getElementById('load-error-banner'); if(banner) banner.remove();
+      closeModal();
+      render();
+      toast('백업을 복원했어요.');
+    }catch(e){ console.error(e); toast('파일을 읽지 못했어요.'); }
+  };
+  reader.readAsText(file);
+}
+function openBackupModal(){
+  const st = storageStatusLabel();
+  openModal(`
+    <div class="modal" style="max-width:440px;">
+      <h2>데이터 백업 / 복원</h2>
+      <div class="modal-sub" style="margin-bottom:14px;">
+        현재 저장 위치: <b>${st.icon} ${esc(st.text)}</b><br>
+        데이터는 index.html 파일이 아니라 위 저장소에 보관돼요. 파일을 새로 올려도
+        같은 주소(같은 브라우저/클라우드)면 유지됩니다. 만일을 대비해 주기적으로 백업을 내려받아 두세요.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn" data-action="exportData">⬇️ 백업 내보내기 (JSON 다운로드)</button>
+        <button class="btn secondary" data-action="importData">⬆️ 백업 가져오기 (현재 데이터 교체)</button>
+      </div>
+      <input id="import-file-input" type="file" accept="application/json,.json" style="display:none;">
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn secondary" data-action="closeModal">닫기</button>
+      </div>
+    </div>
+  `);
+  const inp = document.getElementById('import-file-input');
+  if(inp) inp.addEventListener('change', e => { if(e.target.files && e.target.files[0]) handleImportFile(e.target.files[0]); });
+}
+
 const ACTIONS = {
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
   addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
@@ -2533,6 +2601,9 @@ const ACTIONS = {
   openAdminLogin: ()=>openAdminLogin(),
   logoutAdmin: ()=>logoutAdmin(),
   exportExcel: ()=>exportExcel(),
+  openBackup: ()=>{ if(!isAdmin()) return noAdminToast(); openBackupModal(); },
+  exportData: ()=>exportData(),
+  importData: ()=>document.getElementById('import-file-input')?.click(),
   openGrassInfo: ()=>openGrassInfo(),
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
@@ -2636,15 +2707,43 @@ function applyTheme(){
 }
 async function init(){
   STORAGE_MODE = await detectStorageMode();
-  const stored = await loadState();
-  DATA = stored || buildInitial();
-  if(!stored) await saveState();
+  let stored = null, loadFailed = false;
+  try{
+    stored = await loadState();
+  }catch(e){
+    loadFailed = true;
+    console.error('불러오기 실패 — 저장을 잠급니다', e);
+  }
+
+  if(loadFailed){
+    // 읽기 실패: 절대 시드로 덮어쓰지 않음. 화면엔 시드를 보여주되 저장은 잠금.
+    DATA = buildInitial();
+    SAVE_LOCKED = true;
+    setTimeout(showLoadErrorBanner, 0);
+  } else if(stored){
+    DATA = stored;
+  } else {
+    // 저장소가 정말 비어있음(최초 실행) → 시드 저장 OK
+    DATA = buildInitial();
+    await saveState();
+  }
   DATA.owners.forEach(ensureOwnerMeta);
   UI.owner = DATA.owners[0];
   applyTheme();
   initEvents();
   render();
   subscribeRemoteIfNeeded();
+}
+
+function showLoadErrorBanner(){
+  if(document.getElementById('load-error-banner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'load-error-banner';
+  bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#A32D2D;color:#fff;'
+    + 'padding:10px 14px;font-size:13px;font-weight:700;text-align:center;line-height:1.5;';
+  bar.innerHTML = '⚠️ 저장된 데이터를 불러오지 못했어요. 표시된 건 기본 시드 데이터이며 '
+    + '<u>저장이 잠겨 있어</u> 덮어쓰기 사고는 일어나지 않아요. 새로고침하면 다시 시도합니다.';
+  document.body.prepend(bar);
 }
 
 /* ============================================================
