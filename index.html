@@ -241,6 +241,15 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-stat.ratecol2{background:var(--estrus-soft);}
 .preg-stat.ratecol2 .preg-stat-num{color:var(--estrus-text);}
 .pregcheck-list{display:flex;flex-direction:column;gap:9px;}
+
+/* 질환 보기 */
+.disease-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 15px;cursor:pointer;flex-wrap:wrap;}
+.disease-row:hover{background:var(--surface-alt);}
+.disease-date{font-size:13px;color:var(--ink-soft);font-weight:700;}
+.disease-tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+.disease-tag{font-size:12px;font-weight:800;padding:5px 11px;border-radius:8px;}
+.disease-tag.uterine{background:var(--accent-soft);color:var(--ai-text);}
+.disease-tag.ovary{background:var(--estrus-soft);color:var(--estrus-text);}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
 .pregcheck-row:hover{background:var(--surface-alt);}
 .pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
@@ -747,7 +756,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['disease','질환'],['schedule','스케줄']];
   if(isAdmin()) tabs.unshift(['owner','축사정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
@@ -760,6 +769,7 @@ function renderMain(){
   else if(UI.view==='date') main.innerHTML = renderDateView();
   else if(UI.view==='owner') main.innerHTML = renderOwnerInfoView();
   else if(UI.view==='pregcheck') main.innerHTML = renderPregCheckView();
+  else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
   else main.innerHTML = renderScheduleView();
   if(pendingFocus){
     const el = document.getElementById(pendingFocus.id);
@@ -793,12 +803,9 @@ function lastRecordDate(animalId){
   return recs[0].examDate || recs[0].aiDate || recs[0].estrusDate || null;
 }
 
-function renderAnimalView(){
-  const animals = ownerAnimals().filter(a => a.animalId.includes(UI.animalSearch.trim()));
-  if(UI.selectedAnimal && !animals.find(a=>a.animalId===UI.selectedAnimal)){
-    // keep selection even if filtered out of list view by search; just don't auto-clear unless animal truly removed
-    if(!ownerAnimals().find(a=>a.animalId===UI.selectedAnimal)) UI.selectedAnimal = null;
-  }
+function animalListData(){
+  const q = UI.animalSearch.replace(/\s/g,'').trim();
+  const animals = ownerAnimals().filter(a => a.animalId.replace(/\s/g,'').includes(q));
   const listHtml = animals.map(a => {
     const last = lastRecordDate(a.animalId);
     return `
@@ -811,7 +818,14 @@ function renderAnimalView(){
       </span>
     </div>`;
   }).join('') || `<div class="empty-state">검색 결과가 없어요.</div>`;
+  return { animals, listHtml };
+}
 
+function renderAnimalView(){
+  const { animals, listHtml } = animalListData();
+  if(UI.selectedAnimal && !animals.find(a=>a.animalId===UI.selectedAnimal)){
+    if(!ownerAnimals().find(a=>a.animalId===UI.selectedAnimal)) UI.selectedAnimal = null;
+  }
   let detailHtml = `<div class="empty-state">왼쪽 목록에서 개체를 선택해주세요.<br>전체 ${animals.length}두</div>`;
   if(UI.selectedAnimal){
     const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===UI.selectedAnimal);
@@ -866,9 +880,9 @@ function renderAnimalView(){
   return `
     <div class="animal-layout ${UI.selectedAnimal?'has-selection':''}">
       <div class="panel list-panel">
-        <div class="panel-head"><h3>개체 목록 (${animals.length}두)</h3></div>
-        <input class="search-input" id="animalSearchInput" placeholder="개체번호 검색..." value="${esc(UI.animalSearch)}">
-        <div class="animal-list">${listHtml}</div>
+        <div class="panel-head"><h3>개체 목록 (<span id="animalCount">${animals.length}</span>두)</h3></div>
+        <input class="search-input" id="animalSearchInput" placeholder="개체번호 검색..." value="${esc(UI.animalSearch)}" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        <div class="animal-list" id="animalListBox">${listHtml}</div>
         <div style="margin-top:10px;"><button class="btn secondary small" data-action="addAnimal" style="width:100%;">+ 새 개체 등록</button></div>
       </div>
       <div class="panel detail-panel">${detailHtml}</div>
@@ -938,15 +952,16 @@ function renderRecordCard(r){
 /* ============================================================
    날짜별 보기
 ============================================================ */
-function renderDateView(){
+function dateViewRows(){
   const field = UI.dateMode==='exam' ? 'examDate' : 'aiDate';
   let recs = DATA.records.filter(r=>r.owner===UI.owner && r[field]);
   if(UI.dateFrom) recs = recs.filter(r=>dateOnly(r[field]) >= UI.dateFrom);
   if(UI.dateTo) recs = recs.filter(r=>dateOnly(r[field]) <= UI.dateTo);
-  if(UI.dateSearch.trim()) recs = recs.filter(r=>r.animalId.includes(UI.dateSearch.trim()));
+  const q = UI.dateSearch.replace(/\s/g,'').trim();
+  if(q) recs = recs.filter(r=>r.animalId.replace(/\s/g,'').includes(q));
   recs = recs.sort((a,b)=> dateOnly(b[field]).localeCompare(dateOnly(a[field])) || (b[field]>a[field]?1:-1));
 
-  const rows = recs.map(r => `
+  return recs.map(r => `
     <tr data-action="editRecord" data-id="${esc(r.id)}">
       <td><span class="tag-chip sm">${esc(r.animalId)}</span></td>
       <td>${fmtShort(r[field])}</td>
@@ -958,6 +973,10 @@ function renderDateView(){
       </td>
     </tr>
   `).join('') || `<tr><td colspan="6"><div class="empty-state">조건에 맞는 기록이 없어요.</div></td></tr>`;
+}
+
+function renderDateView(){
+  const rows = dateViewRows();
 
   return `
     <div class="toolbar">
@@ -968,7 +987,7 @@ function renderDateView(){
       <input type="date" id="dateFromInput" value="${UI.dateFrom}">
       <span style="color:var(--ink-soft);font-size:13px;">~</span>
       <input type="date" id="dateToInput" value="${UI.dateTo}">
-      <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}">
+      <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
       <button class="btn secondary small" data-action="resetDateFilters">필터 초기화</button>
       ${isAdmin()?'<button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>':''}
     </div>
@@ -976,7 +995,7 @@ function renderDateView(){
       <thead><tr>
         <th>개체번호</th><th>${UI.dateMode==='exam'?'진료일시':'수정일시'}</th><th>진료일시</th><th>수정일시</th><th>비고</th><th></th>
       </tr></thead>
-      <tbody>${rows}</tbody>
+      <tbody id="dateRowsBox">${rows}</tbody>
     </table>
   `;
 }
@@ -1230,6 +1249,54 @@ function renderPregCheckView(){
   `;
 }
 
+/* ============================================================
+   질환 보기
+============================================================ */
+function renderDiseaseView(){
+  const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const recs = DATA.records
+    .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim())))
+    .sort((a,b)=> (dkey(b)||'').localeCompare(dkey(a)||''));
+
+  const uterineCount = recs.filter(r => (r.uterineDisease||'').trim()).length;
+  const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim()).length;
+  const animalsSet   = new Set(recs.map(r=>r.animalId));
+
+  const rows = recs.map(r => {
+    const d = dkey(r);
+    const tags = [];
+    if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine">자궁 · ${esc(r.uterineDisease.trim())}</span>`);
+    if((r.ovarianDisease||'').trim()) tags.push(`<span class="disease-tag ovary">난소 · ${esc(r.ovarianDisease.trim())}</span>`);
+    return `
+    <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
+      <span class="tag-chip">${esc(r.animalId)}</span>
+      <span class="disease-date">${d?fmtShort(d):'—'}</span>
+      <span class="disease-tags">${tags.join('')}</span>
+    </div>`;
+  }).join('') || `<div class="empty-state">등록된 질환 기록이 없어요.</div>`;
+
+  return `
+    <div class="panel">
+      <div class="preg-summary" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+        <div class="preg-stat">
+          <div class="preg-stat-num">${animalsSet.size}</div>
+          <div class="preg-stat-label">질환 개체</div>
+        </div>
+        <div class="preg-stat ratecol">
+          <div class="preg-stat-num">${uterineCount}</div>
+          <div class="preg-stat-label">자궁질환</div>
+        </div>
+        <div class="preg-stat ratecol2">
+          <div class="preg-stat-num">${ovaryCount}</div>
+          <div class="preg-stat-label">난소질환</div>
+        </div>
+      </div>
+      <div class="section-title"><span>질환 기록 (${recs.length}건)</span></div>
+      <div class="pregcheck-list">${rows}</div>
+    </div>
+  `;
+}
+
 const KV_CATS = [
   ['feeds','사료','예: TMR 단미사료','예: 10kg/일'],
   ['grasses','풀(조사료)','예: 볏짚, 청보리','예: 3kg/일'],
@@ -1476,6 +1543,7 @@ function openRecordModal(record, owner, presetAnimalId){
     estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusOther:'',
     rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
     ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
+    uterineDisease:'', ovarianDisease:'',
     sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
     sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
     sync7Type:'', sync7Date:null };
@@ -1558,6 +1626,19 @@ function openRecordModal(record, owner, presetAnimalId){
       </div>
       ${r.ultrasound ? `<div class="legacy-note">이전 기록(초음파): ${esc(r.ultrasound)}</div>` : ''}
 
+      <div class="fieldset-title">질환</div>
+      <div class="form-grid full">${textField('자궁질환','uterineDisease',r.uterineDisease,'예: 자궁내막염, 자궁축농증 등 직접 입력')}</div>
+      <div class="form-grid full">
+        <div class="field">
+          <label>난소질환</label>
+          <div class="chip-row" style="margin-bottom:7px;">
+            <button type="button" class="quick-chip" data-action="appendField" data-target="f_ovarianDisease" data-val="난포낭종">난포낭종</button>
+            <button type="button" class="quick-chip" data-action="appendField" data-target="f_ovarianDisease" data-val="황체낭종">황체낭종</button>
+          </div>
+          <input type="text" id="f_ovarianDisease" value="${esc(r.ovarianDisease||'')}" placeholder="위에서 선택하거나 직접 입력 (예: 난소정지, 난소위축 등)">
+        </div>
+      </div>
+
       <div class="fieldset-title">호르몬 처치</div>
       <div class="form-grid">
         ${textField('호르몬 처치','hormoneTreatment',r.hormoneTreatment)}
@@ -1626,6 +1707,8 @@ function actionSaveRecord(){
     ultraHorn: modalCtx.legacy.ultraHorn,
     ultraOvaryL: g('f_ultraOvaryL').value.trim(),
     ultraOvaryR: g('f_ultraOvaryR').value.trim(),
+    uterineDisease: (g('f_uterineDisease')||{value:''}).value.trim(),
+    ovarianDisease: (g('f_ovarianDisease')||{value:''}).value.trim(),
     estrusSign: modalCtx.legacy.estrusSign,
     rectalExam: modalCtx.legacy.rectalExam,
     ultrasound: modalCtx.legacy.ultrasound,
@@ -2343,6 +2426,7 @@ const ACTIONS = {
   saveSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSchedItem(); },
   deleteSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionDeleteSchedItem(); },
   fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; },
+  appendField: ds=>{ const el=document.getElementById(ds.target); if(!el) return; const cur=el.value.trim(); const tok=ds.val; const has=cur.split(/[,\s]+/).filter(Boolean).includes(tok); if(has) return; el.value = cur ? cur+', '+tok : tok; },
   calcInterval: ()=>actionCalcInterval(),
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
   clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
@@ -2366,8 +2450,18 @@ function initEvents(){
   });
   document.addEventListener('input', e=>{
     const t = e.target;
-    if(t.id==='animalSearchInput'){ UI.animalSearch=t.value; pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
-    else if(t.id==='dateSearchInput'){ UI.dateSearch=t.value; pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+    if(t.id==='animalSearchInput'){
+      UI.animalSearch=t.value;
+      const box=document.getElementById('animalListBox'), cnt=document.getElementById('animalCount');
+      if(box){ const d=animalListData(); box.innerHTML=d.listHtml; if(cnt) cnt.textContent=d.animals.length; }
+      else { pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+    }
+    else if(t.id==='dateSearchInput'){
+      UI.dateSearch=t.value;
+      const box=document.getElementById('dateRowsBox');
+      if(box){ box.innerHTML=dateViewRows(); }
+      else { pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+    }
   });
   document.addEventListener('change', e=>{
     const t = e.target;
@@ -2491,6 +2585,7 @@ function exportExcel(){
     '발정증상(외음부)','발정증상(점액)','발정증상(자궁수축)','발정증상(기타)',
     '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
     '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
+    '자궁질환','난소질환',
     '호르몬처치','수정횟수','내수정횟수','농가수정횟수','KPN','진료메모',
     '동기화1','동기화1날짜','동기화2','동기화2날짜','동기화3','동기화3날짜',
     '동기화4','동기화4날짜','동기화5','동기화5날짜','동기화6','동기화6날짜',
@@ -2507,6 +2602,7 @@ function exportExcel(){
       r.estrusVulvar || '', r.estrusMucus || '', r.estrusContraction || '', r.estrusOther || '',
       r.rectalUterus || '', r.rectalOvaryL || '', r.rectalOvaryR || '',
       r.ultraUterus || '', r.ultraOvaryL || '', r.ultraOvaryR || '',
+      r.uterineDisease || '', r.ovarianDisease || '',
       r.hormoneTreatment || '', r.aiCount || '', r.inHouseAiCount || '',
       r.farmAiCount || '', r.kpn || '', r.notes || '',
     ];
