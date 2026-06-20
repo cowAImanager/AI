@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Reproduction Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -68,7 +68,7 @@ html[data-theme="dark"]{
 }
 html[data-theme="dark"] body{background:var(--bg);}
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
     repeating-radial-gradient(ellipse 160px 80px at 25% 35%, transparent 0, transparent 76px, rgba(26,160,134,.022) 77px, transparent 78px),
@@ -228,6 +228,18 @@ main{flex:1;padding:18px 20px 70px;}
 .kv-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 
 /* 임신감정 */
+.preg-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,1fr);} }
+.preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
+.preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
+.preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
+.preg-stat-sub{font-weight:600;font-size:10px;color:var(--ink-soft);}
+.preg-stat.pregcol{background:var(--green-soft);}
+.preg-stat.pregcol .preg-stat-num{color:var(--primary-dark);}
+.preg-stat.ratecol{background:var(--accent-soft);}
+.preg-stat.ratecol .preg-stat-num{color:var(--accent);}
+.preg-stat.ratecol2{background:var(--estrus-soft);}
+.preg-stat.ratecol2 .preg-stat-num{color:var(--estrus-text);}
 .pregcheck-list{display:flex;flex-direction:column;gap:9px;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
 .pregcheck-row:hover{background:var(--surface-alt);}
@@ -704,7 +716,7 @@ function render(){
   app.innerHTML = `
     <header class="topbar">
       <div class="title-row">
-        <h1>🐂🐄 번식진료 기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
+        <h1>번식 진료 기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
         <div class="header-actions">
           ${isAdmin()
             ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
@@ -1153,7 +1165,8 @@ function renderPregCheckView(){
     const diagRecs = allRecs.filter(r=>r.pregnant && sortKeyOf(r) >= aiTs).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     const pregnant = diagRecs.length ? diagRecs[0].pregnant : '';
     const recordForEdit = diagRecs.length ? diagRecs[0] : aiRec;
-    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant });
+    const services = Math.max(parseInt(aiRec.aiCount, 10) || 0, 1); // 개체정보 수정횟수(최소 1)
+    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant, services });
   });
   rows.sort((x,y)=> y.days - x.days);
 
@@ -1184,8 +1197,31 @@ function renderPregCheckView(){
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
 
+  const bred = rows.length; // 수정한 두수
+  const totalServices = rows.reduce((s,r)=> s + r.services, 0); // 총 수정횟수
+  const rateCow = bred ? Math.round(pregnant.length / bred * 100) : 0;
+  const rateSvc = totalServices ? Math.round(pregnant.length / totalServices * 100) : 0;
+
   return `
     <div class="panel">
+      <div class="preg-summary">
+        <div class="preg-stat">
+          <div class="preg-stat-num">${active.length}</div>
+          <div class="preg-stat-label">임신감정 대상</div>
+        </div>
+        <div class="preg-stat pregcol">
+          <div class="preg-stat-num">${pregnant.length}</div>
+          <div class="preg-stat-label">임신중</div>
+        </div>
+        <div class="preg-stat ratecol">
+          <div class="preg-stat-num">${rateCow}%</div>
+          <div class="preg-stat-label">수태율 (개체별)<br><span class="preg-stat-sub">임신 ${pregnant.length} / 수정 ${bred}두</span></div>
+        </div>
+        <div class="preg-stat ratecol2">
+          <div class="preg-stat-num">${rateSvc}%</div>
+          <div class="preg-stat-label">수태율 (수정횟수)<br><span class="preg-stat-sub">임신 ${pregnant.length} / 수정 ${totalServices}회</span></div>
+        </div>
+      </div>
       <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
       <div class="pregcheck-list">${activeHtml}</div>
       <div class="section-title" style="margin-top:26px;"><span>🐄 임신중 (${pregnant.length}두)</span></div>
@@ -1754,14 +1790,14 @@ function openGrassInfo(){
         <div class="grass-card straw">
           <div class="grass-name">볏짚</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#C8A44A;"></span>황갈색 건조 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 43.6</span><span class="stat-cp">CP 5.0%</span><span class="stat-price p1">💰 ~130원/kg (국내 최저)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 43.6</span><span class="stat-cp">CP 5.0%</span><span class="stat-price p1">💰 ~200~260원/kg (2026 급등)</span></div>
           <div class="grass-desc">국내 가장 흔한 기본 조사료. 영양은 낮지만 반추위 pH 안정에 기여. 단독 급여 시 번식 성적 저하 주의.</div>
           <div class="grass-sim">🔁 유사: 밀짚·보리짚</div>
         </div>
         <div class="grass-card straw">
           <div class="grass-name">밀짚·보리짚</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#D4B85A;"></span>연한 황색, 볏짚과 흡사</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 44~46</span><span class="stat-cp">CP 4~5%</span><span class="stat-price p1">💰 ~130~140원/kg</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 44~46</span><span class="stat-cp">CP 4~5%</span><span class="stat-price p1">💰 ~200~250원/kg (2026 급등)</span></div>
           <div class="grass-desc">볏짚과 거의 같은 영양·물리적 특성. 볏짚 가격 오를 때 대체재로 활용. 급여 방법 동일.</div>
           <div class="grass-sim">🔁 유사: 볏짚</div>
         </div>
@@ -1773,56 +1809,56 @@ function openGrassInfo(){
         <div class="grass-card quality">
           <div class="grass-name">이탈리안라이그라스<span class="grass-alias">(IRG)</span><span class="grass-badge rec">⭐ 추천</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#4A8A40;"></span>짙은 녹색, 얇고 부드러운 잎</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58~62</span><span class="stat-cp">CP 10~14%</span><span class="stat-price p2">💰💰 ~150~160원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58~62</span><span class="stat-cp">CP 10~14%</span><span class="stat-price p2">💰💰 ~210~280원/kg (국산)</span></div>
           <div class="grass-desc">국내 1순위 양질 조사료. 봄 수확, 소가 가장 즐겨 먹음. 번식우에 특히 권장. 사일리지로 연중 급여 가능.</div>
           <div class="grass-sim">🔁 유사: 라이그라스 건초, 오차드그라스</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">총체보리<span class="grass-alias">(청보리)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#78B540;"></span>녹황색, 부드러운 이삭 포함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 59.5</span><span class="stat-cp">CP 9.0%</span><span class="stat-price p2">💰💰 ~150~180원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 59.5</span><span class="stat-cp">CP 9.0%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
           <div class="grass-desc">국내 자급률 높고 가격 안정적. 이른 봄 수확, 기호성 우수. 사일리지 제조 후 연중 급여. 번식우에 좋은 기본 조사료.</div>
           <div class="grass-sim">🔁 유사: IRG 사일리지, 호밀</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">옥수수 사일리지</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#A0A830;"></span>황록색, 굵은 줄기+이삭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 62.0</span><span class="stat-cp">CP 8.7%</span><span class="stat-price p2">💰💰 ~150~200원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 62.0</span><span class="stat-cp">CP 8.7%</span><span class="stat-price p2">💰💰 ~200~270원/kg (국산)</span></div>
           <div class="grass-desc">에너지 함량 조사료 중 최고. 비육우에 특히 유리. 발효 보존으로 연중 급여. CP가 낮아 단백질 보충 필요.<br><span style="font-size:11px;color:var(--primary);font-weight:700;">💡 사일리지: 풀을 공기 차단 후 유산균 발효 저장 — "풀로 만든 김치". 수개월~1년 보관 가능.</span></div>
           <div class="grass-sim">🔁 유사: 총체벼 사일리지</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">총체벼</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#8AAA30;"></span>연두~황색, 이삭 포함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 54~57</span><span class="stat-cp">CP 7~9%</span><span class="stat-price p2">💰💰 ~160~200원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 54~57</span><span class="stat-cp">CP 7~9%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
           <div class="grass-desc">벼를 알곡이 여물기 전(유숙기)에 이삭·줄기·잎 통째로 베어 사료화. 볏짚보다 영양 훨씬 높음. 논을 그대로 활용 가능. 사일리지로 저장 후 연중 급여. 쌀 수확을 포기하는 대신 사료용으로 전환하는 방식.</div>
           <div class="grass-sim">🔁 유사: 옥수수 사일리지, 청보리 사일리지</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">연맥<span class="grass-alias">(귀리)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#C8C860;"></span>연한 황금색, 처진 이삭·부드러운 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">CP 8~11%</span><span class="stat-price p2">💰💰 ~150~200원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">CP 8~11%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
           <div class="grass-desc">오트밀로 아는 귀리를 알곡 전에 통째로 베어 건초·사일리지로 이용. IRG·청보리와 영양 유사. <b>기호성 매우 좋음</b> — 입 까다로운 소, 분만 직후 식욕 저하 소에게 효과적. 수입산(호주·캐나다)도 많이 유통.</div>
           <div class="grass-sim">🔁 유사: IRG, 청보리, 호밀 (봄수확 양질 조사료 군)</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">호밀</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#3A7A30;"></span>진한 녹색, 넓은 잎폭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 52~56</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p2">💰💰 ~150~180원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 52~56</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p2">💰💰 ~200~250원/kg (국산)</span></div>
           <div class="grass-desc">겨울~봄 재배. IRG와 함께 가을 파종. 내한성 강하고 조기 수확 가능. IRG보다 기호성은 약간 낮음.</div>
           <div class="grass-sim">🔁 유사: 청보리, IRG, 연맥</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">수단그라스</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#5A9040;"></span>녹색, 굵은 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">8~10%</span><span class="stat-price p1">💰 ~130~160원/kg (국산, 저렴)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">8~10%</span><span class="stat-price p1">💰 ~180~240원/kg (국산, 저렴)</span></div>
           <div class="grass-desc">여름 재배. 볏짚보다 저렴하고 기호성 양호. 발효제 살포 후 원형베일 사일리지로 이용. 제주피와 혼합 급여 많음.</div>
           <div class="grass-sim">🔁 유사: 제주피(피 건초)</div>
         </div>
         <div class="grass-card quality">
           <div class="grass-name">제주피<span class="grass-alias">(피 건초)</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#6A9848;"></span>녹색~황록색</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58.8</span><span class="stat-cp">CP 12.9%</span><span class="stat-price p1">💰 ~140~180원/kg (국산)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58.8</span><span class="stat-cp">CP 12.9%</span><span class="stat-price p1">💰 ~190~250원/kg (국산)</span></div>
           <div class="grass-desc">영양성분이 라이그라스와 흡사하면서 가격은 낮아 실용적. 수단그라스와 혼합 유통 多. 기호성 우수.</div>
           <div class="grass-sim">🔁 유사: IRG, 라이그라스 건초</div>
         </div>
@@ -1834,14 +1870,14 @@ function openGrassInfo(){
         <div class="grass-card import">
           <div class="grass-name">알팔파<span class="grass-badge rec">⭐ 번식·단백질</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#2A6E22;"></span>짙은 녹색, 잎이 풍성한 두과목초</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58~65</span><span class="stat-cp">CP 14%+</span><span class="stat-price p4">💰💰💰💰 ~500~550원/kg (수입)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 58~65</span><span class="stat-cp">CP 14%+</span><span class="stat-price p4">💰💰💰💰 ~500~580원/kg (수입)</span></div>
           <div class="grass-desc">단백질 함량 조사료 중 최고. 분만 전후·수태율 저하 시 단기 보강 효과 큼. 다량 급여 시 고창증 주의. 송아지 첫 섬유질 사료로도 사용.</div>
           <div class="grass-sim">🔁 유사: 오차드그라스 (단백질 군)</div>
         </div>
         <div class="grass-card import">
           <div class="grass-name">티모시<span class="grass-badge rec">⭐ 기호성 최고</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#90C060;"></span>연녹~황록색, 가늘고 부드러운 원통형 이삭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~60</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p5">💰💰💰💰💰 ~640~660원/kg (수입 최고가)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 55~60</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p5">💰💰💰💰💰 ~650~700원/kg (수입 최고가)</span></div>
           <div class="grass-desc">소가 가장 좋아하는 건초. 일본·캐나다 수입. 입이 까다롭거나 컨디션 저하 소에게 효과적. 섭취량이 늘어나는 것 자체가 회복에 도움.</div>
           <div class="grass-sim">🔁 유사: 오차드그라스 (질감·색상 비슷)</div>
         </div>
@@ -1853,14 +1889,14 @@ function openGrassInfo(){
         <div class="grass-card import">
           <div class="grass-name">오차드그라스</div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#507840;"></span>진녹색, 납작하고 넓은 잎</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 56~62</span><span class="stat-cp">CP 9~13%</span><span class="stat-price p3">💰💰💰 ~380~460원/kg (수입)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 56~62</span><span class="stat-cp">CP 9~13%</span><span class="stat-price p3">💰💰💰 ~400~480원/kg (수입)</span></div>
           <div class="grass-desc">티모시보다 CP 약간 높음. 사계절 생산 가능하고 재생력 강함. 티모시 대비 저렴. 영양과 기호성 균형이 좋아 범용으로 쓰임.</div>
           <div class="grass-sim">🔁 유사: 티모시, IRG 건초</div>
         </div>
         <div class="grass-card import" style="border-left-color:#B05A30;">
           <div class="grass-name">톨페스큐<span class="grass-badge warn">⚠️ 번식우 주의</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#608050;"></span>짙은 녹색, 잎이 거칠고 뻣뻣함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~500원/kg (수입)</span></div>
+          <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~520원/kg (수입)</span></div>
           <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">⚠️ 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
           <div class="grass-sim">🔁 유사: 오차드그라스 (영양 수준), 볏짚 (기호성 낮음 공통점)</div>
         </div>
@@ -1898,32 +1934,41 @@ function openGrassInfo(){
       </div>
 
       <!-- 시세 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">💰 가격 안내</span><span class="gst-sub">2025년 기준 · kg당</span></span></div>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">💰 가격 안내</span><span class="gst-sub">2026년 상반기 기준 · kg당 (시세 급등)</span></span></div>
+      <div class="grass-rec" style="margin-bottom:10px;border-left:4px solid var(--accent);">
+        <div class="grass-rec-title" style="color:var(--ai-text);">⚠️ 2026년 시세 안내</div>
+        <ul>
+          <li>유가·환율·작황 영향으로 <b>2026년 들어 값이 크게 올랐어요.</b></li>
+          <li>볏짚 산지 가격이 2025년 평균 약 160원 → <b>2026년 2월 약 250원</b>대로 급등(전남·북 기준). 운송비 포함 시 경기·강원은 더 높음.</li>
+          <li>아래는 대략치이며, 구매 전 <b>NH 한우 월간리포트·농협 조사료 시세</b>로 그날 시세 확인을 권장해요.</li>
+        </ul>
+      </div>
       <div class="grass-rec-grid">
         <div class="grass-rec">
-          <div class="grass-rec-title">국내산 (저렴)</div>
+          <div class="grass-rec-title">국내산 (상대적 저렴)</div>
           <ul>
-            <li><b>볏짚·밀짚·보리짚</b> — 약 130~140원</li>
-            <li><b>수단그라스·제주피</b> — 약 130~180원</li>
-            <li><b>IRG·청보리·호밀·옥수수 사일리지</b> — 약 150~210원</li>
-            <li><b>총체벼·연맥(국산)</b> — 약 160~200원</li>
+            <li><b>볏짚·밀짚·보리짚</b> — 약 200~260원</li>
+            <li><b>수단그라스·제주피</b> — 약 180~250원</li>
+            <li><b>IRG·청보리·호밀·옥수수 사일리지</b> — 약 200~280원</li>
+            <li><b>총체벼·연맥(국산)</b> — 약 200~260원</li>
           </ul>
         </div>
         <div class="grass-rec">
           <div class="grass-rec-title">수입산 (비쌈)</div>
           <ul>
-            <li><b>연맥(수입)</b> — 약 380~400원</li>
-            <li><b>라이그라스 건초(수입)</b> — 약 350~380원</li>
-            <li><b>톨페스큐</b> — 약 450~500원</li>
-            <li><b>알팔파</b> — 약 500~550원</li>
-            <li><b>티모시</b> — 약 640~660원 <span style="color:var(--accent);font-weight:800;">(최고가)</span></li>
+            <li><b>라이그라스 건초(수입)</b> — 약 350~420원</li>
+            <li><b>연맥(수입)</b> — 약 390~450원</li>
+            <li><b>오차드그라스</b> — 약 400~480원</li>
+            <li><b>톨페스큐</b> — 약 450~520원</li>
+            <li><b>알팔파</b> — 약 500~580원</li>
+            <li><b>티모시</b> — 약 650~700원 <span style="color:var(--accent);font-weight:800;">(최고가)</span></li>
           </ul>
         </div>
         <div class="grass-rec">
           <div class="grass-rec-title">📌 참고</div>
           <ul>
-            <li>가격은 환율·작황·계절에 따라 크게 달라짐</li>
-            <li>수입산은 국내산 대비 <b>2~5배</b> 비쌈</li>
+            <li>가격은 환율·작황·계절·운송비에 따라 크게 달라짐</li>
+            <li>수입산은 국내산 대비 <b>2~3배</b> 비쌈</li>
             <li>볏짚 단독 급여는 가장 저렴하지만 번식 성적 저하 주원인</li>
             <li>티모시·알팔파는 컨디션 저하·분만 전후 단기 집중 활용 추천</li>
           </ul>
@@ -2022,7 +2067,7 @@ function renderDueDateCalc(aiDateStr){
       <h2>📅 분만예정일</h2>
       <div class="modal-sub">수정일을 입력하면 다음 발정 예정일과 분만 예정일을 바로 계산해줘요.</div>
       <div class="form-grid full">
-        <div class="field"><label>수정일</label><input type="date" id="calc_aiDate" value="${aiDateStr}"></div>
+        <div class="field"><label>수정일</label><input type="date" id="calc_aiDate" value="${aiDateStr}" style="max-width:200px;"></div>
       </div>
       <div class="calc-results">
         <div class="calc-result">
