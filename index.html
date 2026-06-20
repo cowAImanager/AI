@@ -165,6 +165,7 @@ main{flex:1;padding:18px 20px 70px;}
 .info-panel.pedigree .info-panel-title{color:var(--primary-dark);}
 .info-panel.breeding .info-panel-title{color:var(--ai-text);}
 .info-row{display:grid;gap:12px 18px;}
+.info-row.cols1{grid-template-columns:1fr;}
 .info-row.cols2{grid-template-columns:repeat(2,minmax(0,1fr));}
 .info-row.cols3{grid-template-columns:repeat(3,minmax(0,1fr));}
 .info-row.cols4{grid-template-columns:repeat(4,minmax(0,1fr));}
@@ -250,6 +251,8 @@ main{flex:1;padding:18px 20px 70px;}
 .disease-tag{font-size:12px;font-weight:800;padding:5px 11px;border-radius:8px;}
 .disease-tag.uterine{background:var(--accent-soft);color:var(--ai-text);}
 .disease-tag.ovary{background:var(--estrus-soft);color:var(--estrus-text);}
+.disease-tag.improved{background:var(--green-soft);color:var(--primary-dark);}
+.disease-tag.activecyst{background:var(--notpregnant-bg,#F7C1C1);color:#791F1F;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
 .pregcheck-row:hover{background:var(--surface-alt);}
 .pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
@@ -803,6 +806,92 @@ function lastRecordDate(animalId){
   return recs[0].examDate || recs[0].aiDate || recs[0].estrusDate || null;
 }
 
+/* ===== 발정주기일 추정 (초음파 → 프로토콜 → 오늘 투영) ===== */
+function daysBetween(fromStr, toStr){
+  if(!fromStr || !toStr) return 0;
+  const a = new Date(fromStr.slice(0,10)+'T00:00');
+  const b = new Date(toStr.slice(0,10)+'T00:00');
+  return Math.round((b - a) / 86400000);
+}
+function parseUltra(text){
+  text = text || '';
+  const cyst = /낭종/.test(text);
+  // 낭종으로 표기된 'NNmm' 수치는 집계에서 제거 (난포낭종/황체낭종 등)
+  const clean = text.replace(/[가-힣A-Za-z]*낭종[^\d]{0,4}\(?\s*\d+(?:\.\d+)?\s*mm/g, ' 낭종 ')
+                    .replace(/\d+(?:\.\d+)?\s*mm[^\d]{0,4}낭종/g, ' 낭종 ');
+  const clMentioned = /황체/.test(clean);
+  let clSize = null;
+  const cm = clean.match(/황체[가-힣\s]*?(\d+(?:\.\d+)?)\s*mm/);
+  if(cm) clSize = parseFloat(cm[1]);
+  const smallFoll = /소난포/.test(clean);
+  const allMm = [...clean.matchAll(/(\d+(?:\.\d+)?)\s*mm/g)].map(x=>parseFloat(x[1]));
+  const foll = allMm.slice();
+  if(clSize!=null){ const i=foll.indexOf(clSize); if(i>-1) foll.splice(i,1); }
+  const follMax = foll.length ? Math.max(...foll) : null;
+  let dom = null;
+  const dm = clean.match(/(?:우성|우세)난포[^\d]{0,3}(\d+(?:\.\d+)?)\s*mm/);
+  if(dm) dom = parseFloat(dm[1]);
+  return { clMentioned, clSize, smallFoll, follMax, dom, cyst };
+}
+function recHasCyst(r){
+  if(!r) return false;
+  if(/낭종/.test(r.ovarianDisease||'')) return true;
+  const u = [r.ultraUterus, r.ultraOvaryL, r.ultraOvaryR, r.ultrasound].filter(Boolean).join(' ');
+  return /낭종/.test(u);
+}
+function cycleDayRange(p){
+  const cl=p.clSize, clM=p.clMentioned, f=p.follMax, dom=p.dom, small=p.smallFoll;
+  if(!clM && f!=null && f>=12) return [0,0];
+  if((!clM || (cl!=null && cl<=10)) && small) return [1,2];
+  if(cl!=null && cl>=20){
+    if((dom!=null && dom>=15) || (f!=null && f>=15)) return [7,9];
+    if(small) return [10,12];
+    if(f!=null && f>=8) return [13,17];
+  }
+  if(cl!=null && cl>=15 && f!=null && f>=8) return [3,6];
+  if(cl!=null && cl>=10 && cl<=20 && f!=null && f>=10) return [18,20];
+  return null;
+}
+function estimateCycleToday(animal, recs){
+  if(!recs || !recs.length) return null;
+  // 가장 최근 진료가 낭종(질환 또는 초음파)이면 추정 안 함
+  if(recHasCyst(recs[0])) return { cystSkip:true };
+  const cycleLen = parseInt(animal.cycleLength,10) || 21;
+  const mode = animal.waveMode || '2';
+  if(mode==='3'){
+    const base = recs[0];
+    const baseDate = dateOnly(base.examDate || base.aiDate || base.estrusDate || '');
+    if(!baseDate) return null;
+    const md = parseFloat(animal.manualCycleDay);
+    if(isNaN(md)) return { needManual:true, cycleLen };
+    const elapsed = daysBetween(baseDate, todayStr());
+    let day = (md*(cycleLen/21) + elapsed) % cycleLen; if(day<0) day+=cycleLen;
+    return { day: Math.round(day), cycleLen, elapsed, baseDate, basis:`수동 ${md}일`, mode };
+  }
+  // 2난포파: 낭종이 아닌, 초음파가 적힌 가장 최근 진료 기준
+  const ultraRec = recs.find(r => !recHasCyst(r) && [r.ultraOvaryL,r.ultraOvaryR,r.ultraUterus,r.ultrasound].some(v=>v&&v.trim()));
+  if(!ultraRec) return { undetermined:true, cycleLen };
+  const baseDate = dateOnly(ultraRec.examDate || ultraRec.aiDate || ultraRec.estrusDate || '');
+  if(!baseDate) return { undetermined:true, cycleLen };
+  const ultra = [ultraRec.ultraOvaryL, ultraRec.ultraOvaryR, ultraRec.ultraUterus, ultraRec.ultrasound].filter(Boolean).join(' ');
+  const p = parseUltra(ultra);
+  const rng = cycleDayRange(p);
+  if(!rng) return { undetermined:true, cycleLen, baseDate };
+  const elapsed = daysBetween(baseDate, todayStr());
+  let day = (((rng[0]+rng[1])/2)*(cycleLen/21) + elapsed) % cycleLen; if(day<0) day+=cycleLen;
+  return { day: Math.round(day), cycleLen, elapsed, baseDate, basis:`초음파 ${rng[0]}~${rng[1]}일`, mode };
+}
+function cycleTodayHtml(animal, recs){
+  const r = estimateCycleToday(animal, recs);
+  if(!r) return '—';
+  if(r.cystSkip) return `<span style="color:var(--ink-soft);">낭종 — 추정 안 함</span>`;
+  if(r.needManual) return `<span style="color:var(--ink-soft);">3난포파 · 주기일 입력 필요</span>`;
+  if(r.undetermined) return `<span style="color:var(--ink-soft);">${r.cyst?'낭종 — 추정 제외':'초음파로 판정 불가'}</span>`;
+  return `<span style="color:var(--accent);font-weight:800;">약 ${r.day}일째</span>`
+    + `<div style="font-size:11px;color:var(--ink-soft);font-weight:500;margin-top:2px;">`
+    + `${r.mode==='3'?'3':'2'}난포파 · 주기 ${r.cycleLen}일 · ${r.basis} · 진료후 ${r.elapsed}일</div>`;
+}
+
 function animalListData(){
   const q = UI.animalSearch.replace(/\s/g,'').trim();
   const animals = ownerAnimals().filter(a => a.animalId.replace(/\s/g,'').includes(q));
@@ -863,8 +952,11 @@ function renderAnimalView(){
               <div class="field"><label>내 수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'inHouseAiCount'))||'—'}</div></div>
             </div>
             <div class="info-row cols2">
-              <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||'—'}</div></div>
+              <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||(a.cycleLength?esc(a.cycleLength)+'일':'—')}</div></div>
               <div class="field"><label>수정 난이도</label><div class="val">${difficultyStars(a.aiDifficulty)}${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
+            </div>
+            <div class="info-row cols1">
+              <div class="field"><label>오늘 발정주기 (추정)</label><div class="val">${cycleTodayHtml(a, recs)}</div></div>
             </div>
           </div>
         </div>
@@ -1022,6 +1114,26 @@ function buildAutoSchedule(owner){
       if(type && date) add(rec.animalId, date, type);
     }
   });
+
+  // 발정주기 예측 → 예상 발정일 ±1일에 '발정확인' 자동 추가
+  DATA.animals.filter(a=>a.owner===owner).forEach(a => {
+    const recs = DATA.records.filter(r=>r.owner===owner && r.animalId===a.animalId)
+      .sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+    if(!recs.length) return;
+    if((lastNonEmpty(recs,'pregnant')||'').trim().toUpperCase()==='O') return; // 임신 확정 제외
+    const est = estimateCycleToday(a, recs);
+    if(!est || typeof est.day!=='number' || !est.baseDate) return;            // 낭종/판정불가/수동미입력 제외
+    const cycleLen = est.cycleLen;
+    if(daysBetween(est.baseDate, todayStr()) > cycleLen*2) return;            // 2주기 넘게 지난 추정 제외
+    const daysToEstrus = (cycleLen - est.day) % cycleLen;
+    const nextEstrus = addDays(todayStr(), daysToEstrus);
+    for(let k=0;k<3;k++){
+      const ed = addDays(nextEstrus, k*cycleLen);
+      add(a.animalId, addDays(ed,-1), '발정확인');
+      add(a.animalId, ed, '발정확인');
+      add(a.animalId, addDays(ed,1), '발정확인');
+    }
+  });
   return result;
 }
 
@@ -1045,7 +1157,7 @@ function scheduleRowsForOwner(owner){
   const range = DATA.scheduleRange[owner];
   const dates = dateRangeArray(range.start, range.end);
   const auto = buildAutoSchedule(owner);
-  const ids = DATA.scheduleAnimals[owner] || [];
+  const ids = Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto)]));
   const rows = [];
   ids.forEach(aid => {
     dates.forEach(d => {
@@ -1101,11 +1213,11 @@ function renderScheduleAgenda(){
 function renderScheduleGrid(){
   const range = DATA.scheduleRange[UI.owner];
   const dates = dateRangeArray(range.start, range.end);
-  const animalIds = DATA.scheduleAnimals[UI.owner];
   const today = todayStr();
 
-  // 자동생성 스케줄 계산 (진료기록 동기화 단계만)
+  // 자동생성 스케줄 계산 (동기화 단계 + 발정 예측)
   const auto = buildAutoSchedule(UI.owner);
+  const animalIds = Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto)]));
 
   const header = `<th class="corner">개체번호</th>` + dates.map(d => `
     <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
@@ -1263,11 +1375,23 @@ function renderDiseaseView(){
   const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim()).length;
   const animalsSet   = new Set(recs.map(r=>r.animalId));
 
+  // 낭종 호전 판정: 과거 낭종 기록이 있는데 가장 최근 진료에서 낭종 없음
+  const cystAnimals = new Set(recs.filter(recHasCyst).map(r=>r.animalId));
+  let improvedCount = 0;
+  cystAnimals.forEach(id => { const latest = animalRecords(id)[0]; if(latest && !recHasCyst(latest)) improvedCount++; });
+
   const rows = recs.map(r => {
     const d = dkey(r);
     const tags = [];
     if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine">자궁 · ${esc(r.uterineDisease.trim())}</span>`);
     if((r.ovarianDisease||'').trim()) tags.push(`<span class="disease-tag ovary">난소 · ${esc(r.ovarianDisease.trim())}</span>`);
+    if(recHasCyst(r)){
+      const latest = animalRecords(r.animalId)[0];
+      const resolved = latest && !recHasCyst(latest);
+      tags.push(resolved
+        ? `<span class="disease-tag improved">✅ 낭종 호전</span>`
+        : `<span class="disease-tag activecyst">🔴 낭종 진행중</span>`);
+    }
     return `
     <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
       <span class="tag-chip">${esc(r.animalId)}</span>
@@ -1278,7 +1402,7 @@ function renderDiseaseView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+      <div class="preg-summary">
         <div class="preg-stat">
           <div class="preg-stat-num">${animalsSet.size}</div>
           <div class="preg-stat-label">질환 개체</div>
@@ -1290,6 +1414,10 @@ function renderDiseaseView(){
         <div class="preg-stat ratecol2">
           <div class="preg-stat-num">${ovaryCount}</div>
           <div class="preg-stat-label">난소질환</div>
+        </div>
+        <div class="preg-stat pregcol">
+          <div class="preg-stat-num">${improvedCount}</div>
+          <div class="preg-stat-label">낭종 호전</div>
         </div>
       </div>
       <div class="section-title"><span>질환 기록 (${recs.length}건)</span></div>
@@ -1765,10 +1893,12 @@ function actionDeleteRecord(id){
 function openAnimalModal(animal){
   const isNew = !animal;
   modalCtx = { type:'animal', owner: animal?animal.owner:UI.owner, originalId: animal?animal.animalId:null };
-  const a = animal || { animalId:'', breed:'한우', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'' };
+  const a = animal || { animalId:'', breed:'한우', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'', waveMode:'2', cycleLength:'21', manualCycleDay:'' };
   const diffOpts = [1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${n}</option>`).join('');
   const breedVal = a.breed || '한우';
   const breedOpts = ['한우','젖소'].map(b=>`<option value="${b}" ${breedVal===b?'selected':''}>${b}</option>`).join('');
+  const waveVal = a.waveMode || '2';
+  const waveOpts = [['2','2난포파 (초음파 자동추정)'],['3','3난포파 (주기일 직접입력)']].map(([v,t])=>`<option value="${v}" ${waveVal===v?'selected':''}>${t}</option>`).join('');
   openModal(`
     <div class="modal">
       <h2>${isNew?'새 개체 등록':'개체정보 수정'}</h2>
@@ -1790,6 +1920,12 @@ function openAnimalModal(animal){
           </select>
         </div>
         ${textField('수정 난이도 메모','aiDifficultyNote',a.aiDifficultyNote)}
+      </div>
+      <div class="fieldset-title">발정주기 추정 설정</div>
+      <div class="form-grid">
+        <div class="field"><label>난포파</label><select id="f_waveMode">${waveOpts}</select></div>
+        <div class="field"><label>예상발정주기 (일)</label><input type="number" id="f_cycleLength" value="${esc(a.cycleLength||'21')}" min="17" max="26" inputmode="numeric"></div>
+        <div class="field"><label>수동 주기일 (3난포파용)</label><input type="number" id="f_manualCycleDay" value="${esc(a.manualCycleDay||'')}" placeholder="마지막 진료일 기준 N일째" min="0" max="25" inputmode="numeric"></div>
       </div>
       <div class="modal-actions">
         <button class="btn secondary" data-action="closeModal">취소</button>
@@ -1816,6 +1952,9 @@ function actionSaveAnimal(){
     lastCalving: document.getElementById('f_lastCalving').value || null,
     aiDifficulty: document.getElementById('f_aiDifficulty').value,
     aiDifficultyNote: document.getElementById('f_aiDifficultyNote').value.trim(),
+    waveMode: (document.getElementById('f_waveMode')||{}).value || '2',
+    cycleLength: (document.getElementById('f_cycleLength')||{}).value.trim() || '21',
+    manualCycleDay: (document.getElementById('f_manualCycleDay')||{}).value.trim(),
   };
   if(oldId===null){
     DATA.animals.push({ animalId:newId, owner, ...fields });
