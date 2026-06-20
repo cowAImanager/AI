@@ -1184,8 +1184,7 @@ function renderPregCheckView(){
     const diagRecs = allRecs.filter(r=>r.pregnant && sortKeyOf(r) >= aiTs).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     const pregnant = diagRecs.length ? diagRecs[0].pregnant : '';
     const recordForEdit = diagRecs.length ? diagRecs[0] : aiRec;
-    const services = Math.max(parseInt(aiRec.aiCount, 10) || 0, 1); // 개체정보 수정횟수(최소 1)
-    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant, services });
+    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec.aiDate, days, pregnant });
   });
   rows.sort((x,y)=> y.days - x.days);
 
@@ -1216,8 +1215,10 @@ function renderPregCheckView(){
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
 
-  const bred = rows.length; // 수정한 두수
-  const totalServices = rows.reduce((s,r)=> s + r.services, 0); // 총 수정횟수
+  // 수정 = 수정상세정보의 KPN(정액번호)이 기입된 기록만 카운트
+  const aiServiceRecs = DATA.records.filter(r => r.owner===UI.owner && (r.kpn||'').trim());
+  const totalServices = aiServiceRecs.length;                  // 총 수정횟수
+  const bred = new Set(aiServiceRecs.map(r=>r.animalId)).size; // 수정한 두수
   const rateCow = bred ? Math.round(pregnant.length / bred * 100) : 0;
   const rateSvc = totalServices ? Math.round(pregnant.length / totalServices * 100) : 0;
 
