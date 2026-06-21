@@ -68,6 +68,7 @@ html[data-theme="dark"]{
 }
 html[data-theme="dark"] body{background:var(--bg);}
 *{box-sizing:border-box;}
+html{overflow-y:scroll;scrollbar-gutter:stable;}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
@@ -128,12 +129,12 @@ header.topbar{padding:16px 20px 0;background:var(--surface);border-bottom:1px so
 main{flex:1;padding:18px 20px 70px;}
 
 /* ---------- tag chip (signature element: ear tag) ---------- */
-.tag-chip{display:inline-flex;align-items:center;background:var(--tag-yellow);color:var(--tag-ink);font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:12.5px;padding:5px 10px 5px 17px;border-radius:3px 9px 9px 3px;position:relative;box-shadow:1px 2px 0 rgba(0,0,0,0.18);white-space:nowrap;letter-spacing:0.03em;}
-.tag-chip::before{content:'';position:absolute;left:6px;top:50%;width:5px;height:5px;background:var(--bg);border:1px solid rgba(0,0,0,0.3);border-radius:50%;transform:translateY(-50%);}
-.tag-chip.lg{font-size:17px;padding:9px 16px 9px 25px;}
-.tag-chip.lg::before{left:9px;width:6px;height:6px;}
-.tag-chip.sm{font-size:12px;padding:4px 9px 4px 14px;}
-.tag-chip.sm::before{left:4px;width:4px;height:4px;}
+.tag-chip{display:inline-flex;align-items:center;background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:12.5px;padding:5px 11px 5px 16px;border:1px solid var(--line);border-radius:4px;position:relative;overflow:hidden;box-shadow:none;white-space:nowrap;letter-spacing:0.03em;}
+.tag-chip::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--primary);border-radius:0;}
+.tag-chip.lg{font-size:17px;padding:9px 16px 9px 20px;}
+.tag-chip.lg::before{width:6px;}
+.tag-chip.sm{font-size:12px;padding:4px 10px 4px 14px;}
+.tag-chip.sm::before{width:4px;}
 
 /* ---------- buttons ---------- */
 .btn{background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s;}
