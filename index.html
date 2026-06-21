@@ -288,6 +288,10 @@ main{flex:1;padding:18px 20px 70px;}
 .ai-stepper .ai-count-num{font-size:18px;min-width:20px;text-align:center;color:var(--primary-dark);}
 .dbl-toggle{cursor:pointer;}
 .dbl-toggle.on{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important;}
+.dbl-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:.02em;vertical-align:middle;}
+.inline-edit{font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:100%;max-width:150px;}
+.inline-edit:focus{outline:none;border-color:var(--primary);background:var(--surface);}
+.inline-edit:hover{border-color:var(--primary);}
 .tag-chip.lg.fattened,.tag-chip.sm.fattened{opacity:.6;text-decoration:line-through;}
 .animal-list-item.fattened{opacity:.62;}
 .animal-list-item.fattened.active{opacity:1;}
@@ -1063,8 +1067,16 @@ function renderAnimalView(){
           <div class="info-panel breeding">
             <div class="info-panel-title">📋 번식 정보</div>
             <div class="info-row cols4">
-              <div class="field"><label>산차</label><div class="val">${esc(a.parity)||'—'}</div></div>
-              <div class="field"><label>마지막 분만일</label><div class="val">${esc(a.lastCalving)||'—'}</div></div>
+              <div class="field"><label>산차</label><div class="val">
+                ${isAdmin()
+                  ? `<input type="number" class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="parity" value="${esc(a.parity)}" min="0" max="20" inputmode="numeric">`
+                  : (esc(a.parity)||'—')}
+              </div></div>
+              <div class="field"><label>마지막 분만일</label><div class="val">
+                ${isAdmin()
+                  ? `<input type="date" class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="lastCalving" value="${esc(dateOnly(a.lastCalving||''))}">`
+                  : (esc(a.lastCalving)||'—')}
+              </div></div>
               <div class="field"><label>수정횟수 (현재)</label><div class="val">
                 ${isAdmin()
                   ? `<span class="ai-stepper"><button class="iconbtn step" data-action="adjustAiCount" data-id="${esc(a.animalId)}" data-delta="-1">−</button><b class="ai-count-num">${currentAiCount(a,recs)}</b><button class="iconbtn step" data-action="adjustAiCount" data-id="${esc(a.animalId)}" data-delta="1">+</button></span>`
@@ -1073,8 +1085,17 @@ function renderAnimalView(){
               <div class="field"><label>내 수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'inHouseAiCount'))||'—'}</div></div>
             </div>
             <div class="info-row cols2">
-              <div class="field"><label>예상발정주기</label><div class="val">${esc(lastNonEmpty(recs,'expectedCycle'))||(a.cycleLength?esc(a.cycleLength)+'일':'—')}</div></div>
-              <div class="field"><label>수정 난이도</label><div class="val">${difficultyStars(a.aiDifficulty)}${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
+              <div class="field"><label>예상발정주기 (일)</label><div class="val">
+                ${isAdmin()
+                  ? `<input type="number" class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="cycleLength" value="${esc(a.cycleLength||'21')}" min="17" max="26" inputmode="numeric">`
+                  : (a.cycleLength?esc(a.cycleLength)+'일':(esc(lastNonEmpty(recs,'expectedCycle'))||'—'))}
+              </div></div>
+              <div class="field"><label>수정 난이도</label><div class="val">
+                ${isAdmin()
+                  ? `<select class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="aiDifficulty"><option value="">선택 안 함</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${'★'.repeat(n)} ${n}</option>`).join('')}</select>`
+                  : difficultyStars(a.aiDifficulty)}
+                ${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}
+              </div></div>
             </div>
             <div class="info-row cols1">
               <div class="field"><label>오늘 발정주기 (추정)</label><div class="val">${cycleTodayHtml(a, recs)}</div></div>
@@ -1167,7 +1188,9 @@ function renderRecordCard(r){
         ${kv('수정횟수', r.aiCount)}
         ${kv('내수정횟수', r.inHouseAiCount)}
         ${kv('농가수정횟수', r.farmAiCount)}
-        ${kv('KPN', r.kpn)}
+        ${r.kpn
+          ? `<span class="kv"><b>KPN</b> ${esc(r.kpn)}${r.doubleAi?` <span class="dbl-badge">연수정</span>`:''}</span>`
+          : (r.doubleAi ? `<span class="kv"><b>수정</b> <span class="dbl-badge">연수정</span></span>` : '')}
         ${kv('다음발정일', r.nextEstrusDate?fmtShort(r.nextEstrusDate):'')}
         ${kv('예상분만일', r.expectedCalving?fmtShort(r.expectedCalving):'')}
       </div>
@@ -3046,6 +3069,11 @@ function initEvents(){
     else if(t.id==='f_estrusDate_date' || t.id==='f_aiDate_date'){
       const nextEl = document.getElementById('f_nextEstrusDate');
       if(nextEl && t.value){ nextEl.value = addDays(t.value, 21); }
+    }
+    else if(t.dataset && t.dataset.animalField){
+      if(!isAdmin()) return noAdminToast();
+      const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===t.dataset.id);
+      if(a){ a[t.dataset.animalField] = t.value; saveState(); renderMain(); }
     }
     else if(t.id==='f_sync1Date' && UI.activeSyncProtocol){
       fillSyncProtocolDates(UI.activeSyncProtocol, t.value);
