@@ -141,7 +141,8 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .gs-clear{flex:0 0 auto;border:none;background:var(--ink-soft);color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;opacity:.65;}
 .gs-clear svg{width:11px;height:11px;}
 .gs-clear:hover{opacity:1;}
-.gs-input:placeholder-shown ~ .gs-clear{display:none;}
+.resolved-check{display:flex;align-items:center;gap:7px;margin:7px 2px 2px;font-size:13px;color:var(--ink-soft);font-weight:600;cursor:pointer;}
+.resolved-check input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;}
 .sr-list{display:flex;flex-direction:column;gap:8px;}
 .sr-row{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--surface);display:flex;flex-direction:column;gap:7px;}
 .sr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -1965,9 +1966,14 @@ function renderPregCheckView(){
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
 
-  // 수태율 = '1차 임신감정(O/X)이 난 라운드'만 집계 (미감정 제외, 연수정은 그 라운드 1건, 분만 여부 무관)
-  const diagRecs = DATA.records.filter(r => r.owner===UI.owner && ['O','X'].includes((r.pregnant||'').trim().toUpperCase()));
-  const diagORecs = diagRecs.filter(r => (r.pregnant||'').trim().toUpperCase()==='O');
+  // 수태율 = '1차 임신감정(O/X)이 난 라운드' 중 '내가 수정한 것(내수정횟수 있음)'만 집계
+  //   (농가 등 다른 사람이 수정한 건 내 수태 실적에서 제외)
+  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
+  const pregOf = r => (r.pregnant||'').trim().toUpperCase();
+  const hasInhouse = r => { const n = parseInt(inh(r),10); return !isNaN(n) && n >= 1; };   // 내가 수정함
+  const diagRecs = DATA.records.filter(r => r.owner===UI.owner && ['O','X'].includes(pregOf(r)) && hasInhouse(r));
+  const diagORecs = diagRecs.filter(r => pregOf(r)==='O');
   // 수정당 수태율: 1차감정 1건 = 1수정, O면 성공
   const totalServices = diagRecs.length;
   const svcSuccess = diagORecs.length;
@@ -1977,9 +1983,6 @@ function renderPregCheckView(){
   // 첫수정 수태율: '내수정 1'을 한 수정(=내가 한 그 사이클 첫 수정)이 분모.
   //   단, 결과(감정 O 또는 X)가 난 사이클만 분모 — 아직 감정 안 한 대기중은 제외.
   //   분자: 그 사이클에 재수정(내수정2+) 없이 임신감정 O.
-  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
-  const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
-  const pregOf = r => (r.pregnant||'').trim().toUpperCase();
   const allByAnimal = {};
   DATA.records.filter(r=>r.owner===UI.owner).forEach(r => { (allByAnimal[r.animalId] = allByAnimal[r.animalId] || []).push(r); });
   let fsSuccess = 0, fsTotal = 0;
@@ -2041,7 +2044,9 @@ function renderDiseaseView(){
     .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim()) || recHasCyst(r)))
     .sort((a,b)=> (dkey(b)||'').localeCompare(dkey(a)||''));
 
-  const uterineCount = recs.filter(r => (r.uterineDisease||'').trim()).length;
+  const uterineRecs = recs.filter(r => (r.uterineDisease||'').trim());
+  const uterineResolvedCount = uterineRecs.filter(r => r.uterineResolved).length;
+  const uterineCount = uterineRecs.length - uterineResolvedCount;   // 진행중(치료완료 제외)
   const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim()).length;
   const animalsSet   = new Set(recs.map(r=>r.animalId));
 
@@ -2053,7 +2058,12 @@ function renderDiseaseView(){
   const rows = recs.map(r => {
     const d = dkey(r);
     const tags = [];
-    if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine"><span class="dtag-prefix">자궁 · </span>${esc(r.uterineDisease.trim())}</span>`);
+    if((r.uterineDisease||'').trim()){
+      tags.push(`<span class="disease-tag uterine"><span class="dtag-prefix">자궁 · </span>${esc(r.uterineDisease.trim())}</span>`);
+      tags.push(r.uterineResolved
+        ? `<span class="disease-tag improved" title="자궁질환 호전">${svgIcon('checkCircle',13)} 호전</span>`
+        : `<span class="disease-tag activecyst" title="자궁질환 진행중">🔴 진행중</span>`);
+    }
     if((r.ovarianDisease||'').trim()){
       tags.push(`<span class="disease-tag ovary"><span class="dtag-prefix">난소 · </span>${esc(r.ovarianDisease.trim())}</span>`);
     } else if(recHasCyst(r)){
@@ -2078,7 +2088,7 @@ function renderDiseaseView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary">
+      <div class="preg-summary five">
         <div class="preg-stat">
           <div class="preg-stat-num">${animalsSet.size}</div>
           <div class="preg-stat-label">질환 개체</div>
@@ -2086,6 +2096,10 @@ function renderDiseaseView(){
         <div class="preg-stat ratecol">
           <div class="preg-stat-num">${uterineCount}</div>
           <div class="preg-stat-label">자궁질환</div>
+        </div>
+        <div class="preg-stat pregcol">
+          <div class="preg-stat-num">${uterineResolvedCount}</div>
+          <div class="preg-stat-label">자궁 호전</div>
         </div>
         <div class="preg-stat ratecol2">
           <div class="preg-stat-num">${ovaryCount}</div>
@@ -2348,7 +2362,7 @@ function openRecordModal(record, owner, presetAnimalId){
     estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusOther:'',
     rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
     ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
-    uterineDisease:'', ovarianDisease:'',
+    uterineDisease:'', uterineResolved:false, ovarianDisease:'',
     sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
     sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
     sync7Type:'', sync7Date:null };
@@ -2480,6 +2494,7 @@ function openRecordModal(record, owner, presetAnimalId){
 
       <div class="fieldset-title">질환</div>
       <div class="form-grid full">${textField('자궁질환','uterineDisease',r.uterineDisease,'예: 자궁내막염, 자궁축농증 등 직접 입력')}</div>
+      <label class="resolved-check"><input type="checkbox" id="f_uterineResolved" ${r.uterineResolved?'checked':''}> 자궁질환 치료완료 (호전)</label>
       <div class="form-grid full">
         <div class="field">
           <label>난소질환</label>
@@ -2567,6 +2582,7 @@ function actionSaveRecord(){
     ultraOvaryL: g('f_ultraOvaryL').value.trim(),
     ultraOvaryR: g('f_ultraOvaryR').value.trim(),
     uterineDisease: (g('f_uterineDisease')||{value:''}).value.trim(),
+    uterineResolved: !!((g('f_uterineResolved')||{}).checked),
     ovarianDisease: (g('f_ovarianDisease')||{value:''}).value.trim(),
     estrusSign: modalCtx.legacy.estrusSign,
     rectalExam: modalCtx.legacy.rectalExam,
