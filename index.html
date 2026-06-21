@@ -257,8 +257,8 @@ main{flex:1;padding:18px 20px 70px;}
 @media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,1fr);} }
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
-.preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
-.preg-stat-sub{font-weight:600;font-size:10px;color:var(--ink-soft);}
+.preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;white-space:nowrap;}
+.preg-stat-sub{font-weight:700;font-size:10px;color:var(--primary-dark);}
 .preg-stat.pregcol{background:var(--green-soft);}
 .preg-stat.pregcol .preg-stat-num{color:var(--primary-dark);}
 .preg-stat.ratecol{background:var(--accent-soft);}
@@ -1619,13 +1619,17 @@ function renderPregCheckView(){
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
 
-  // 수정 1회 = 실제 수정일(aiDate)과 KPN(정액번호)이 모두 있는 기록만 카운트
-  // (임신감정 기록처럼 KPN만 딸려온 건 제외)
-  const aiServiceRecs = DATA.records.filter(r => r.owner===UI.owner && r.aiDate && (r.kpn||'').trim());
-  const totalServices = aiServiceRecs.length;                  // 총 수정횟수
-  const bred = new Set(aiServiceRecs.map(r=>r.animalId)).size; // 수정한 두수
-  const rateCow = bred ? Math.round(pregnant.length / bred * 100) : 0;
-  const rateSvc = totalServices ? Math.round(pregnant.length / totalServices * 100) : 0;
+  // 수태율 = '1차 임신감정(O/X)이 난 라운드'만 집계 (미감정 제외, 연수정은 그 라운드 1건, 분만 여부 무관)
+  const diagRecs = DATA.records.filter(r => r.owner===UI.owner && ['O','X'].includes((r.pregnant||'').trim().toUpperCase()));
+  const diagORecs = diagRecs.filter(r => (r.pregnant||'').trim().toUpperCase()==='O');
+  // 수정(라운드) 기준: 1차감정 1건 = 1라운드, O면 성공
+  const totalServices = diagRecs.length;
+  const svcSuccess = diagORecs.length;
+  const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
+  // 개체 기준: 1차감정 받은 개체 중 O를 받은 적 있는 개체
+  const bred = new Set(diagRecs.map(r=>r.animalId)).size;
+  const cowSuccess = new Set(diagORecs.map(r=>r.animalId)).size;
+  const rateCow = bred ? Math.round(cowSuccess / bred * 100) : 0;
 
   return `
     <div class="panel">
@@ -1640,11 +1644,11 @@ function renderPregCheckView(){
         </div>
         <div class="preg-stat ratecol">
           <div class="preg-stat-num">${rateCow}%</div>
-          <div class="preg-stat-label">수태율 (개체별)<br><span class="preg-stat-sub">임신 ${pregnant.length} / 수정 ${bred}두</span></div>
+          <div class="preg-stat-label">수태율(개체별) <span class="preg-stat-sub">${cowSuccess}/${bred}두</span></div>
         </div>
         <div class="preg-stat ratecol2">
           <div class="preg-stat-num">${rateSvc}%</div>
-          <div class="preg-stat-label">수태율 (수정횟수)<br><span class="preg-stat-sub">임신 ${pregnant.length} / 수정 ${totalServices}회</span></div>
+          <div class="preg-stat-label">수태율(수정) <span class="preg-stat-sub">${svcSuccess}/${totalServices}건</span></div>
         </div>
       </div>
       <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
