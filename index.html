@@ -290,6 +290,10 @@ main{flex:1;padding:18px 20px 70px;}
 .dbl-toggle.on{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important;}
 .dbl-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:.02em;vertical-align:middle;}
 .preg-stage2.disabled{opacity:.4;pointer-events:none;}
+.pregcheck-row.fattened{opacity:.9;}
+.pregcheck-row .fatten-badge.sm{margin-left:6px;}
+.sched-x{background:none;border:none;color:var(--notpregnant-bg,#C0392B);font-size:13px;font-weight:800;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;}
+.sched-x:hover{background:rgba(192,57,43,.12);}
 .inline-edit{font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:100%;max-width:150px;}
 .inline-edit:focus{outline:none;border-color:var(--primary);background:var(--surface);}
 .inline-edit:hover{border-color:var(--primary);}
@@ -688,6 +692,7 @@ function ensureOwnerMeta(owner){
   if(!DATA.ownerProfiles) DATA.ownerProfiles = {};
   if(!DATA.ownerProfiles[owner]) DATA.ownerProfiles[owner] = defaultOwnerProfile();
   if(!DATA.completedCells) DATA.completedCells = {};
+  if(!DATA.dismissedCells) DATA.dismissedCells = {};
   if(!DATA.ownerFlags) DATA.ownerFlags = {};
   if(!DATA.ownerFlags[owner]) DATA.ownerFlags[owner] = { favorite:false, archived:false };
 }
@@ -701,6 +706,11 @@ function archivedOwners(){ return DATA.owners.filter(ownerArch); }
 // completedCells 키: "owner|animalId|date"
 function cellKey(owner, aid, date){ return `${owner}|${aid}|${date}`; }
 function isCellDone(owner, aid, date){ return !!(DATA.completedCells||{})[cellKey(owner,aid,date)]; }
+function isCellDismissed(owner, aid, date){ return !!(DATA.dismissedCells||{})[cellKey(owner,aid,date)]; }
+function dismissCell(owner, aid, date){
+  if(!DATA.dismissedCells) DATA.dismissedCells = {};
+  DATA.dismissedCells[cellKey(owner,aid,date)] = true;
+}
 function toggleCellDone(owner, aid, date){
   if(!DATA.completedCells) DATA.completedCells = {};
   const k = cellKey(owner, aid, date);
@@ -932,6 +942,13 @@ function recHasCyst(r){
   return /낭종/.test(u);
 }
 const VWP_DAYS = 40;   // 분만 후 재수정 휴지기
+// 낭종 종류를 명확히 식별 (난포낭종 / 황체낭종)
+function cystType(r){
+  const src = [r.ovarianDisease, r.ultraUterus, r.ultraOvaryL, r.ultraOvaryR, r.ultrasound].filter(Boolean).join(' ');
+  if(/난포\s*낭종|난포낭종|난포성\s*낭종/.test(src)) return '난포낭종';
+  if(/황체\s*낭종|황체낭종|황체성\s*낭종/.test(src)) return '황체낭종';
+  return '낭종';
+}
 function recDate(r){ return dateOnly(r.examDate || r.aiDate || r.estrusDate || ''); }
 function latestCalvingDate(recs){
   const ds = recs.filter(r => dateOnly(r.calvingDate||'')).map(r => dateOnly(r.calvingDate)).sort();
@@ -1215,6 +1232,23 @@ function renderRecordCard(r){
 /* ============================================================
    날짜별 보기
 ============================================================ */
+function dateNoteSummary(r){
+  const parts = [];
+  const preg = [];
+  if((r.pregnant||'').trim())  preg.push('1차 '+r.pregnant.trim());
+  if((r.pregnant2||'').trim()) preg.push('2차 '+r.pregnant2.trim());
+  if((r.fetalSex||'').trim())  preg.push('성 '+r.fetalSex.trim());
+  if(preg.length) parts.push('감정 '+preg.join('/'));
+  if((r.calvingDate||'').trim()) parts.push('분만 '+dateOnly(r.calvingDate)+((r.calfSex||'').trim()?'('+r.calfSex.trim()+')':''));
+  if((r.uterineDisease||'').trim()) parts.push('자궁: '+r.uterineDisease.trim());
+  if((r.ovarianDisease||'').trim()) parts.push('난소: '+r.ovarianDisease.trim());
+  // 구조화된 난소질환이 없어도 초음파 텍스트에 낭종이 있으면 우선 표시
+  let extra = '';
+  if(!(r.ovarianDisease||'').trim() && /낭종/.test(r.ultrasound||'')) extra = (ultraSummary(r) || r.ultrasound);
+  else extra = estrusSummary(r) || ultraSummary(r) || rectalSummary(r) || r.notes || '';
+  if(extra) parts.push(extra);
+  return parts.join(' · ');
+}
 function dateViewRows(){
   const field = UI.dateMode==='exam' ? 'examDate' : 'aiDate';
   let recs = DATA.records.filter(r=>r.owner===UI.owner && r[field]);
@@ -1230,7 +1264,7 @@ function dateViewRows(){
       <td>${fmtShort(r[field])}</td>
       <td>${fmtShort(r.examDate)}</td>
       <td>${fmtShort(r.aiDate)}</td>
-      <td><span class="note-trunc">${esc(estrusSummary(r) || r.notes || ultraSummary(r) || rectalSummary(r) || '')}</span></td>
+      <td><span class="note-trunc">${esc(dateNoteSummary(r))}</span></td>
       <td class="actions">
         ${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>`:''}
       </td>
@@ -1331,7 +1365,7 @@ function renderScheduleView(){
 function scheduleRowsForOwner(owner){
   ensureOwnerMeta(owner);
   const range = DATA.scheduleRange[owner];
-  const dates = dateRangeArray(range.start, range.end);
+  const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
   const auto = buildAutoSchedule(owner);
   const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto)])));
   const rows = [];
@@ -1339,6 +1373,8 @@ function scheduleRowsForOwner(owner){
     dates.forEach(d => {
       const manual = DATA.schedule.find(s=>s.owner===owner && s.animalId===aid && s.date===d);
       const autoEntries = (auto[aid]||{})[d] || [];
+      // 자동 일정인데 사용자가 숨긴 칸이면 제외 (수동 일정은 유지)
+      if(!manual && autoEntries.length && isCellDismissed(owner, aid, d)) return;
       const note = manual ? manual.note : autoEntries.join(' / ');
       if(!note) return;
       rows.push({ aid, date:d, note, done:isCellDone(owner,aid,d), isAuto: !manual && !!autoEntries.length, manual: !!manual });
@@ -1369,6 +1405,7 @@ function renderScheduleAgenda(){
         <span class="tag-chip sm">${esc(r.aid)}</span>
         <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
         <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" title="${r.done?'완료취소':'완료처리'}">✓</button>
+        ${(r.isAuto && isAdmin())?`<button class="sched-x" data-action="dismissSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" title="이 자동 일정 숨기기">✕</button>`:''}
       </div>`;
     });
   }
@@ -1380,6 +1417,7 @@ function renderScheduleAgenda(){
       <button class="btn secondary small" data-action="shiftRange" data-dir="7">7일 ▶</button>
       <button class="btn secondary small" data-action="extendRange">+7일</button>
       ${isAdmin()?`<button class="btn small" data-action="addSchedItem" style="margin-left:auto;">+ 일정</button>`:''}
+      ${(()=>{ const n=Object.keys(DATA.dismissedCells||{}).filter(k=>k.startsWith(UI.owner+'|')).length; return (isAdmin()&&n)?`<button class="btn secondary small" data-action="restoreDismissed" title="숨긴 자동 일정 모두 복원">↩ 숨김 ${n} 복원</button>`:''; })()}
     </div>
     <div class="sched-agenda">${body}</div>
   `;
@@ -1388,7 +1426,7 @@ function renderScheduleAgenda(){
 /* 표(그리드) 보기 — 데스크탑 기본 */
 function renderScheduleGrid(){
   const range = DATA.scheduleRange[UI.owner];
-  const dates = dateRangeArray(range.start, range.end);
+  const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
   const today = todayStr();
 
   // 자동생성 스케줄 계산 (동기화 단계 + 발정 예측)
@@ -1403,7 +1441,8 @@ function renderScheduleGrid(){
     const safeId = aid.replace(/\s+/g,'_');
     const cells = dates.map(d => {
       const manual = DATA.schedule.find(s=>s.owner===UI.owner && s.animalId===aid && s.date===d);
-      const autoEntries = (auto[aid]||{})[d] || [];
+      let autoEntries = (auto[aid]||{})[d] || [];
+      if(!manual && autoEntries.length && isCellDismissed(UI.owner, aid, d)) autoEntries = [];  // 숨긴 자동 일정
       const autoText = autoEntries.join(' / ');
       const displayVal = manual ? manual.note : autoText;
       const isAuto = !manual && !!autoText;
@@ -1484,7 +1523,7 @@ function renderPregCheckView(){
     const expCalv = dateOnly(lastNonEmpty(sorted,'expectedCalving')||'');
     const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate)) || aiRec || sorted[0];
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
-      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv });
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, fattening: !!a.fattening });
   });
   rows.sort((x,y)=> (y.days==null?-1:y.days) - (x.days==null?-1:x.days));
 
@@ -1533,13 +1572,14 @@ function renderPregCheckView(){
       badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`;
     }
 
+    const fattenBadge = row.fattening ? `<span class="fatten-badge sm">🥩 비육전환</span>` : '';
     return `
-    <div class="pregcheck-row ${rowClass}" data-action="editRecord" data-id="${esc(row.record.id)}">
+    <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip">${esc(row.animalId)}</span>
       <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
       ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
       <span class="preg-tags">${tags.join('')}</span>
-      ${badge}
+      ${badge}${fattenBadge}
     </div>
   `;
   };
@@ -1589,7 +1629,7 @@ function renderPregCheckView(){
 function renderDiseaseView(){
   const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
   const recs = DATA.records
-    .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim())))
+    .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim()) || recHasCyst(r)))
     .sort((a,b)=> (dkey(b)||'').localeCompare(dkey(a)||''));
 
   const uterineCount = recs.filter(r => (r.uterineDisease||'').trim()).length;
@@ -1605,13 +1645,20 @@ function renderDiseaseView(){
     const d = dkey(r);
     const tags = [];
     if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine">자궁 · ${esc(r.uterineDisease.trim())}</span>`);
-    if((r.ovarianDisease||'').trim()) tags.push(`<span class="disease-tag ovary">난소 · ${esc(r.ovarianDisease.trim())}</span>`);
+    if((r.ovarianDisease||'').trim()){
+      tags.push(`<span class="disease-tag ovary">난소 · ${esc(r.ovarianDisease.trim())}</span>`);
+    } else if(recHasCyst(r)){
+      // 난소질환 칸은 비었지만 초음파 등에 낭종이 적힌 경우: 종류 + 적어둔 내용
+      const detail = (r.ultraOvaryL||r.ultraOvaryR||r.ultrasound||'').trim();
+      tags.push(`<span class="disease-tag ovary">난소 · ${esc(cystType(r))}${detail?' ('+esc(detail)+')':''}</span>`);
+    }
     if(recHasCyst(r)){
       const latest = animalRecords(r.animalId)[0];
       const resolved = latest && !recHasCyst(latest);
+      const ct = cystType(r);
       tags.push(resolved
-        ? `<span class="disease-tag improved">✅ 낭종 호전</span>`
-        : `<span class="disease-tag activecyst">🔴 낭종 진행중</span>`);
+        ? `<span class="disease-tag improved">✅ ${esc(ct)} 호전</span>`
+        : `<span class="disease-tag activecyst">🔴 ${esc(ct)} 진행중</span>`);
     }
     return `
     <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
@@ -2149,11 +2196,19 @@ function actionSaveRecord(){
   const prevRec = DATA.records.find(x=>x.id===rec.id);
   const oldCalv = prevRec ? dateOnly(prevRec.calvingDate||'') : '';
   const newCalv = dateOnly(rec.calvingDate||'');
+  const oldAi = prevRec ? (prevRec.aiDate||'') : '';
+  const newAi = rec.aiDate || '';
   const idx = DATA.records.findIndex(x=>x.id===rec.id);
+  // 자동 +1 기준값은 '이 기록을 제외한' 현재 수정횟수
+  const baseAiCount = (()=>{
+    const animal = DATA.animals.find(a=>a.owner===owner && a.animalId===animalId);
+    if(!animal) return 0;
+    return currentAiCount(animal, DATA.records.filter(r=>r.owner===owner && r.animalId===animalId && r.id!==rec.id));
+  })();
   if(idx>-1) DATA.records[idx] = rec; else DATA.records.push(rec);
 
   // 분만일 자동 처리: 분만일이 '새로' 들어오면 산차 +1, 최근분만일 자동 갱신
-  let parityBumped = false;
+  let parityBumped = false, aiBumped = false;
   if(newCalv){
     const animal = DATA.animals.find(a=>a.owner===owner && a.animalId===animalId);
     if(animal){
@@ -2167,11 +2222,19 @@ function actionSaveRecord(){
       if(latest) animal.lastCalving = latest;        // 최근분만일 = 기록 중 가장 최근 분만일
     }
   }
+  // 수정일(aiDate)이 '새로' 들어오면 현재 수정횟수 자동 +1 (같은 저장에서 분만 리셋이 일어나면 제외)
+  if(newAi && !oldAi && !(newCalv && !oldCalv)){
+    const animal = DATA.animals.find(a=>a.owner===owner && a.animalId===animalId);
+    if(animal){ animal.aiCountCurrent = String(baseAiCount + 1); aiBumped = true; }
+  }
   saveState();
   closeModal();
   UI.selectedAnimal = animalId;
   renderMain();
-  toast(parityBumped ? '기록 저장 · 산차 +1, 최근분만일 갱신했어요.' : '기록을 저장했어요.');
+  const msgs = [];
+  if(parityBumped) msgs.push('산차 +1·최근분만일 갱신');
+  if(aiBumped) msgs.push('수정횟수 +1');
+  toast(msgs.length ? '기록 저장 · '+msgs.join(' · ') : '기록을 저장했어요.');
 }
 
 function actionDeleteRecord(id){
@@ -2220,7 +2283,7 @@ function openAnimalModal(animal){
         <div class="field"><label>난포파</label><select id="f_waveMode">${waveOpts}</select></div>
         <div class="field"><label>예상발정주기 (일)</label><input type="number" id="f_cycleLength" value="${esc(a.cycleLength||'21')}" min="17" max="26" inputmode="numeric"></div>
         <div class="field"><label>수동 주기일 (3난포파용)</label><input type="number" id="f_manualCycleDay" value="${esc(a.manualCycleDay||'')}" placeholder="마지막 진료일 기준 N일째" min="0" max="25" inputmode="numeric"></div>
-        <div class="field"><label>현재 수정횟수</label><input type="number" id="f_aiCountCurrent" value="${esc(a.aiCountCurrent||'')}" placeholder="분만 시 자동 0" min="0" max="20" inputmode="numeric"></div>
+        <div class="field"><label>현재 수정횟수</label><input type="number" id="f_aiCountCurrent" value="${esc(a.aiCountCurrent||'')}" placeholder="수정 기록 시 자동 +1 / 분만 시 0" min="0" max="20" inputmode="numeric"></div>
       </div>
       <div class="modal-actions">
         <button class="btn secondary" data-action="closeModal">취소</button>
@@ -2541,7 +2604,7 @@ function openAllSchedule(){
 function allOwnersScheduleHtml(){
   const today = todayStr();
   const range = { start: addDays(today,-7), end: addDays(today, 45) };
-  const dates = dateRangeArray(range.start, range.end);
+  const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
   const allRows = [];
   DATA.owners.forEach(owner => {
     ensureOwnerMeta(owner);
@@ -3019,6 +3082,18 @@ const ACTIONS = {
   extendRange: ()=>{ const r=DATA.scheduleRange[UI.owner]; r.end=addDays(r.end,7); saveState(); renderMain(); },
   addScheduleAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionAddScheduleAnimal(); },
   removeScheduleAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionRemoveScheduleAnimal(ds.id); },
+  dismissSchedItem: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    dismissCell(UI.owner, ds.aid, ds.date);
+    saveState(); renderMain();
+    toast('자동 일정을 숨겼어요. (원본 기록은 유지)');
+  },
+  restoreDismissed: ()=>{
+    if(!isAdmin()) return noAdminToast();
+    Object.keys(DATA.dismissedCells||{}).filter(k=>k.startsWith(UI.owner+'|')).forEach(k=>{ delete DATA.dismissedCells[k]; });
+    saveState(); renderMain();
+    toast('숨긴 자동 일정을 모두 복원했어요.');
+  },
   clearAllSchedule: ()=>{ if(!isAdmin()) return noAdminToast(); openConfirm('이 축주의 스케줄과 개체 목록을 전부 삭제할까요? 진료기록은 유지돼요.', ()=>{
     DATA.schedule = DATA.schedule.filter(s=>s.owner!==UI.owner);
     DATA.scheduleAnimals[UI.owner] = [];
