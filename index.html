@@ -94,12 +94,19 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .brand-badge{display:inline-flex;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15));}
 .title-row .sub{font-size:11.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.8;}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.header-actions .btn{display:inline-flex;align-items:center;gap:5px;}
+.header-actions .ic,.status-badge .ic{flex:0 0 auto;}
+.ic{vertical-align:middle;}
+.iconbtn svg,.diff-stars svg{vertical-align:middle;}
+.diff-stars svg{margin:0 .5px;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;}
 .status-badge{font-size:11px;color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-weight:600;}
 .theme-toggle{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface-alt);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0;}
 .theme-toggle:hover{background:var(--surface);}
 
 .owner-tabs{display:flex;gap:6px;margin-top:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
-.owner-tab{padding:9px 18px;border-radius:10px 10px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
+.owner-tab{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:10px 10px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
+.owner-tabs .tab-break{display:none;}
 .owner-tab.active{background:var(--surface);color:var(--primary-dark);font-weight:800;box-shadow:0 -2px 8px rgba(0,0,0,.06);}
 .owner-tab.addnew{background:transparent;border:1px dashed var(--line);color:var(--ink-soft);font-weight:600;}
 .owner-tab.fav{background:var(--tag-yellow);color:#5a4500;border-color:var(--tag-yellow);}
@@ -606,10 +613,13 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .title-row h1{font-size:16px;gap:6px;}
   .title-row h1 .brand-badge svg{width:22px;height:22px;}
   .header-actions{gap:5px;}
-  .header-actions .btn.small{padding:5px 8px;font-size:11.5px;}
+  .header-actions .btn-label{display:none;}
+  .header-actions .btn.small{padding:5px 9px;font-size:14px;}
+  .status-badge .btn-label{display:none;}
+  .status-badge{font-size:13px;padding:4px 8px;}
   .header-actions .theme-toggle{width:28px;height:28px;font-size:13px;}
-  .status-badge{font-size:10px;padding:3px 8px;}
   .owner-tabs{gap:4px;margin-top:10px;}
+  .owner-tabs .tab-break{display:block;flex-basis:100%;height:0;margin:0;padding:0;border:none;}
   .owner-tab{padding:6px 12px;font-size:12.5px;border-radius:8px 8px 0 0;}
   .subnav{gap:14px;padding:10px 0 0;}
   .subnav button{font-size:13px;padding:5px 1px 9px;}
@@ -762,11 +772,40 @@ function subscribeRemoteIfNeeded(){
     }catch(e){ console.error('동기화 데이터 처리 실패', e); }
   });
 }
+function svgIcon(name, size){
+  const P = {
+    lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>',
+    lockOpen:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.7-1.6"/>',
+    table:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M10 4v16"/>',
+    save:'<path d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h6"/><rect x="8" y="13" width="8" height="6"/>',
+    leaf:'<path d="M5 19c0-8 6-13 14-13 0 8-5 13-13 13"/><path d="M6 18c2-4 5-7 9-9"/>',
+    cloud:'<path d="M7.5 18a4 4 0 0 1 .3-8A5 5 0 0 1 17 8.5 3.5 3.5 0 0 1 17.5 18z"/>',
+    calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/>',
+    clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9.5 4h5v2.5h-5z"/><path d="M9 11h6M9 15h6"/>',
+    refresh:'<path d="M4 11a8 8 0 0 1 13.5-4.5L20 9"/><path d="M20 4v5h-5"/><path d="M20 13a8 8 0 0 1-13.5 4.5L4 15"/><path d="M4 20v-5h5"/>',
+    x:'<path d="M6 6l12 12M18 6L6 18"/>',
+    check:'<path d="M5 12.5l4.5 4.5L19 6.5"/>',
+    checkCircle:'<circle cx="12" cy="12" r="9"/><path d="M8 12.2l2.8 2.8L16 9"/>',
+    star:'<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+    archive:'<path d="M4 8h16v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z"/><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M10 12h4"/>',
+    undo:'<path d="M9 7L4 12l5 5"/><path d="M4 12h10.5a4.5 4.5 0 0 1 0 9H13"/>',
+    checkbox:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l2.8 2.8L16 9"/>',
+    checkboxEmpty:'<rect x="4" y="4" width="16" height="16" rx="3"/>',
+    pin:'<path d="M12 16v6"/><path d="M8 3.5h8l-1.2 7 2.7 2.7a1 1 0 0 1-.7 1.7H7.2a1 1 0 0 1-.7-1.7L9.2 10.5z"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M3.5 7l2.6 1.5M17.9 15.5l2.6 1.5M3.5 17l2.6-1.5M17.9 8.5l2.6-1.5"/>',
+    noEntry:'<circle cx="12" cy="12" r="9"/><path d="M6.5 12h11"/>',
+    arrowUp:'<path d="M12 20V5M6 11l6-6 6 6"/>',
+    arrowDown:'<path d="M12 4v15M6 13l6 6 6-6"/>',
+    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8 5.9 18.1M18.1 5.9 19.8 4.2"/>',
+    moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>'
+  };
+  return `<svg class="ic" viewBox="0 0 24 24" width="${size||17}" height="${size||17}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name]||''}</svg>`;
+}
 function storageStatusLabel(){
-  if(SAVE_LOCKED) return { icon:'⛔', text:'저장 잠금(읽기 실패)' };
-  if(STORAGE_MODE==='cloud') return { icon:'☁️', text:'클라우드 저장' };
+  if(SAVE_LOCKED) return { icon:'⛔', key:'lock', text:'저장 잠금(읽기 실패)' };
+  if(STORAGE_MODE==='cloud') return { icon:'☁️', key:'cloud', text:'클라우드 저장' };
   if(STORAGE_MODE==='claude') return null; // 미리보기(아티팩트) 환경 — 배지 숨김
-  return { icon:'💾', text:'이 브라우저에만 저장' };
+  return { icon:'💾', key:'save', text:'이 브라우저에만 저장' };
 }
 function buildInitial(){
   const d = JSON.parse(JSON.stringify(RAW_INITIAL));
@@ -886,7 +925,7 @@ function breedIcon(breed){ return breed==='젖소' ? '🐄' : '🐂'; }
 function difficultyStars(level){
   if(!level) return '—';
   const n = Math.max(0, Math.min(5, +level));
-  return `<span class="diff-stars"><span class="on">${'★'.repeat(n)}</span><span class="off">${'☆'.repeat(5-n)}</span></span> <span class="diff-num">(${n}/5)</span>`;
+  return `<span class="diff-stars"><span class="on">${Array(n).fill(`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"currentColor\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`).join('')}</span><span class="off">${Array(5-n).fill(`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linejoin=\"round\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`).join('')}</span></span> <span class="diff-num">(${n}/5)</span>`;
 }
 function weekdayKr(dateStr){
   const [y,m,d] = dateStr.split('-').map(Number);
@@ -929,14 +968,14 @@ function render(){
         <h1><span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></span>번식진료기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
         <div class="header-actions">
           ${isAdmin()
-            ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">🔓 관리자 모드</button>`
-            : `<button class="btn secondary small" data-action="openAdminLogin">🔒 관리자</button>`
+            ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">${svgIcon('lockOpen')}<span class="btn-label">관리자 모드</span></button>`
+            : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">관리자</span></button>`
           }
-          <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">📊 엑셀내보내기</button>
-          ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">💾 백업</button>`:''}
-          <button class="btn secondary small" data-action="openGrassInfo" style="font-size:12px;">🌿 풀정보</button>
-          <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${isDark?'☀️':'🌙'}</button>
-          ${status?`<span class="status-badge" title="${esc(status.text)}">${status.icon} ${esc(status.text)}</span>`:''}
+          <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
+          ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
+          <button class="btn secondary small" data-action="openGrassInfo">${svgIcon('leaf')}<span class="btn-label">풀정보</span></button>
+          <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
+          ${status?`<span class="status-badge" title="${esc(status.text)}">${svgIcon(status.key)}<span class="btn-label">${esc(status.text)}</span></span>`:''}
         </div>
       </div>
       <div class="owner-tabs">${renderOwnerTabs()}</div>
@@ -949,18 +988,19 @@ function render(){
 
 function renderOwnerTabs(){
   DATA.owners.forEach(ensureOwnerMeta);
-  let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">📅 분만예정일</div>`;
-  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">📋 전체스케줄</div>`;
+  let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">${svgIcon('calendar')}<span>분만예정일</span></div>`;
+  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">${svgIcon('clipboard')}<span>전체스케줄</span></div>`;
+  html += `<div class="tab-break" aria-hidden="true"></div>`;
   // 현재 보고 있는 축주가 보관됨이면 임시로 보여줌
   if(ownerArch(UI.owner)){
-    html += `<div class="owner-tab active archived-view" data-action="setOwner" data-owner="${esc(UI.owner)}">📦 ${esc(UI.owner)}</div>`;
+    html += `<div class="owner-tab active archived-view" data-action="setOwner" data-owner="${esc(UI.owner)}">${svgIcon('archive',15)} ${esc(UI.owner)}</div>`;
   }
   html += orderedActiveOwners().map(o => `
-    <div class="owner-tab ${o===UI.owner?'active':''} ${ownerFav(o)?'fav':''}" data-action="setOwner" data-owner="${esc(o)}">${ownerFav(o)?'⭐ ':''}${esc(o)}</div>
+    <div class="owner-tab ${o===UI.owner?'active':''} ${ownerFav(o)?'fav':''}" data-action="setOwner" data-owner="${esc(o)}">${ownerFav(o)?svgIcon('star',14)+' ':''}${esc(o)}</div>
   `).join('');
   const archN = archivedOwners().length;
   if(isAdmin()){
-    html += `<div class="owner-tab manage" data-action="openOwnerManage">⚙ 축주관리${archN?` · 📦${archN}`:''}</div>`;
+    html += `<div class="owner-tab manage" data-action="openOwnerManage">${svgIcon('gear',15)} 축주관리${archN?` ${svgIcon('archive',13)} ${archN}`:''}</div>`;
   }
   html += `<div class="owner-tab addnew" data-action="addOwner">+ 축주 추가</div>`;
   return html;
@@ -1263,7 +1303,7 @@ function renderAnimalView(){
               </div></div>
               <div class="field"><label>수정 난이도</label><div class="val">
                 ${isAdmin()
-                  ? `<select class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="aiDifficulty"><option value="">선택 안 함</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${'★'.repeat(n)} ${n}</option>`).join('')}</select>`
+                  ? `<select class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="aiDifficulty"><option value="">선택 안 함</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${Array(n).fill(`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"currentColor\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`).join('')} ${n}</option>`).join('')}</select>`
                   : difficultyStars(a.aiDifficulty)}
                 ${a.aiDifficultyNote?`<div style="font-size:12px;color:var(--ink-soft);font-weight:500;margin-top:2px;">${esc(a.aiDifficultyNote)}</div>`:''}
               </div></div>
@@ -1422,9 +1462,9 @@ function renderDateView(){
         <button class="${UI.dateMode==='exam'?'active':''}" data-action="setDateMode" data-mode="exam">진료일시 기준</button>
         <button class="${UI.dateMode==='ai'?'active':''}" data-action="setDateMode" data-mode="ai">수정일시 기준</button>
       </div>
-      <div class="date-field"><input type="date" id="dateFromInput" value="${UI.dateFrom}">${UI.dateFrom?`<button class="date-clear" data-action="clearDateFrom" title="시작일 지우기">✕</button>`:''}</div>
+      <div class="date-field"><input type="date" id="dateFromInput" value="${UI.dateFrom}">${UI.dateFrom?`<button class="date-clear" data-action="clearDateFrom" title="시작일 지우기">${svgIcon('x',14)}</button>`:''}</div>
       <span style="color:var(--ink-soft);font-size:13px;">~</span>
-      <div class="date-field"><input type="date" id="dateToInput" value="${UI.dateTo}">${UI.dateTo?`<button class="date-clear" data-action="clearDateTo" title="종료일 지우기">✕</button>`:''}</div>
+      <div class="date-field"><input type="date" id="dateToInput" value="${UI.dateTo}">${UI.dateTo?`<button class="date-clear" data-action="clearDateTo" title="종료일 지우기">${svgIcon('x',14)}</button>`:''}</div>
       <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
       <button class="btn secondary small" data-action="resetDateFilters">필터 초기화</button>
       ${isAdmin()?'<button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>':''}
@@ -1562,8 +1602,8 @@ function renderScheduleAgenda(){
       body += `<div class="allsched-item ${r.done?'done':''} ${r.skipped?'skipped':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
         <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
         <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
-        <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="함(완료)">✓</button>
-        <button class="skip-btn ${r.skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="안 함">✕</button>
+        <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="함(완료)">${svgIcon('check',14)}</button>
+        <button class="skip-btn ${r.skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="안 함">${svgIcon('x',14)}</button>
       </div>`;
     });
   }
@@ -1575,7 +1615,7 @@ function renderScheduleAgenda(){
       <button class="btn secondary small" data-action="shiftRange" data-dir="7">7일 ▶</button>
       <button class="btn secondary small" data-action="extendRange">+7일</button>
       ${isAdmin()?`<button class="btn small" data-action="addSchedItem" style="margin-left:auto;">+ 일정</button>`:''}
-      ${(()=>{ const n=Object.keys(DATA.dismissedCells||{}).filter(k=>k.startsWith(UI.owner+'|')).length; return (isAdmin()&&n)?`<button class="btn secondary small" data-action="restoreDismissed" title="숨긴 자동 일정 모두 복원">↩ 숨김 ${n} 복원</button>`:''; })()}
+      ${(()=>{ const n=Object.keys(DATA.dismissedCells||{}).filter(k=>k.startsWith(UI.owner+'|')).length; return (isAdmin()&&n)?`<button class="btn secondary small" data-action="restoreDismissed" title="숨긴 자동 일정 모두 복원">${svgIcon('undo',14)} 숨김 ${n} 복원</button>`:''; })()}
     </div>
     <div class="sched-agenda">${body}</div>
   `;
@@ -1611,8 +1651,8 @@ function renderScheduleGrid(){
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
           ${hasContent?`<div class="sched-cell-btns">
-            <button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">✓</button>
-            <button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">✕</button>
+            <button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">${svgIcon('check',14)}</button>
+            <button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">${svgIcon('x',14)}</button>
           </div>`:''}
         </div>
       </td>`;
@@ -1621,7 +1661,7 @@ function renderScheduleGrid(){
       <td class="rowhead">
         <div class="rowhead-inner">
           <span class="tag-chip sm" data-animal-id="${esc(aid)}">${esc(aid)}</span>
-          <button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">✕</button>
+          <button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">${svgIcon('x',14)}</button>
         </div>
       </td>
       ${cells}
@@ -1850,7 +1890,7 @@ function renderDiseaseView(){
       const resolved = latest && !recHasCyst(latest);
       const ct = cystType(r);
       tags.push(resolved
-        ? `<span class="disease-tag improved">✅ ${esc(ct)} 호전</span>`
+        ? `<span class="disease-tag improved">${svgIcon('checkCircle',13)} ${esc(ct)} 호전</span>`
         : `<span class="disease-tag activecyst">🔴 ${esc(ct)} 진행중</span>`);
     }
     return `
@@ -1947,7 +1987,7 @@ function renderKvRows(cat, items){
     <div class="kv-row" data-idx="${i}">
       <input type="text" class="kv-name" id="kv_${cat}_name_${i}" placeholder="이름" value="${esc(it.name)}">
       <input type="text" class="kv-amount" id="kv_${cat}_amount_${i}" placeholder="급여량" value="${esc(it.amount)}">
-      <button type="button" class="iconbtn" data-action="removeKvRow" data-cat="${cat}" data-idx="${i}">✕</button>
+      <button type="button" class="iconbtn" data-action="removeKvRow" data-cat="${cat}" data-idx="${i}">${svgIcon('x',14)}</button>
     </div>
   `).join('');
 }
@@ -2157,7 +2197,7 @@ function openRecordModal(record, owner, presetAnimalId){
         <div class="field">
           <label>연수정</label>
           <div class="chips-inline">
-            <button type="button" class="dbl-toggle ${r.doubleAi?'on':''}" id="f_doubleAi_btn" data-action="toggleDoubleAi">${r.doubleAi?'☑':'☐'} 연수정 (한 발정 2회 연속)</button>
+            <button type="button" class="dbl-toggle ${r.doubleAi?'on':''}" id="f_doubleAi_btn" data-action="toggleDoubleAi">${r.doubleAi?svgIcon('checkbox',14):svgIcon('checkboxEmpty',14)} 연수정 (한 발정 2회 연속)</button>
           </div>
           <input type="hidden" id="f_doubleAi" value="${r.doubleAi?'1':''}">
         </div>
@@ -2817,8 +2857,8 @@ function allOwnersScheduleHtml(){
       <span class="tag-chip sm" data-animal-id="${esc(row.aid)}" data-owner="${esc(row.owner)}">${esc(row.aid)}</span>
       <span class="allsched-owner">${esc(row.owner)}</span>
       <span class="allsched-note">${esc(row.note)}</span>
-      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="함(완료)">✓</button>
-      <button class="skip-btn ${skipped?'is-skip':''}" data-action="toggleCellSkipAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="안 함">✕</button>
+      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="함(완료)">${svgIcon('check',14)}</button>
+      <button class="skip-btn ${skipped?'is-skip':''}" data-action="toggleCellSkipAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="안 함">${svgIcon('x',14)}</button>
     </div>`;
   });
   return html;
@@ -3118,8 +3158,8 @@ function openBackupModal(){
         같은 주소(같은 브라우저/클라우드)면 유지됩니다. 만일을 대비해 주기적으로 백업을 내려받아 두세요.
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn" data-action="exportData">⬇️ 백업 내보내기 (JSON 다운로드)</button>
-        <button class="btn secondary" data-action="importData">⬆️ 백업 가져오기 (현재 데이터 교체)</button>
+        <button class="btn" data-action="exportData">${svgIcon('arrowDown',15)} 백업 내보내기 (JSON 다운로드)</button>
+        <button class="btn secondary" data-action="importData">${svgIcon('arrowUp',15)} 백업 가져오기 (현재 데이터 교체)</button>
       </div>
       <input id="import-file-input" type="file" accept="application/json,.json" style="display:none;">
       <div class="modal-actions" style="margin-top:16px;">
@@ -3140,14 +3180,14 @@ function ownerRowManage(o){
   return `
     <div class="ownmg-row ${arch?'arch':''}">
       <div class="ownmg-main">
-        <span class="ownmg-name">${fav?'⭐ ':''}${esc(o)}</span>
+        <span class="ownmg-name">${fav?svgIcon('star',13)+' ':''}${esc(o)}</span>
         <span class="ownmg-sub">개체 ${animN}</span>
       </div>
       <div class="ownmg-actions">
-        ${arch ? '' : `<button class="iconbtn" title="즐겨찾기" data-action="toggleOwnerFavorite" data-owner="${esc(o)}">${fav?'⭐':'☆'}</button>
+        ${arch ? '' : `<button class="iconbtn" title="즐겨찾기" data-action="toggleOwnerFavorite" data-owner="${esc(o)}">${fav?`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"currentColor\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`:`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linejoin=\"round\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`}</button>
         <button class="iconbtn" title="위로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="-1">↑</button>
         <button class="iconbtn" title="아래로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="1">↓</button>`}
-        <button class="iconbtn ${arch?'restore':'archive'}" data-action="toggleOwnerArchive" data-owner="${esc(o)}">${arch?'♻ 복원':'📦 보관'}</button>
+        <button class="iconbtn ${arch?'restore':'archive'}" data-action="toggleOwnerArchive" data-owner="${esc(o)}">${arch?`${svgIcon('undo',14)} 복원`:`${svgIcon('archive',14)} 보관`}</button>
       </div>
     </div>`;
 }
@@ -3161,7 +3201,7 @@ function openOwnerManage(){
       <div class="ownmg-list">
         ${active.length ? active.map(ownerRowManage).join('') : `<div class="empty-state">활성 축주가 없어요.</div>`}
       </div>
-      ${arch.length ? `<div class="ownmg-divider">📦 보관됨 (${arch.length})</div><div class="ownmg-list">${arch.map(ownerRowManage).join('')}</div>` : ''}
+      ${arch.length ? `<div class="ownmg-divider">${svgIcon('archive',13)} 보관됨 (${arch.length})</div><div class="ownmg-list">${arch.map(ownerRowManage).join('')}</div>` : ''}
       <div class="modal-actions" style="margin-top:16px;">
         <button class="btn secondary" data-action="closeModal">닫기</button>
       </div>
@@ -3332,7 +3372,7 @@ const ACTIONS = {
     const on = h.value!=='1';
     h.value = on?'1':'';
     if(wrap) wrap.style.display = on?'':'none';
-    if(btn){ btn.classList.toggle('on', on); btn.textContent = (on?'☑':'☐') + ' 연수정 (한 발정 2회 연속)'; }
+    if(btn){ btn.classList.toggle('on', on); btn.innerHTML = (on?svgIcon('checkbox',14):svgIcon('checkboxEmpty',14)) + ' 연수정 (한 발정 2회 연속)'; }
   },
   toggleSchedSort: ()=>{ DATA.scheduleSortDir = (DATA.scheduleSortDir||'asc')==='asc' ? 'desc' : 'asc'; saveState(); renderMain(); },
   addSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(null, null); },
