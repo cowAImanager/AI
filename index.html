@@ -376,8 +376,10 @@ main{flex:1;padding:18px 20px 70px;}
 .sched-cell.today{background:var(--today-cell-bg);}
 .sched-cell.auto input{color:var(--primary);font-style:italic;opacity:.85;}
 .sched-cell.done input{text-decoration:line-through;opacity:.5;}
-.sched-cell-inner{display:flex;align-items:center;width:100%;}
-.sched-cell-inner input{flex:1;min-width:0;}
+.sched-cell-inner{display:flex;flex-direction:column;align-items:stretch;width:100%;}
+.sched-cell-inner input{width:100%;min-width:0;}
+.sched-cell-btns{display:flex;justify-content:center;gap:3px;padding:2px 0 3px;}
+.sched-cell-btns .done-btn,.sched-cell-btns .skip-btn{width:18px;height:16px;margin-left:0;font-size:10px;border-radius:3px;}
 .done-btn{width:20px;height:20px;flex-shrink:0;border:1px solid var(--line);background:var(--surface-alt);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;padding:0;margin-left:2px;}
 .done-btn.is-done{background:var(--primary);color:#fff;border-color:var(--primary);}
 .skip-btn{width:20px;height:20px;flex-shrink:0;border:1px solid var(--line);background:var(--surface-alt);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;padding:0;margin-left:2px;}
@@ -742,6 +744,20 @@ function toggleCellSkip(owner, aid, date){
   if(DATA.skippedCells[k]) delete DATA.skippedCells[k];
   else { DATA.skippedCells[k] = true; if(DATA.completedCells) delete DATA.completedCells[k]; }   // '안 함' 켜면 완료 해제
   saveState();
+}
+// 토글 시 전체 재렌더 없이 해당 셀의 ✓/✕ 버튼·클래스만 갱신 (표 스크롤 위치 유지)
+function refreshSchedToggleBtns(e, owner, aid, date){
+  const btn = e && e.target ? e.target.closest('button') : null;
+  const cell = btn ? (btn.closest('.sched-cell') || btn.closest('.allsched-item')) : null;
+  if(!cell) return;
+  const doneOn = isCellDone(owner, aid, date);
+  const skipOn = isCellSkipped(owner, aid, date);
+  const dB = cell.querySelector('.done-btn');
+  const sB = cell.querySelector('.skip-btn');
+  if(dB) dB.classList.toggle('is-done', doneOn);
+  if(sB) sB.classList.toggle('is-skip', skipOn);
+  cell.classList.toggle('done', doneOn);
+  cell.classList.toggle('skipped', skipOn);
 }
 
 /* ============================================================
@@ -1510,8 +1526,10 @@ function renderScheduleGrid(){
       return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''} ${skipped&&hasContent?'skipped':''}">
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
-          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">✓</button>`:''}
-          ${hasContent?`<button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">✕</button>`:''}
+          ${hasContent?`<div class="sched-cell-btns">
+            <button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">✓</button>
+            <button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">✕</button>
+          </div>`:''}
         </div>
       </td>`;
     }).join('');
@@ -3197,15 +3215,15 @@ const ACTIONS = {
   cellDoneToggle: (ds, e)=>{
     if(!isAdmin()) return noAdminToast();
     toggleCellDone(UI.owner, ds.aid, ds.date);
-    renderMain();
+    refreshSchedToggleBtns(e, UI.owner, ds.aid, ds.date);
   },
   cellSkipToggle: (ds, e)=>{
     if(!isAdmin()) return noAdminToast();
     toggleCellSkip(UI.owner, ds.aid, ds.date);
-    renderMain();
+    refreshSchedToggleBtns(e, UI.owner, ds.aid, ds.date);
   },
-  toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
-  toggleCellSkipAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellSkip(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
+  toggleCellDoneAll: (ds, e)=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); refreshSchedToggleBtns(e, ds.owner, ds.aid, ds.date); },
+  toggleCellSkipAll: (ds, e)=>{ if(!isAdmin()) return noAdminToast(); toggleCellSkip(ds.owner, ds.aid, ds.date); refreshSchedToggleBtns(e, ds.owner, ds.aid, ds.date); },
   cancelSchedAll: ds=>{
     if(!isAdmin()) return noAdminToast();
     if(ds.manual){
