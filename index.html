@@ -282,6 +282,10 @@ main{flex:1;padding:18px 20px 70px;}
 .fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
 .fatten-badge.sm{font-size:10px;padding:2px 6px;border-radius:6px;}
 .head-id-wrap{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ai-stepper{display:inline-flex;align-items:center;gap:8px;}
+.ai-stepper .iconbtn.step{width:30px;height:30px;font-size:18px;font-weight:800;border-radius:8px;background:var(--surface-alt);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;padding:0;}
+.ai-stepper .iconbtn.step:hover{background:var(--primary);color:#fff;border-color:var(--primary);}
+.ai-stepper .ai-count-num{font-size:18px;min-width:20px;text-align:center;color:var(--primary-dark);}
 .tag-chip.lg.fattened,.tag-chip.sm.fattened{opacity:.6;text-decoration:line-through;}
 .animal-list-item.fattened{opacity:.62;}
 .animal-list-item.fattened.active{opacity:1;}
@@ -981,6 +985,11 @@ function cycleTodayHtml(animal, recs){
     + `${r.mode==='3'?'3':'2'}난포파 · 주기 ${r.cycleLen}일 · ${r.basis} · 진료후 ${r.elapsed}일</div>`;
 }
 
+function currentAiCount(a, recs){
+  if(a && a.aiCountCurrent!=null && a.aiCountCurrent!==''){ return parseInt(a.aiCountCurrent,10)||0; }
+  const v = lastNonEmpty(recs||[], 'aiCount');
+  return v ? (parseInt(v,10)||0) : 0;
+}
 function animalListData(){
   const q = UI.animalSearch.replace(/\s/g,'').trim();
   const animals = ownerAnimals().filter(a => a.animalId.replace(/\s/g,'').includes(q));
@@ -1037,7 +1046,11 @@ function renderAnimalView(){
             <div class="info-row cols4">
               <div class="field"><label>산차</label><div class="val">${esc(a.parity)||'—'}</div></div>
               <div class="field"><label>마지막 분만일</label><div class="val">${esc(a.lastCalving)||'—'}</div></div>
-              <div class="field"><label>수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'aiCount'))||'—'}</div></div>
+              <div class="field"><label>수정횟수 (현재)</label><div class="val">
+                ${isAdmin()
+                  ? `<span class="ai-stepper"><button class="iconbtn step" data-action="adjustAiCount" data-id="${esc(a.animalId)}" data-delta="-1">−</button><b class="ai-count-num">${currentAiCount(a,recs)}</b><button class="iconbtn step" data-action="adjustAiCount" data-id="${esc(a.animalId)}" data-delta="1">+</button></span>`
+                  : `<b style="font-size:16px;">${currentAiCount(a,recs)}</b>`}
+              </div></div>
               <div class="field"><label>내 수정횟수</label><div class="val">${esc(lastNonEmpty(recs,'inHouseAiCount'))||'—'}</div></div>
             </div>
             <div class="info-row cols2">
@@ -2069,6 +2082,7 @@ function actionSaveRecord(){
       if(!oldCalv){                                  // 빈 값 → 분만일 입력 (신규 분만)
         const p = parseInt(animal.parity,10);
         animal.parity = String((isNaN(p)?0:p) + 1);
+        animal.aiCountCurrent = '0';                  // 분만하면 수정횟수 리셋 (다음 수정부터 0)
         parityBumped = true;
       }
       const latest = latestCalvingDate(DATA.records.filter(r=>r.owner===owner && r.animalId===animalId));
@@ -2128,6 +2142,7 @@ function openAnimalModal(animal){
         <div class="field"><label>난포파</label><select id="f_waveMode">${waveOpts}</select></div>
         <div class="field"><label>예상발정주기 (일)</label><input type="number" id="f_cycleLength" value="${esc(a.cycleLength||'21')}" min="17" max="26" inputmode="numeric"></div>
         <div class="field"><label>수동 주기일 (3난포파용)</label><input type="number" id="f_manualCycleDay" value="${esc(a.manualCycleDay||'')}" placeholder="마지막 진료일 기준 N일째" min="0" max="25" inputmode="numeric"></div>
+        <div class="field"><label>현재 수정횟수</label><input type="number" id="f_aiCountCurrent" value="${esc(a.aiCountCurrent||'')}" placeholder="분만 시 자동 0" min="0" max="20" inputmode="numeric"></div>
       </div>
       <div class="modal-actions">
         <button class="btn secondary" data-action="closeModal">취소</button>
@@ -2157,6 +2172,7 @@ function actionSaveAnimal(){
     waveMode: (document.getElementById('f_waveMode')||{}).value || '2',
     cycleLength: (document.getElementById('f_cycleLength')||{}).value.trim() || '21',
     manualCycleDay: (document.getElementById('f_manualCycleDay')||{}).value.trim(),
+    aiCountCurrent: (document.getElementById('f_aiCountCurrent')||{}).value.trim(),
   };
   if(oldId===null){
     DATA.animals.push({ animalId:newId, owner, ...fields });
@@ -2886,6 +2902,16 @@ const ACTIONS = {
     if(!a) return;
     a.fattening = !a.fattening;
     toast(a.fattening ? '비육전환했어요. 번식 진료 대상에서 제외돼요.' : '번식 대상으로 복귀했어요.');
+    saveState(); renderMain();
+  },
+  adjustAiCount: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===ds.id);
+    if(!a) return;
+    const cur = currentAiCount(a, animalRecords(a.animalId));
+    let next = cur + parseInt(ds.delta,10);
+    if(next<0) next = 0;
+    a.aiCountCurrent = String(next);
     saveState(); renderMain();
   },
   deleteAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionDeleteAnimal(ds); },
