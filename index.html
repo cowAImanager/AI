@@ -82,6 +82,8 @@ html[data-theme="dark"] body::before{
 }
 .app{position:relative;z-index:1;}
 button{font-family:inherit;}
+body,button,input,select,textarea{word-break:keep-all;overflow-wrap:break-word;}
+.status-badge{white-space:nowrap;}
 .app{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
 
 /* ---------- header ---------- */
@@ -89,7 +91,7 @@ header.topbar{padding:20px 20px 0;background:var(--bg);}
 .title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .title-row h1{font-weight:900;font-size:20px;margin:0;letter-spacing:-0.02em;color:var(--primary-dark);}
 .title-row .sub{font-size:11.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.8;}
-.header-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .status-badge{font-size:11px;color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-weight:600;}
 .theme-toggle{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface-alt);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0;}
 .theme-toggle:hover{background:var(--surface);}
@@ -103,8 +105,9 @@ header.topbar{padding:20px 20px 0;background:var(--bg);}
 .owner-tab.allsched-tab{background:var(--primary-dark);}
 .owner-tab.addnew:hover{background:var(--surface-alt);}
 
-.subnav{display:flex;gap:20px;padding:14px 20px 0;align-items:center;}
-.subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;}
+.subnav{display:flex;gap:20px;padding:14px 20px 0;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.subnav::-webkit-scrollbar{display:none;}
+.subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto;}
 .subnav button.active{color:var(--primary-dark);border-color:var(--accent);}
 
 main{flex:1;padding:18px 20px 70px;}
@@ -123,7 +126,7 @@ main{flex:1;padding:18px 20px 70px;}
 .btn.secondary{background:var(--surface-alt);color:var(--ink);border:1px solid var(--line);}
 .btn.ghost{background:transparent;color:var(--primary-dark);border:1px solid var(--primary);}
 .btn.danger{background:var(--surface);color:var(--accent);border:1px solid var(--accent);}
-.btn.small{padding:5px 11px;font-size:12px;border-radius:7px;}
+.btn.small{padding:5px 11px;font-size:12px;border-radius:7px;white-space:nowrap;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 .iconbtn{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:13px;padding:4px 7px;border-radius:6px;}
 .iconbtn:hover{background:var(--surface-alt);color:var(--accent);}
@@ -253,6 +256,23 @@ main{flex:1;padding:18px 20px 70px;}
 .disease-tag.ovary{background:var(--estrus-soft);color:var(--estrus-text);}
 .disease-tag.improved{background:var(--green-soft);color:var(--primary-dark);}
 .disease-tag.activecyst{background:var(--notpregnant-bg,#F7C1C1);color:#791F1F;}
+.preg-tags{display:inline-flex;gap:5px;flex-wrap:wrap;}
+.preg-tag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:7px;white-space:nowrap;}
+.preg-tag.pos{background:var(--green-soft);color:var(--primary-dark);}
+.preg-tag.neg{background:var(--notpregnant-row-bg);color:var(--notpregnant-bg);}
+.preg-tag.rechk{background:var(--tag-yellow);color:#5a4500;}
+.preg-tag.sex{background:var(--estrus-soft);color:var(--estrus-text);}
+.preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
+.preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
+.preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
+.fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
+.fatten-badge.sm{font-size:10px;padding:2px 6px;border-radius:6px;}
+.head-id-wrap{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tag-chip.lg.fattened,.tag-chip.sm.fattened{opacity:.6;text-decoration:line-through;}
+.animal-list-item.fattened{opacity:.62;}
+.animal-list-item.fattened.active{opacity:1;}
+.btn.small.fatten-btn,.btn.fatten-btn{background:#7A3B12;color:#fff;border:none;}
+.btn.fatten-btn:hover{opacity:.88;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
 .pregcheck-row:hover{background:var(--surface-alt);}
 .pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
@@ -607,7 +627,7 @@ function subscribeRemoteIfNeeded(){
 function storageStatusLabel(){
   if(SAVE_LOCKED) return { icon:'⛔', text:'저장 잠금(읽기 실패)' };
   if(STORAGE_MODE==='cloud') return { icon:'☁️', text:'클라우드 저장' };
-  if(STORAGE_MODE==='claude') return { icon:'🧩', text:'아티팩트 저장' };
+  if(STORAGE_MODE==='claude') return null; // 미리보기(아티팩트) 환경 — 배지 숨김
   return { icon:'💾', text:'이 브라우저에만 저장' };
 }
 function buildInitial(){
@@ -842,6 +862,33 @@ function recHasCyst(r){
   const u = [r.ultraUterus, r.ultraOvaryL, r.ultraOvaryR, r.ultrasound].filter(Boolean).join(' ');
   return /낭종/.test(u);
 }
+const VWP_DAYS = 40;   // 분만 후 재수정 휴지기
+function recDate(r){ return dateOnly(r.examDate || r.aiDate || r.estrusDate || ''); }
+function latestCalvingDate(recs){
+  const ds = recs.filter(r => dateOnly(r.calvingDate||'')).map(r => dateOnly(r.calvingDate)).sort();
+  return ds.length ? ds[ds.length-1] : '';
+}
+function latestCalvingRec(recs){
+  const cs = recs.filter(r => dateOnly(r.calvingDate||''))
+    .sort((x,y)=> dateOnly(y.calvingDate).localeCompare(dateOnly(x.calvingDate)));
+  return cs[0] || null;
+}
+// 직전 임신(1차 O) 이후 분만했는지
+function calvedAfterPregnancy(recs){
+  const sorted = recs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+  const o1 = sorted.find(r => (r.pregnant||'').trim().toUpperCase()==='O');
+  if(!o1) return false;
+  const oDate = recDate(o1);
+  const calv = latestCalvingDate(recs);
+  return !!(calv && (!oDate || calv >= oDate));
+}
+function isCurrentlyPregnant(recs){
+  if(!recs || !recs.length) return false;
+  const sorted = recs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+  if((lastNonEmpty(sorted,'pregnant')||'').trim().toUpperCase()!=='O') return false; // 최신 1차가 O 아님(X 재검 등)
+  if(calvedAfterPregnancy(recs)) return false;                                        // 임신 후 분만함
+  return true;
+}
 function cycleDayRange(p){
   const cl=p.clSize, clM=p.clMentioned, f=p.follMax, dom=p.dom, small=p.smallFoll;
   if(!clM && f!=null && f>=12) return [0,0];
@@ -857,6 +904,8 @@ function cycleDayRange(p){
 }
 function estimateCycleToday(animal, recs){
   if(!recs || !recs.length) return null;
+  if(animal && animal.fattening) return { fattenSkip:true };
+  if(isCurrentlyPregnant(recs)) return { pregnantSkip:true };
   // 가장 최근 진료가 낭종(질환 또는 초음파)이면 추정 안 함
   if(recHasCyst(recs[0])) return { cystSkip:true };
   const cycleLen = parseInt(animal.cycleLength,10) || 21;
@@ -887,6 +936,8 @@ function estimateCycleToday(animal, recs){
 function cycleTodayHtml(animal, recs){
   const r = estimateCycleToday(animal, recs);
   if(!r) return '—';
+  if(r.fattenSkip) return `<span style="color:var(--ink-soft);">비육전환 — 추정 안 함</span>`;
+  if(r.pregnantSkip) return `<span style="color:var(--ink-soft);">임신중 — 추정 안 함</span>`;
   if(r.cystSkip) return `<span style="color:var(--ink-soft);">낭종 — 추정 안 함</span>`;
   if(r.needManual) return `<span style="color:var(--ink-soft);">3난포파 · 주기일 입력 필요</span>`;
   if(r.undetermined) return `<span style="color:var(--ink-soft);">${r.cyst?'낭종 — 추정 제외':'초음파로 판정 불가'}</span>`;
@@ -901,8 +952,8 @@ function animalListData(){
   const listHtml = animals.map(a => {
     const last = lastRecordDate(a.animalId);
     return `
-    <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
-      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span><span class="tag-chip sm">${esc(a.animalId)}</span></span>
+    <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''} ${a.fattening?'fattened':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
+      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span><span class="tag-chip sm">${esc(a.animalId)}</span>${a.fattening?`<span class="fatten-badge sm">🥩 비육</span>`:''}</span>
       <span class="animal-meta">
         <span>산차 ${esc(a.parity||'—')}</span>
         <span>${ageMonths(a.birth)}</span>
@@ -926,7 +977,7 @@ function renderAnimalView(){
       detailHtml = `
         <button class="btn secondary small mobile-back" data-action="backToList">← 목록으로</button>
         <div class="animal-detail-head">
-          <span class="tag-chip lg">${esc(a.animalId)}</span>
+          <span class="head-id-wrap"><span class="tag-chip lg ${a.fattening?'fattened':''}">${esc(a.animalId)}</span>${a.fattening?`<span class="fatten-badge">🥩 비육전환</span>`:''}</span>
           <div class="head-actions">
             ${isAdmin()?`<button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
             <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
@@ -960,6 +1011,16 @@ function renderAnimalView(){
             </div>
             <div class="info-row cols1">
               <div class="field"><label>오늘 발정주기 (추정)</label><div class="val">${cycleTodayHtml(a, recs)}</div></div>
+            </div>
+            <div class="info-row cols1">
+              <div class="field"><label>번식 상태</label><div class="val">
+                ${a.fattening
+                  ? `<span class="fatten-badge">🥩 비육전환됨</span> <span style="font-size:12px;color:var(--ink-soft);">번식 진료 대상 아님</span>${isAdmin()?` <button class="btn secondary small" data-action="toggleFattening" data-id="${esc(a.animalId)}">↩ 번식 복귀</button>`:''}`
+                  : (isAdmin()
+                      ? `<button class="btn small fatten-btn" data-action="toggleFattening" data-id="${esc(a.animalId)}">🥩 비육전환</button>`
+                      : `<span style="color:var(--ink-soft);">번식 대상</span>`)
+                }
+              </div></div>
             </div>
           </div>
         </div>
@@ -1030,7 +1091,11 @@ function renderRecordCard(r){
         ${kv('직장검사', rectalSummary(r))}
         ${kv('초음파', ultraSummary(r))}
         ${kv('호르몬처치', r.hormoneTreatment)}
-        ${kv('임신여부', r.pregnant)}
+        ${kv('1차 감정', r.pregnant)}
+        ${kv('2차 감정', r.pregnant2)}
+        ${kv('성 감정', r.fetalSex)}
+        ${kv('분만일', r.calvingDate?fmtShort(r.calvingDate):'')}
+        ${kv('송아지 성별', r.calfSex)}
         ${kv('수정횟수', r.aiCount)}
         ${kv('내수정횟수', r.inHouseAiCount)}
         ${kv('농가수정횟수', r.farmAiCount)}
@@ -1120,10 +1185,11 @@ function buildAutoSchedule(owner){
 
   // 발정주기 예측 → 예상 발정일 ±1일에 '발정확인' 자동 추가
   DATA.animals.filter(a=>a.owner===owner).forEach(a => {
+    if(a.fattening) return;                                                  // 비육전환 개체 제외
     const recs = DATA.records.filter(r=>r.owner===owner && r.animalId===a.animalId)
       .sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     if(!recs.length) return;
-    if((lastNonEmpty(recs,'pregnant')||'').trim().toUpperCase()==='O') return; // 임신 확정 제외
+    if(isCurrentlyPregnant(recs)) return;                                    // 임신 중(분만 전) 제외
     const est = estimateCycleToday(a, recs);
     if(!est || typeof est.day!=='number' || !est.baseDate) return;            // 낭종/판정불가/수동미입력 제외
     const cycleLen = est.cycleLen;
@@ -1291,39 +1357,77 @@ function renderPregCheckView(){
   animals.forEach(a => {
     const allRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
     const aiRecs = allRecs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    // 임신여부가 적힌 기록 중 가장 최근 것 (날짜 없는 기록도 인정)
-    const pregRecs = allRecs.filter(r => (r.pregnant||'').trim()).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    const pregRec = pregRecs[0] || null;
-    const pregnant = pregRec ? pregRec.pregnant : '';
-    // 수정기록도 없고 임신표기도 없으면 제외
-    if(!aiRecs.length && !pregnant) return;
+    const sorted = allRecs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
+    // 각 감정의 가장 최근 값 (서로 다른 진료에 있을 수 있어 개별로 찾음)
+    const preg1 = (lastNonEmpty(sorted,'pregnant')||'').trim();
+    const preg2 = (lastNonEmpty(sorted,'pregnant2')||'').trim();
+    const fsex  = (lastNonEmpty(sorted,'fetalSex')||'').trim();
+    // 수정기록도 없고 감정 표기도 전혀 없으면 제외
+    if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs)) return;
     const aiRec = aiRecs[0] || null;
     const aiD = aiRec ? dateOnly(aiRec.aiDate) : '';
     const days = aiD ? Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000) : null;
-    const recordForEdit = pregRec || aiRec;
-    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days, pregnant });
+    const isPreg = isCurrentlyPregnant(allRecs);
+    const calved = calvedAfterPregnancy(allRecs);
+    const calvRec = latestCalvingRec(allRecs);
+    const calvDate = calvRec ? dateOnly(calvRec.calvingDate) : '';
+    const calfSex = calvRec ? (calvRec.calfSex||'') : '';
+    const expCalv = dateOnly(lastNonEmpty(sorted,'expectedCalving')||'');
+    const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate)) || aiRec || sorted[0];
+    rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv });
   });
   rows.sort((x,y)=> (y.days==null?-1:y.days) - (x.days==null?-1:x.days));
 
-  const pregnant = rows.filter(r => (r.pregnant||'').trim().toUpperCase() === 'O');
-  const active   = rows.filter(r => (r.pregnant||'').trim().toUpperCase() !== 'O');
+  const pregnant = rows.filter(r => r.isPreg);
+  const active   = rows.filter(r => !r.isPreg);
 
   const renderRow = row => {
-    const preg = (row.pregnant||'').trim().toUpperCase();
-    const isNotPregnant = preg==='X';
-    const isPregnant = preg==='O';
-    const needsCheck = !row.pregnant && row.days!=null && row.days>=30;
+    const p1 = (row.preg1||'').trim().toUpperCase();
+    const p2 = (row.preg2||'').trim().toUpperCase();
+    const isNotPregnant = p1==='X' && !row.isPreg && !row.calved;
+    const needsCheck = !row.preg1 && !row.calved && row.days!=null && row.days>=30;
     let rowClass = '';
+    if(row.calved) rowClass='confirmed';
+    else if(row.isPreg) rowClass='confirmed';
+    else if(isNotPregnant) rowClass='notpregnant';
+    else if(needsCheck) rowClass='overdue';
+
+    const tags = [];
+    if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
+    if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
+    if(row.fsex)  tags.push(`<span class="preg-tag sex">성 ${esc(row.fsex)}</span>`);
+
     let badge = '';
-    if(isNotPregnant){ rowClass='notpregnant'; badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`; }
-    else if(needsCheck){ rowClass='overdue'; badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`; }
-    else if(isPregnant){ rowClass='confirmed'; badge = `<span class="pregcheck-badge confirmed">✅ 임신중</span>`; }
+    if(row.calved){
+      const pp = daysBetween(row.calvDate, todayStr());
+      const vwp = pp < VWP_DAYS ? `재수정 대기 D-${VWP_DAYS-pp}` : '재수정 가능';
+      tags.length = 0; // 분만완료 행은 분만 정보 위주로
+      tags.push(`<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
+      if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
+      tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
+      badge = `<span class="pregcheck-badge confirmed">🐮 분만완료</span>`;
+    } else if(row.isPreg){
+      if(row.expCalv){
+        const dd = daysBetween(todayStr(), row.expCalv);
+        if(dd >= 0) tags.push(`<span class="preg-tag due">분만 D-${dd}</span>`);
+        else { tags.push(`<span class="preg-tag overdue">분만예정 ${-dd}일 지남</span>`); rowClass='overdue'; }
+      }
+      badge = (!row.calved && row.expCalv && daysBetween(todayStr(), row.expCalv) < 0)
+        ? `<span class="pregcheck-badge">🔴 분만 확인 필요</span>`
+        : `<span class="pregcheck-badge confirmed">✅ 임신중</span>`;
+    } else if(isNotPregnant){
+      badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`;
+    } else if(needsCheck){
+      badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`;
+    }
+
     return `
     <div class="pregcheck-row ${rowClass}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip">${esc(row.animalId)}</span>
       <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
-      ${row.days!=null?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
-      ${row.pregnant?`<span class="pregcheck-status">임신여부 ${esc(row.pregnant)}</span>`:''}
+      ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
+      <span class="preg-tags">${tags.join('')}</span>
       ${badge}
     </div>
   `;
@@ -1671,7 +1775,7 @@ function openRecordModal(record, owner, presetAnimalId){
       backfat: record?(record.backfat||''):'', marbling: record?(record.marbling||''):'',
       rectalHorn: record?(record.rectalHorn||''):'', ultraHorn: record?(record.ultraHorn||''):'' } };
   const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiInterval:'',
-    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', estrusSign:'', rectalExam:'',
+    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', estrusSign:'', rectalExam:'',
     ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
     carcass:'', ribeye:'', backfat:'', marbling:'',
     estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusOther:'',
@@ -1725,7 +1829,7 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="fieldset-title">임신감정</div>
       <div class="form-grid">
         <div class="field">
-          <label>임신여부</label>
+          <label>1차 감정</label>
           <input type="text" id="f_pregnant" value="${esc(r.pregnant)}">
           <div class="chips-inline">
             <button type="button" data-action="fillField" data-target="f_pregnant" data-val="O">O (임신)</button>
@@ -1733,7 +1837,43 @@ function openRecordModal(record, owner, presetAnimalId){
             <button type="button" data-action="fillField" data-target="f_pregnant" data-val="재검필요">재검필요</button>
           </div>
         </div>
+        <div class="field">
+          <label>2차 감정</label>
+          <input type="text" id="f_pregnant2" value="${esc(r.pregnant2||'')}">
+          <div class="chips-inline">
+            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="O">O (임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="X">X (비임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="재검필요">재검필요</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>성 감정</label>
+          <input type="text" id="f_fetalSex" value="${esc(r.fetalSex)}">
+          <div class="chips-inline">
+            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="수">수컷</button>
+            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="암">암컷</button>
+            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="불명">불명</button>
+          </div>
+        </div>
       </div>
+
+      <div class="fieldset-title">분만</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>분만일</label>
+          <input type="date" id="f_calvingDate" value="${esc(dateOnly(r.calvingDate||''))}">
+        </div>
+        <div class="field">
+          <label>송아지 성별</label>
+          <input type="text" id="f_calfSex" value="${esc(r.calfSex)}">
+          <div class="chips-inline">
+            <button type="button" data-action="fillField" data-target="f_calfSex" data-val="수">수컷</button>
+            <button type="button" data-action="fillField" data-target="f_calfSex" data-val="암">암컷</button>
+            <button type="button" data-action="fillField" data-target="f_calfSex" data-val="쌍태">쌍태</button>
+          </div>
+        </div>
+      </div>
+      <div class="sync-proto-hint">분만일을 입력하면 그 개체는 임신중에서 빠지고 분만완료로 표시돼요. (산차·최근분만일은 개체정보에서 직접 수정)</div>
 
       <div class="fieldset-title">발정증상</div>
       <div class="form-grid">
@@ -1829,6 +1969,10 @@ function actionSaveRecord(){
     expectedCalving: g('f_expectedCalving').value || null,
     expectedCycle: g('f_expectedCycle').value.trim(),
     pregnant: g('f_pregnant').value.trim(),
+    pregnant2: (g('f_pregnant2')||{value:''}).value.trim(),
+    fetalSex: (g('f_fetalSex')||{value:''}).value.trim(),
+    calvingDate: (g('f_calvingDate')||{value:''}).value || null,
+    calfSex: (g('f_calfSex')||{value:''}).value.trim(),
     estrusVulvar: g('f_estrusVulvar').value.trim(),
     estrusMucus: g('f_estrusMucus').value.trim(),
     estrusContraction: g('f_estrusContraction').value.trim(),
@@ -2613,6 +2757,14 @@ const ACTIONS = {
   backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
   addAnimal: ()=>openAnimalModal(null),
   editAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
+  toggleFattening: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===ds.id);
+    if(!a) return;
+    a.fattening = !a.fattening;
+    toast(a.fattening ? '비육전환했어요. 번식 진료 대상에서 제외돼요.' : '번식 대상으로 복귀했어요.');
+    saveState(); renderMain();
+  },
   deleteAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionDeleteAnimal(ds); },
   addRecord: ds=>{ if(!isAdmin()) return noAdminToast(); openRecordModal(null, UI.owner, ds.id); },
   addRecordGeneric: ()=>{ if(!isAdmin()) return noAdminToast(); openRecordModal(null, UI.owner, null); },
@@ -2835,7 +2987,7 @@ function exportExcel(){
   // ── 시트 1: 진료·수정 기록 ──
   const recHeaders = [
     '축주','개체번호','진료일','발정일시','수정일시','수정간격',
-    '다음발정일','예상분만일','예상발정주기','임신여부',
+    '다음발정일','예상분만일','예상발정주기','1차감정','2차감정','성감정','분만일','송아지성별',
     '발정증상(외음부)','발정증상(점액)','발정증상(자궁수축)','발정증상(기타)',
     '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
     '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
@@ -2852,7 +3004,8 @@ function exportExcel(){
       r.estrusDate || '', r.aiDate || '', r.aiInterval || '',
       r.nextEstrusDate ? r.nextEstrusDate.slice(0,10) : '',
       r.expectedCalving ? r.expectedCalving.slice(0,10) : '',
-      r.expectedCycle || '', r.pregnant || '',
+      r.expectedCycle || '', r.pregnant || '', r.pregnant2 || '', r.fetalSex || '',
+      r.calvingDate ? r.calvingDate.slice(0,10) : '', r.calfSex || '',
       r.estrusVulvar || '', r.estrusMucus || '', r.estrusContraction || '', r.estrusOther || '',
       r.rectalUterus || '', r.rectalOvaryL || '', r.rectalOvaryR || '',
       r.ultraUterus || '', r.ultraOvaryL || '', r.ultraOvaryR || '',
