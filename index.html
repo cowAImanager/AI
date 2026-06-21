@@ -100,6 +100,20 @@ header.topbar{padding:20px 20px 0;background:var(--bg);}
 .owner-tab{padding:9px 18px;border-radius:10px 10px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
 .owner-tab.active{background:var(--surface);color:var(--primary-dark);font-weight:800;box-shadow:0 -2px 8px rgba(0,0,0,.06);}
 .owner-tab.addnew{background:transparent;border:1px dashed var(--line);color:var(--ink-soft);font-weight:600;}
+.owner-tab.fav{background:var(--tag-yellow);color:#5a4500;border-color:var(--tag-yellow);}
+.owner-tab.fav.active{background:var(--surface);color:var(--primary-dark);border-color:var(--line);box-shadow:0 -2px 8px rgba(247,200,67,.45);}
+.owner-tab.manage{background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-weight:600;}
+.owner-tab.archived-view{background:var(--surface-alt);color:var(--ink-soft);border-style:dashed;}
+.ownmg-list{display:flex;flex-direction:column;gap:7px;}
+.ownmg-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);flex-wrap:wrap;}
+.ownmg-row.arch{opacity:.7;background:var(--surface-alt);}
+.ownmg-main{display:flex;flex-direction:column;gap:1px;}
+.ownmg-name{font-weight:800;font-size:14px;}
+.ownmg-sub{font-size:11px;color:var(--ink-soft);}
+.ownmg-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.ownmg-actions .iconbtn.archive{color:var(--accent);}
+.ownmg-actions .iconbtn.restore{color:var(--primary-dark);}
+.ownmg-divider{font-size:12px;font-weight:700;color:var(--ink-soft);margin:14px 0 8px;}
 .owner-tab.calc-tab{background:var(--primary);color:#fff;border-color:var(--primary);margin-right:6px;}
 .owner-tab.calc-tab:hover{opacity:.88;}
 .owner-tab.allsched-tab{background:var(--primary-dark);}
@@ -658,7 +672,16 @@ function ensureOwnerMeta(owner){
   if(!DATA.ownerProfiles) DATA.ownerProfiles = {};
   if(!DATA.ownerProfiles[owner]) DATA.ownerProfiles[owner] = defaultOwnerProfile();
   if(!DATA.completedCells) DATA.completedCells = {};
+  if(!DATA.ownerFlags) DATA.ownerFlags = {};
+  if(!DATA.ownerFlags[owner]) DATA.ownerFlags[owner] = { favorite:false, archived:false };
 }
+function ownerFav(o){ return !!((DATA.ownerFlags||{})[o]||{}).favorite; }
+function ownerArch(o){ return !!((DATA.ownerFlags||{})[o]||{}).archived; }
+function orderedActiveOwners(){
+  const active = DATA.owners.filter(o=>!ownerArch(o));
+  return [...active.filter(ownerFav), ...active.filter(o=>!ownerFav(o))];
+}
+function archivedOwners(){ return DATA.owners.filter(ownerArch); }
 // completedCells 키: "owner|animalId|date"
 function cellKey(owner, aid, date){ return `${owner}|${aid}|${date}`; }
 function isCellDone(owner, aid, date){ return !!(DATA.completedCells||{})[cellKey(owner,aid,date)]; }
@@ -772,11 +795,20 @@ function render(){
 }
 
 function renderOwnerTabs(){
+  DATA.owners.forEach(ensureOwnerMeta);
   let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">📅 분만예정일</div>`;
   html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">📋 전체스케줄</div>`;
-  html += DATA.owners.map(o => `
-    <div class="owner-tab ${o===UI.owner?'active':''}" data-action="setOwner" data-owner="${esc(o)}">${esc(o)}</div>
+  // 현재 보고 있는 축주가 보관됨이면 임시로 보여줌
+  if(ownerArch(UI.owner)){
+    html += `<div class="owner-tab active archived-view" data-action="setOwner" data-owner="${esc(UI.owner)}">📦 ${esc(UI.owner)}</div>`;
+  }
+  html += orderedActiveOwners().map(o => `
+    <div class="owner-tab ${o===UI.owner?'active':''} ${ownerFav(o)?'fav':''}" data-action="setOwner" data-owner="${esc(o)}">${ownerFav(o)?'⭐ ':''}${esc(o)}</div>
   `).join('');
+  const archN = archivedOwners().length;
+  if(isAdmin()){
+    html += `<div class="owner-tab manage" data-action="openOwnerManage">⚙ 축주관리${archN?` · 📦${archN}`:''}</div>`;
+  }
   html += `<div class="owner-tab addnew" data-action="addOwner">+ 축주 추가</div>`;
   return html;
 }
@@ -2739,9 +2771,79 @@ function openBackupModal(){
   if(inp) inp.addEventListener('change', e => { if(e.target.files && e.target.files[0]) handleImportFile(e.target.files[0]); });
 }
 
+/* ============================================================
+   축주 관리 (즐겨찾기 / 순서 / 보관)
+============================================================ */
+function ownerRowManage(o){
+  const fav = ownerFav(o), arch = ownerArch(o);
+  const animN = DATA.animals.filter(a=>a.owner===o).length;
+  return `
+    <div class="ownmg-row ${arch?'arch':''}">
+      <div class="ownmg-main">
+        <span class="ownmg-name">${fav?'⭐ ':''}${esc(o)}</span>
+        <span class="ownmg-sub">개체 ${animN}</span>
+      </div>
+      <div class="ownmg-actions">
+        ${arch ? '' : `<button class="iconbtn" title="즐겨찾기" data-action="toggleOwnerFavorite" data-owner="${esc(o)}">${fav?'⭐':'☆'}</button>
+        <button class="iconbtn" title="위로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="-1">↑</button>
+        <button class="iconbtn" title="아래로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="1">↓</button>`}
+        <button class="iconbtn ${arch?'restore':'archive'}" data-action="toggleOwnerArchive" data-owner="${esc(o)}">${arch?'♻ 복원':'📦 보관'}</button>
+      </div>
+    </div>`;
+}
+function openOwnerManage(){
+  const active = DATA.owners.filter(o=>!ownerArch(o));
+  const arch = archivedOwners();
+  openModal(`
+    <div class="modal" style="max-width:460px;">
+      <h2>축주 관리</h2>
+      <div class="modal-sub" style="margin-bottom:12px;">⭐ 즐겨찾기는 맨 앞에 강조돼요. ↑↓로 순서를 바꾸고, 안 가는 집은 📦 보관하면 탭에서 빠지지만 기록은 그대로 남아요.</div>
+      <div class="ownmg-list">
+        ${active.length ? active.map(ownerRowManage).join('') : `<div class="empty-state">활성 축주가 없어요.</div>`}
+      </div>
+      ${arch.length ? `<div class="ownmg-divider">📦 보관됨 (${arch.length})</div><div class="ownmg-list">${arch.map(ownerRowManage).join('')}</div>` : ''}
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn secondary" data-action="closeModal">닫기</button>
+      </div>
+    </div>
+  `);
+}
+
 const ACTIONS = {
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
   addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
+  openOwnerManage: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerManage(); },
+  toggleOwnerFavorite: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    ensureOwnerMeta(ds.owner);
+    DATA.ownerFlags[ds.owner].favorite = !DATA.ownerFlags[ds.owner].favorite;
+    saveState(); render(); openOwnerManage();
+  },
+  toggleOwnerArchive: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    ensureOwnerMeta(ds.owner);
+    const now = !DATA.ownerFlags[ds.owner].archived;
+    DATA.ownerFlags[ds.owner].archived = now;
+    if(now) DATA.ownerFlags[ds.owner].favorite = false;            // 보관 시 즐겨찾기 해제
+    if(now && UI.owner===ds.owner){                                 // 보던 축주를 보관하면 활성 축주로 이동
+      const active = orderedActiveOwners();
+      if(active.length) UI.owner = active[0];
+    }
+    toast(now ? `${ds.owner} 보관함으로 이동했어요.` : `${ds.owner} 복원했어요.`);
+    saveState(); render(); openOwnerManage();
+  },
+  moveOwner: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const dir = parseInt(ds.dir,10);
+    const owners = DATA.owners;
+    const i = owners.indexOf(ds.owner);
+    if(i<0) return;
+    let j = i + dir;
+    while(j>=0 && j<owners.length && ownerArch(owners[j])) j += dir;   // 보관된 축주 건너뜀
+    if(j<0 || j>=owners.length) return;
+    const t = owners[i]; owners[i] = owners[j]; owners[j] = t;
+    saveState(); render(); openOwnerManage();
+  },
   toggleTheme: ()=>{ DATA.theme = DATA.theme==='dark' ? 'light' : 'dark'; applyTheme(); saveState(); render(); },
   openDueDateCalc: ()=>openDueDateCalc(),
   openAdminLogin: ()=>openAdminLogin(),
