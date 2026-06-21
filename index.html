@@ -182,16 +182,15 @@ main{flex:1;padding:18px 20px 70px;}
 .animal-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
 .head-actions{display:flex;gap:6px;flex-wrap:wrap;}
 .info-grid{display:flex;flex-direction:column;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
-.info-groups{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
-.info-panel{border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:13px;position:relative;overflow:hidden;}
-.info-panel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
-.info-panel.pedigree{background:var(--green-soft);}
-.info-panel.pedigree::before{background:var(--primary);}
-.info-panel.breeding{background:var(--accent-soft);}
-.info-panel.breeding::before{background:var(--accent);}
-.info-panel-title{font-size:11.5px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:5px;}
-.info-panel.pedigree .info-panel-title{color:var(--primary-dark);}
-.info-panel.breeding .info-panel-title{color:var(--ai-text);}
+.info-groups{display:flex;flex-direction:column;gap:0;margin-top:14px;}
+.info-panel{border:none;border-radius:0;padding:16px 0;display:flex;flex-direction:column;gap:14px;position:relative;background:transparent;border-top:1px solid var(--line);}
+.info-panel:first-child{border-top:none;padding-top:4px;}
+.info-panel::before{display:none;}
+.info-panel-title{font-size:12px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:6px;color:var(--ink);}
+.info-panel-title .ic{color:var(--primary);}
+.info-panel.breeding .info-panel-title .ic{color:var(--accent);}
+.info-panel.pedigree .info-panel-title{color:var(--ink);}
+.info-panel.breeding .info-panel-title{color:var(--ink);}
 .info-row{display:grid;gap:12px 18px;}
 .info-row.cols1{grid-template-columns:1fr;}
 .info-row.cols2{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -321,6 +320,7 @@ main{flex:1;padding:18px 20px 70px;}
 .btn.small.fatten-btn,.btn.fatten-btn{background:#7A3B12;color:#fff;border:none;}
 .btn.fatten-btn:hover{opacity:.88;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
+.pregcheck-mid{display:contents;}
 .pregcheck-row:hover{background:var(--surface-alt);}
 .pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
 .pregcheck-date{font-size:13px;color:var(--ink-soft);font-weight:700;}
@@ -581,16 +581,37 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .preg-badge,.fatten-badge,.pregcheck-badge{font-size:11px;padding:4px 9px;border-radius:6px;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed{font-size:11px;padding:4px 9px;}
 
-  /* 임신감정 행 */
+  /* 임신감정 행 — 한 줄 압축 */
   .pregcheck-list{gap:6px;}
-  .pregcheck-row{padding:9px 11px;gap:8px;border-radius:9px;}
+  .pregcheck-row{padding:9px 11px;gap:8px;border-radius:9px;flex-wrap:nowrap;}
+  .pregcheck-row .tag-chip{flex:0 0 auto;}
+  .pregcheck-mid{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:1 1 auto;min-width:0;}
+  .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .pregcheck-mid .pregcheck-days{flex:0 0 auto;}
+  .pregcheck-mid .preg-tags{flex:0 0 auto;}
+  .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
+  .pregcheck-badge{font-size:11px;padding:4px 9px;}
+  .pregcheck-badge.preg{font-size:11px;padding:4px 9px;}
+
+  /* 질환 행 — 한 줄 압축 */
+  .disease-row{flex-wrap:nowrap;gap:8px;overflow:hidden;}
+  .disease-row .tag-chip{flex:0 0 auto;}
+  .disease-date{flex:0 0 auto;}
+  .disease-tags{margin-left:auto;display:flex;gap:6px;flex:0 1 auto;min-width:0;flex-wrap:nowrap;overflow:hidden;}
+  .disease-tags .disease-tag{white-space:nowrap;font-size:11px;padding:4px 9px;}
+  .disease-tags .disease-tag.ovary,.disease-tags .disease-tag.uterine{overflow:hidden;text-overflow:ellipsis;min-width:0;display:block;}
+  .disease-tags .disease-tag.improved,.disease-tags .disease-tag.activecyst{flex:0 0 auto;}
+  .disease-tag .dtag-prefix{display:none;}
 
   /* 개체 상세 — 혈통/번식 정보 패널 */
-  .info-panel{padding:10px 12px;gap:9px;border-radius:8px;}
-  .info-row{gap:8px 10px;}
-  .info-row .field label{font-size:10px;margin-bottom:1px;}
-  .info-row .field .val{font-size:13px;}
-  .info-panel-title{font-size:11px;}
+  .info-panel{padding:13px 0;gap:11px;}
+  .info-row{gap:9px 12px;}
+  .info-row .field label{font-size:10px;margin-bottom:2px;}
+  .info-row .field .val{font-size:13.5px;}
+  .info-panel-title{font-size:11.5px;}
+  .ai-stepper{gap:6px;}
+  .ai-stepper .iconbtn.step{width:25px;height:25px;font-size:15px;border-radius:6px;}
+  .ai-stepper .ai-count-num{font-size:15px;min-width:16px;}
 
   /* 날짜별 카드 더 조밀하게 */
   .data-table tr{padding:9px 11px;margin-bottom:7px;border-radius:8px;}
@@ -796,6 +817,7 @@ function svgIcon(name, size){
     noEntry:'<circle cx="12" cy="12" r="9"/><path d="M6.5 12h11"/>',
     arrowUp:'<path d="M12 20V5M6 11l6-6 6 6"/>',
     arrowDown:'<path d="M12 4v15M6 13l6 6 6-6"/>',
+    dna:'<path d="M8 3c0 5 8 5 8 9.5S8 17 8 21"/><path d="M16 3c0 5-8 5-8 9.5S16 17 16 21"/><path d="M9.2 7h5.6M9.2 17h5.6"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8 5.9 18.1M18.1 5.9 19.8 4.2"/>',
     moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>'
   };
@@ -1263,7 +1285,7 @@ function renderAnimalView(){
         </div>
         <div class="info-groups">
           <div class="info-panel pedigree">
-            <div class="info-panel-title">🧬 혈통 · 기본정보</div>
+            <div class="info-panel-title">${svgIcon('dna',16)} 혈통 · 기본정보</div>
             <div class="info-row cols3">
               <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
               <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
@@ -1276,7 +1298,7 @@ function renderAnimalView(){
             </div>
           </div>
           <div class="info-panel breeding">
-            <div class="info-panel-title">📋 번식 정보</div>
+            <div class="info-panel-title">${svgIcon('clipboard',16)} 번식 정보</div>
             <div class="info-row cols4">
               <div class="field"><label>산차</label><div class="val">
                 ${isAdmin()
@@ -1778,9 +1800,11 @@ function renderPregCheckView(){
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
-      <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
-      ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
-      <span class="preg-tags">${tags.join('')}</span>
+      <span class="pregcheck-mid">
+        <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
+        ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
+        <span class="preg-tags">${tags.join('')}</span>
+      </span>
       ${badge}${fattenBadge}
     </div>
   `;
@@ -1877,21 +1901,20 @@ function renderDiseaseView(){
   const rows = recs.map(r => {
     const d = dkey(r);
     const tags = [];
-    if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine">자궁 · ${esc(r.uterineDisease.trim())}</span>`);
+    if((r.uterineDisease||'').trim()) tags.push(`<span class="disease-tag uterine"><span class="dtag-prefix">자궁 · </span>${esc(r.uterineDisease.trim())}</span>`);
     if((r.ovarianDisease||'').trim()){
-      tags.push(`<span class="disease-tag ovary">난소 · ${esc(r.ovarianDisease.trim())}</span>`);
+      tags.push(`<span class="disease-tag ovary"><span class="dtag-prefix">난소 · </span>${esc(r.ovarianDisease.trim())}</span>`);
     } else if(recHasCyst(r)){
-      // 난소질환 칸은 비었지만 초음파 등에 낭종이 적힌 경우: 종류 + 적어둔 내용
-      const detail = (r.ultraOvaryL||r.ultraOvaryR||r.ultrasound||'').trim();
-      tags.push(`<span class="disease-tag ovary">난소 · ${esc(cystType(r))}${detail?' ('+esc(detail)+')':''}</span>`);
+      // 난소질환 칸은 비었지만 초음파 등에 낭종이 적힌 경우: 종류만 (상세 소견은 행 클릭 시 확인)
+      tags.push(`<span class="disease-tag ovary"><span class="dtag-prefix">난소 · </span>${esc(cystType(r))}</span>`);
     }
     if(recHasCyst(r)){
       const latest = animalRecords(r.animalId)[0];
       const resolved = latest && !recHasCyst(latest);
       const ct = cystType(r);
       tags.push(resolved
-        ? `<span class="disease-tag improved">${svgIcon('checkCircle',13)} ${esc(ct)} 호전</span>`
-        : `<span class="disease-tag activecyst">🔴 ${esc(ct)} 진행중</span>`);
+        ? `<span class="disease-tag improved" title="${esc(ct)} 호전">${svgIcon('checkCircle',13)} 호전</span>`
+        : `<span class="disease-tag activecyst" title="${esc(ct)} 진행중">🔴 진행중</span>`);
     }
     return `
     <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
