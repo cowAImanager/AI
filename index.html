@@ -349,6 +349,9 @@ main{flex:1;padding:18px 20px 70px;}
 .seg button{border:none;background:var(--surface);padding:8px 14px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
 .seg button.active{background:var(--primary);color:#fff;}
 .toolbar input[type=date]{padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--surface);}
+.date-field{position:relative;display:inline-flex;align-items:center;}
+.date-field .date-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:none;background:var(--ink-soft);color:#fff;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:.7;}
+.date-field .date-clear:hover{opacity:1;}
 .toolbar .search-input{width:200px;margin-bottom:0;}
 
 .data-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border-radius:6px;overflow:hidden;table-layout:fixed;}
@@ -543,14 +546,73 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#262420;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.25);}
 
 @media (max-width:600px){
-  .toolbar{gap:8px;}
+  /* 정보 밀도 ↑ — 한 화면에 더 많이 */
+  main{padding:12px 12px 60px;}
+  .panel{padding:11px;border-radius:9px;}
+  .toolbar{gap:7px;margin-bottom:10px;}
   .toolbar .seg{width:100%;}
-  .toolbar .seg button{flex:1;}
-  .toolbar input[type=date]{flex:1;min-width:0;}
+  .toolbar .seg button{flex:1;padding:7px 10px;font-size:12.5px;}
+  .toolbar .date-field{flex:1;min-width:0;}
+  .toolbar input[type=date]{width:100%;min-width:0;padding:7px 8px;}
   .toolbar .search-input{width:100%;}
-  .preg-stat{padding:12px 8px;}
-  .preg-stat-num{font-size:22px;}
-  .preg-stat-label{font-size:11px;}
+  .section-title{font-size:14.5px;margin:16px 0 8px;padding-bottom:4px;}
+  .section-title::before{height:14px;}
+
+  /* 통계 카드 */
+  .preg-summary{gap:7px;margin-bottom:12px;}
+  .preg-stat{padding:9px 6px;border-radius:9px;}
+  .preg-stat-num{font-size:19px;}
+  .preg-stat-label{font-size:10px;margin-top:4px;line-height:1.25;}
+  .preg-stat-sub{font-size:9px;margin-top:2px;}
+
+  /* 칩 */
+  .tag-chip{font-size:11px;padding:3px 8px 3px 11px;}
+  .tag-chip.lg{font-size:14px;padding:6px 11px 6px 14px;}
+  .tag-chip.sm{font-size:10.5px;padding:3px 7px 3px 10px;}
+
+  /* 배지 */
+  .preg-badge,.fatten-badge,.pregcheck-badge{font-size:11px;padding:4px 9px;border-radius:6px;}
+  .pregcheck-badge.preg,.pregcheck-badge.confirmed{font-size:11px;padding:4px 9px;}
+
+  /* 임신감정 행 */
+  .pregcheck-list{gap:6px;}
+  .pregcheck-row{padding:9px 11px;gap:8px;border-radius:9px;}
+
+  /* 개체 상세 — 혈통/번식 정보 패널 */
+  .info-panel{padding:10px 12px;gap:9px;border-radius:8px;}
+  .info-row{gap:8px 10px;}
+  .info-row .field label{font-size:10px;margin-bottom:1px;}
+  .info-row .field .val{font-size:13px;}
+  .info-panel-title{font-size:11px;}
+
+  /* 날짜별 카드 더 조밀하게 */
+  .data-table tr{padding:9px 11px;margin-bottom:7px;border-radius:8px;}
+  .data-table td{font-size:12.5px;padding:2px 0;}
+
+  /* 목록(개체 목록) 행 */
+  .animal-list-item{padding:7px 8px;gap:3px;}
+
+  /* 축사정보 (축주 정보) 컴팩트 */
+  .info-grid{gap:8px;margin-top:10px;padding-top:10px;}
+  .kv-display-list{gap:4px;}
+  .kv-display-row{padding:6px 10px;font-size:12.5px;border-radius:7px;}
+  .head-actions .btn.small{padding:5px 9px;font-size:11.5px;}
+
+  /* 날짜 필터 비우기 버튼 */
+  .date-field .date-clear{right:5px;}
+
+  /* 상단 헤더·탭 조이기 */
+  header.topbar{margin:0 12px;padding:11px 12px 0;}
+  .title-row h1{font-size:16px;gap:6px;}
+  .title-row h1 .brand-badge svg{width:22px;height:22px;}
+  .header-actions{gap:5px;}
+  .header-actions .btn.small{padding:5px 8px;font-size:11.5px;}
+  .header-actions .theme-toggle{width:28px;height:28px;font-size:13px;}
+  .status-badge{font-size:10px;padding:3px 8px;}
+  .owner-tabs{gap:4px;margin-top:10px;}
+  .owner-tab{padding:6px 12px;font-size:12.5px;border-radius:8px 8px 0 0;}
+  .subnav{gap:14px;padding:10px 0 0;}
+  .subnav button{font-size:13px;padding:5px 1px 9px;}
 }
 @media (max-width:540px){
   .modal{padding:18px;border-radius:14px;}
@@ -1360,9 +1422,9 @@ function renderDateView(){
         <button class="${UI.dateMode==='exam'?'active':''}" data-action="setDateMode" data-mode="exam">진료일시 기준</button>
         <button class="${UI.dateMode==='ai'?'active':''}" data-action="setDateMode" data-mode="ai">수정일시 기준</button>
       </div>
-      <input type="date" id="dateFromInput" value="${UI.dateFrom}">
+      <div class="date-field"><input type="date" id="dateFromInput" value="${UI.dateFrom}">${UI.dateFrom?`<button class="date-clear" data-action="clearDateFrom" title="시작일 지우기">✕</button>`:''}</div>
       <span style="color:var(--ink-soft);font-size:13px;">~</span>
-      <input type="date" id="dateToInput" value="${UI.dateTo}">
+      <div class="date-field"><input type="date" id="dateToInput" value="${UI.dateTo}">${UI.dateTo?`<button class="date-clear" data-action="clearDateTo" title="종료일 지우기">✕</button>`:''}</div>
       <input class="search-input" id="dateSearchInput" placeholder="개체번호 검색..." value="${esc(UI.dateSearch)}" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
       <button class="btn secondary small" data-action="resetDateFilters">필터 초기화</button>
       ${isAdmin()?'<button class="btn small" data-action="addRecordGeneric" style="margin-left:auto;">+ 기록 추가</button>':''}
@@ -3213,6 +3275,8 @@ const ACTIONS = {
   deleteRecordInModal: ()=>{ if(!isAdmin()) return noAdminToast(); closeModal(); actionDeleteRecord(modalCtx.id); },
   setDateMode: ds=>{ UI.dateMode=ds.mode; renderMain(); },
   resetDateFilters: ()=>{ UI.dateFrom=''; UI.dateTo=''; UI.dateSearch=''; renderMain(); },
+  clearDateFrom: ()=>{ UI.dateFrom=''; renderMain(); },
+  clearDateTo: ()=>{ UI.dateTo=''; renderMain(); },
   shiftRange: ds=>{ const r=DATA.scheduleRange[UI.owner]; const n=parseInt(ds.dir,10); r.start=addDays(r.start,n); r.end=addDays(r.end,n); saveState(); renderMain(); },
   extendRange: ()=>{ const r=DATA.scheduleRange[UI.owner]; r.end=addDays(r.end,7); saveState(); renderMain(); },
   addScheduleAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionAddScheduleAnimal(); },
