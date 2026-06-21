@@ -135,6 +135,8 @@ main{flex:1;padding:18px 20px 70px;}
 .tag-chip.lg::before{width:6px;}
 .tag-chip.sm{font-size:12px;padding:4px 10px 4px 14px;}
 .tag-chip.sm::before{width:4px;}
+.tag-chip[data-animal-id]{cursor:pointer;}
+.tag-chip[data-animal-id]:hover{border-color:var(--primary);background:var(--surface-alt);}
 
 /* ---------- buttons ---------- */
 .btn{background:var(--primary);color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s;}
@@ -301,7 +303,7 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-stage2.disabled{opacity:.4;pointer-events:none;}
 .pregcheck-row.fattened{opacity:.9;}
 .pregcheck-row .fatten-badge.sm{margin-left:6px;}
-.sched-x{background:none;border:none;color:var(--notpregnant-bg,#C0392B);font-size:13px;font-weight:800;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;}
+.sched-x{background:none;border:none;color:var(--notpregnant-bg,#C0392B);font-size:13px;font-weight:800;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;flex-shrink:0;}
 .sched-x:hover{background:rgba(192,57,43,.12);}
 .inline-edit{font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:100%;max-width:150px;}
 .inline-edit:focus{outline:none;border-color:var(--primary);background:var(--surface);}
@@ -1287,7 +1289,7 @@ function dateViewRows(){
 
   return recs.map(r => `
     <tr data-action="editRecord" data-id="${esc(r.id)}">
-      <td><span class="tag-chip sm">${esc(r.animalId)}</span></td>
+      <td><span class="tag-chip sm" data-animal-id="${esc(r.animalId)}">${esc(r.animalId)}</span></td>
       <td>${fmtShort(r.examDate)}</td>
       <td>${fmtShort(r.aiDate)}</td>
       <td><span class="note-trunc">${esc(dateNoteSummary(r))}</span></td>
@@ -1445,7 +1447,7 @@ function renderScheduleAgenda(){
       }
       const tappable = r.manual && isAdmin();
       body += `<div class="allsched-item ${r.done?'done':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
-        <span class="tag-chip sm">${esc(r.aid)}</span>
+        <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
         <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
         <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" title="${r.done?'완료취소':'완료처리'}">✓</button>
         ${(r.isAuto && isAdmin())?`<button class="sched-x" data-action="dismissSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" title="이 자동 일정 숨기기">✕</button>`:''}
@@ -1495,13 +1497,14 @@ function renderScheduleGrid(){
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
           ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="${done?'완료취소':'완료처리'}">✓</button>`:''}
+          ${(isAuto && isAdmin())?`<button class="sched-x" data-action="dismissSchedItem" data-aid="${esc(aid)}" data-date="${d}" title="이 자동 일정 안 함(숨김)">✕</button>`:''}
         </div>
       </td>`;
     }).join('');
     return `<tr>
       <td class="rowhead">
         <div class="rowhead-inner">
-          <span class="tag-chip sm">${esc(aid)}</span>
+          <span class="tag-chip sm" data-animal-id="${esc(aid)}">${esc(aid)}</span>
           <button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">✕</button>
         </div>
       </td>
@@ -1618,7 +1621,7 @@ function renderPregCheckView(){
     const fattenBadge = row.fattening ? `<span class="fatten-badge sm">🥩 비육전환</span>` : '';
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
-      <span class="tag-chip">${esc(row.animalId)}</span>
+      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
       ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
       <span class="preg-tags">${tags.join('')}</span>
@@ -1736,7 +1739,7 @@ function renderDiseaseView(){
     }
     return `
     <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
-      <span class="tag-chip">${esc(r.animalId)}</span>
+      <span class="tag-chip" data-animal-id="${esc(r.animalId)}">${esc(r.animalId)}</span>
       <span class="disease-date">${d?fmtShort(d):'—'}</span>
       <span class="disease-tags">${tags.join('')}</span>
     </div>`;
@@ -2694,10 +2697,11 @@ function allOwnersScheduleHtml(){
     }
     const done = row.done;
     html += `<div class="allsched-item ${done?'done':''} ${row.isAuto?'auto':''}">
-      <span class="tag-chip sm">${esc(row.aid)}</span>
+      <span class="tag-chip sm" data-animal-id="${esc(row.aid)}" data-owner="${esc(row.owner)}">${esc(row.aid)}</span>
       <span class="allsched-owner">${esc(row.owner)}</span>
       <span class="allsched-note">${esc(row.note)}</span>
       <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="${done?'완료취소':'완료처리'}">✓</button>
+      ${isAdmin()?`<button class="sched-x" data-action="cancelSchedAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" data-manual="${row.manual?1:''}" title="${row.manual?'이 일정 삭제':'이 자동 일정 안 함(숨김)'}">✕</button>`:''}
     </div>`;
   });
   return html;
@@ -3190,6 +3194,18 @@ const ACTIONS = {
     }
   },
   toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
+  cancelSchedAll: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    if(ds.manual){
+      DATA.schedule = DATA.schedule.filter(s=>!(s.owner===ds.owner && s.animalId===ds.aid && s.date===ds.date));
+      toast('일정을 삭제했어요.');
+    } else {
+      dismissCell(ds.owner, ds.aid, ds.date);
+      toast('자동 일정을 숨겼어요. (원본 기록은 유지)');
+    }
+    saveState();
+    const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml();
+  },
   insertChip: ds=>actionInsertChip(ds.code),
   setSchedMode: ds=>{ UI.schedMode=ds.mode; renderMain(); },
   toggleDoubleAi: ()=>{
@@ -3225,6 +3241,18 @@ const ACTIONS = {
 
 function initEvents(){
   document.addEventListener('click', e=>{
+    const chip = e.target.closest('.tag-chip[data-animal-id]');
+    if(chip){
+      e.preventDefault();
+      const id = chip.dataset.animalId;
+      const owner = chip.dataset.owner;
+      if(owner && DATA.owners.includes(owner)) UI.owner = owner;
+      if(document.getElementById('modalRoot')) closeModal();
+      UI.view = 'animal';
+      UI.selectedAnimal = id;
+      renderMain();
+      return;
+    }
     const el = e.target.closest('[data-action]');
     if(!el) return;
     const action = el.dataset.action;
