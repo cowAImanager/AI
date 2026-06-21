@@ -357,6 +357,20 @@ main{flex:1;padding:18px 20px 70px;}
 .data-table tr:hover td{background:var(--surface-alt);}
 .data-table .actions{white-space:nowrap;}
 .note-trunc{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+@media (max-width:640px){
+  .data-table{table-layout:auto;border:none;background:transparent;}
+  .data-table colgroup,.data-table thead{display:none;}
+  .data-table,.data-table tbody,.data-table tr,.data-table td{display:block;width:auto;}
+  .data-table tr{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:11px 13px;background:var(--surface);}
+  .data-table td{border:none;padding:3px 0;font-size:13.5px;}
+  .data-table td.empty{display:none;}
+  .data-table td[data-label]:not([data-label=""])::before{content:attr(data-label);display:inline-block;min-width:34px;font-weight:700;color:var(--ink-soft);font-size:11px;margin-right:8px;}
+  .data-table td[data-label=""]{margin-bottom:4px;}
+  .data-table td .note-trunc{white-space:normal;max-width:100%;line-height:1.45;}
+  .data-table td.actions{display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);}
+  .data-table td.actions:empty{display:none;}
+  .data-table td.actions .iconbtn{flex:1;text-align:center;padding:7px 0;border:1px solid var(--line);border-radius:7px;}
+}
 
 /* ---------- schedule ---------- */
 .sched-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
@@ -528,6 +542,16 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#262420;color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.25);}
 
+@media (max-width:600px){
+  .toolbar{gap:8px;}
+  .toolbar .seg{width:100%;}
+  .toolbar .seg button{flex:1;}
+  .toolbar input[type=date]{flex:1;min-width:0;}
+  .toolbar .search-input{width:100%;}
+  .preg-stat{padding:12px 8px;}
+  .preg-stat-num{font-size:22px;}
+  .preg-stat-label{font-size:11px;}
+}
 @media (max-width:540px){
   .modal{padding:18px;border-radius:14px;}
   .form-grid{grid-template-columns:1fr 1fr;}
@@ -1318,13 +1342,11 @@ function dateViewRows(){
 
   return recs.map(r => `
     <tr data-action="editRecord" data-id="${esc(r.id)}">
-      <td><span class="tag-chip sm" data-animal-id="${esc(r.animalId)}">${esc(r.animalId)}</span></td>
-      <td>${fmtShort(r.examDate)}</td>
-      <td>${fmtShort(r.aiDate)}</td>
-      <td><span class="note-trunc">${esc(dateNoteSummary(r))}</span></td>
-      <td class="actions">
-        ${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>`:''}
-      </td>
+      <td data-label=""><span class="tag-chip sm" data-animal-id="${esc(r.animalId)}">${esc(r.animalId)}</span></td>
+      <td data-label="진료" class="${r.examDate?'':'empty'}">${fmtShort(r.examDate)}</td>
+      <td data-label="수정" class="${r.aiDate?'':'empty'}">${fmtShort(r.aiDate)}</td>
+      <td data-label="비고"><span class="note-trunc">${esc(dateNoteSummary(r))}</span></td>
+      <td class="actions">${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}" data-stop="1">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}" data-stop="1">삭제</button>`:''}</td>
     </tr>
   `).join('') || `<tr><td colspan="5"><div class="empty-state">조건에 맞는 기록이 없어요.</div></td></tr>`;
 }
