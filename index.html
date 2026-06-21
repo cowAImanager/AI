@@ -972,7 +972,7 @@ function cycleTodayHtml(animal, recs){
   const r = estimateCycleToday(animal, recs);
   if(!r) return '—';
   if(r.fattenSkip) return `<span style="color:var(--ink-soft);">비육전환 — 추정 안 함</span>`;
-  if(r.pregnantSkip) return `<span class="preg-badge">🤰 임신중</span> <span style="color:var(--ink-soft);font-size:12px;">발정주기 추정 안 함</span>`;
+  if(r.pregnantSkip) return `<span class="preg-badge">🍼 임신중</span> <span style="color:var(--ink-soft);font-size:12px;">발정주기 추정 안 함</span>`;
   if(r.cystSkip) return `<span style="color:var(--ink-soft);">낭종 — 추정 안 함</span>`;
   if(r.needManual) return `<span style="color:var(--ink-soft);">3난포파 · 주기일 입력 필요</span>`;
   if(r.undetermined) return `<span style="color:var(--ink-soft);">${r.cyst?'낭종 — 추정 제외':'초음파로 판정 불가'}</span>`;
@@ -988,7 +988,7 @@ function animalListData(){
     const last = lastRecordDate(a.animalId);
     return `
     <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''} ${a.fattening?'fattened':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
-      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span><span class="tag-chip sm">${esc(a.animalId)}</span>${isCurrentlyPregnant(animalRecords(a.animalId))?`<span class="preg-badge sm">🤰 임신중</span>`:''}${a.fattening?`<span class="fatten-badge sm">🥩 비육</span>`:''}</span>
+      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span><span class="tag-chip sm">${esc(a.animalId)}</span>${isCurrentlyPregnant(animalRecords(a.animalId))?`<span class="preg-badge sm">🍼 임신중</span>`:''}${a.fattening?`<span class="fatten-badge sm">🥩 비육</span>`:''}</span>
       <span class="animal-meta">
         <span>산차 ${esc(a.parity||'—')}</span>
         <span>${ageMonths(a.birth)}</span>
@@ -1012,7 +1012,7 @@ function renderAnimalView(){
       detailHtml = `
         <button class="btn secondary small mobile-back" data-action="backToList">← 목록으로</button>
         <div class="animal-detail-head">
-          <span class="head-id-wrap"><span class="tag-chip lg ${a.fattening?'fattened':''}">${esc(a.animalId)}</span>${isCurrentlyPregnant(recs)?`<span class="preg-badge">🤰 임신중</span>`:''}${a.fattening?`<span class="fatten-badge">🥩 비육전환</span>`:''}</span>
+          <span class="head-id-wrap"><span class="tag-chip lg ${a.fattening?'fattened':''}">${esc(a.animalId)}</span>${isCurrentlyPregnant(recs)?`<span class="preg-badge">🍼 임신중</span>`:''}${a.fattening?`<span class="fatten-badge">🥩 비육전환</span>`:''}</span>
           <div class="head-actions">
             ${isAdmin()?`<button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
             <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
@@ -1450,7 +1450,7 @@ function renderPregCheckView(){
       }
       badge = (!row.calved && row.expCalv && daysBetween(todayStr(), row.expCalv) < 0)
         ? `<span class="pregcheck-badge">🔴 분만 확인 필요</span>`
-        : `<span class="pregcheck-badge preg">🤰 임신중</span>`;
+        : `<span class="pregcheck-badge preg">🍼 임신중</span>`;
     } else if(isNotPregnant){
       badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`;
     } else if(needsCheck){
