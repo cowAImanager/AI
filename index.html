@@ -286,6 +286,8 @@ main{flex:1;padding:18px 20px 70px;}
 .ai-stepper .iconbtn.step{width:30px;height:30px;font-size:18px;font-weight:800;border-radius:8px;background:var(--surface-alt);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;padding:0;}
 .ai-stepper .iconbtn.step:hover{background:var(--primary);color:#fff;border-color:var(--primary);}
 .ai-stepper .ai-count-num{font-size:18px;min-width:20px;text-align:center;color:var(--primary-dark);}
+.dbl-toggle{cursor:pointer;}
+.dbl-toggle.on{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important;}
 .tag-chip.lg.fattened,.tag-chip.sm.fattened{opacity:.6;text-decoration:line-through;}
 .animal-list-item.fattened{opacity:.62;}
 .animal-list-item.fattened.active{opacity:1;}
@@ -444,6 +446,8 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .sched-cell input:focus{background:var(--surface);outline:2px solid var(--tag-yellow);position:relative;z-index:1;}
 
 /* 스케줄 표/목록 토글 + 목록(아젠다) 보기 */
+.sched-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.sched-toolbar .sched-modetoggle{margin-bottom:0;}
 .sched-modetoggle{margin-bottom:14px;}
 .sched-agenda-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .sched-agenda{display:flex;flex-direction:column;gap:4px;}
@@ -862,6 +866,21 @@ function sortKeyOf(r){
   if(!d) return -1;
   return new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime();
 }
+// 개체번호 3번째 그룹 기준 정렬 (예: "002 2029 9407 0" → 9407)
+function animalSortGroup(id){
+  const parts = String(id||'').trim().split(/\s+/);
+  const g = parts.length>=3 ? parts[2] : (parts[parts.length-1]||'');
+  const n = parseInt(g,10);
+  return isNaN(n) ? Infinity : n;
+}
+function sortScheduleIds(ids){
+  const asc = (DATA.scheduleSortDir||'asc') !== 'desc';
+  return ids.slice().sort((a,b)=>{
+    const ka=animalSortGroup(a), kb=animalSortGroup(b);
+    if(ka!==kb) return asc ? ka-kb : kb-ka;
+    return asc ? String(a).localeCompare(String(b)) : String(b).localeCompare(String(a));
+  });
+}
 function lastRecordDate(animalId){
   const recs = animalRecords(animalId);
   if(!recs.length) return null;
@@ -1139,6 +1158,7 @@ function renderRecordCard(r){
         ${kv('직장검사', rectalSummary(r))}
         ${kv('초음파', ultraSummary(r))}
         ${kv('호르몬처치', r.hormoneTreatment)}
+        ${r.doubleAi && r.aiDate2 ? kv('2차 수정일시', fmtShort(r.aiDate2)) : ''}
         ${kv('1차 감정', r.pregnant)}
         ${kv('2차 감정', r.pregnant2)}
         ${kv('성 감정', r.fetalSex)}
@@ -1261,10 +1281,14 @@ function isMobileWidth(){
 function renderScheduleView(){
   ensureOwnerMeta(UI.owner);
   const mode = UI.schedMode || (isMobileWidth() ? 'list' : 'grid');
-  const toggle = `<div class="seg sched-modetoggle">
+  const asc = (DATA.scheduleSortDir||'asc')!=='desc';
+  const toggle = `<div class="sched-toolbar">
+    <div class="seg sched-modetoggle">
       <button class="${mode==='list'?'active':''}" data-action="setSchedMode" data-mode="list">📋 목록</button>
       <button class="${mode==='grid'?'active':''}" data-action="setSchedMode" data-mode="grid">📊 표</button>
-    </div>`;
+    </div>
+    <button class="btn secondary small" data-action="toggleSchedSort" title="개체번호(3번째 그룹) 정렬">번호순 ${asc?'▲ 올림':'▼ 내림'}</button>
+  </div>`;
   return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
 }
 
@@ -1274,7 +1298,7 @@ function scheduleRowsForOwner(owner){
   const range = DATA.scheduleRange[owner];
   const dates = dateRangeArray(range.start, range.end);
   const auto = buildAutoSchedule(owner);
-  const ids = Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto)]));
+  const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto)])));
   const rows = [];
   ids.forEach(aid => {
     dates.forEach(d => {
@@ -1334,7 +1358,7 @@ function renderScheduleGrid(){
 
   // 자동생성 스케줄 계산 (동기화 단계 + 발정 예측)
   const auto = buildAutoSchedule(UI.owner);
-  const animalIds = Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto)]));
+  const animalIds = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto)])));
 
   const header = `<th class="corner">개체번호</th>` + dates.map(d => `
     <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
@@ -1822,7 +1846,7 @@ function openRecordModal(record, owner, presetAnimalId){
       carcass: record?(record.carcass||''):'', ribeye: record?(record.ribeye||''):'',
       backfat: record?(record.backfat||''):'', marbling: record?(record.marbling||''):'',
       rectalHorn: record?(record.rectalHorn||''):'', ultraHorn: record?(record.ultraHorn||''):'' } };
-  const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiInterval:'',
+  const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiDate2:null, doubleAi:false, aiInterval:'',
     nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', estrusSign:'', rectalExam:'',
     ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
     carcass:'', ribeye:'', backfat:'', marbling:'',
@@ -1850,6 +1874,16 @@ function openRecordModal(record, owner, presetAnimalId){
         ${dateOnlyField('진료일시','examDate',r.examDate)}
         ${dtField('발정일시','estrusDate',r.estrusDate)}
         ${dtField('수정일시','aiDate',r.aiDate)}
+        <div class="field">
+          <label>연수정</label>
+          <div class="chips-inline">
+            <button type="button" class="dbl-toggle ${r.doubleAi?'on':''}" id="f_doubleAi_btn" data-action="toggleDoubleAi">${r.doubleAi?'☑':'☐'} 연수정 (한 발정 2회 연속)</button>
+          </div>
+          <input type="hidden" id="f_doubleAi" value="${r.doubleAi?'1':''}">
+        </div>
+        <div id="double-ai-wrap" style="${r.doubleAi?'':'display:none;'}">
+          ${dtField('2차 수정일시','aiDate2',r.aiDate2)}
+        </div>
         <div class="field">
           <label>수정간격</label>
           <input type="text" id="f_aiInterval" value="${esc(r.aiInterval)}">
@@ -2012,6 +2046,8 @@ function actionSaveRecord(){
     examDate: g('f_examDate').value || null,
     estrusDate: combineDT(g('f_estrusDate_date').value, g('f_estrusDate_time').value),
     aiDate: combineDT(g('f_aiDate_date').value, g('f_aiDate_time').value),
+    doubleAi: (g('f_doubleAi')||{value:''}).value==='1',
+    aiDate2: ((g('f_doubleAi')||{value:''}).value==='1') ? combineDT((g('f_aiDate2_date')||{value:''}).value, (g('f_aiDate2_time')||{value:''}).value) : null,
     aiInterval: g('f_aiInterval').value.trim(),
     nextEstrusDate: g('f_nextEstrusDate').value || null,
     expectedCalving: g('f_expectedCalving').value || null,
@@ -2948,6 +2984,17 @@ const ACTIONS = {
   toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
   insertChip: ds=>actionInsertChip(ds.code),
   setSchedMode: ds=>{ UI.schedMode=ds.mode; renderMain(); },
+  toggleDoubleAi: ()=>{
+    const h=document.getElementById('f_doubleAi');
+    const btn=document.getElementById('f_doubleAi_btn');
+    const wrap=document.getElementById('double-ai-wrap');
+    if(!h) return;
+    const on = h.value!=='1';
+    h.value = on?'1':'';
+    if(wrap) wrap.style.display = on?'':'none';
+    if(btn){ btn.classList.toggle('on', on); btn.textContent = (on?'☑':'☐') + ' 연수정 (한 발정 2회 연속)'; }
+  },
+  toggleSchedSort: ()=>{ DATA.scheduleSortDir = (DATA.scheduleSortDir||'asc')==='asc' ? 'desc' : 'asc'; saveState(); renderMain(); },
   addSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(null, null); },
   editSchedItem: ds=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(ds.aid, ds.date); },
   saveSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSchedItem(); },
