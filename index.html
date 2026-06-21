@@ -153,7 +153,7 @@ main{flex:1;padding:18px 20px 70px;}
 .search-input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 
 /* ---------- animal view ---------- */
-.animal-layout{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start;}
+.animal-layout{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;}
 @media (max-width:760px){
   .animal-layout{grid-template-columns:1fr;}
   .animal-layout.has-selection .list-panel{display:none;}
@@ -195,7 +195,8 @@ main{flex:1;padding:18px 20px 70px;}
 .info-row .field .val{font-size:14px;font-weight:600;}
 
 /* 좌측 목록 품종 그림 */
-.list-id-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;row-gap:4px;}
+.list-id-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;}
+.list-id-row .tag-chip{flex:0 0 auto;}
 .list-id-row .tag-chip{flex-shrink:0;}
 .list-id-row .breed-emoji{flex-shrink:0;}
 .list-id-row .preg-badge,.list-id-row .fatten-badge{flex-shrink:0;}
@@ -288,7 +289,7 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
 .preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
 .fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
-.fatten-badge.sm{font-size:10px;padding:2px 6px;border-radius:6px;}
+.fatten-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;gap:2px;letter-spacing:-.02em;}
 .head-id-wrap{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .ai-stepper{display:inline-flex;align-items:center;gap:8px;}
 .ai-stepper .iconbtn.step{width:30px;height:30px;font-size:18px;font-weight:800;border-radius:8px;background:var(--surface-alt);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;padding:0;}
@@ -322,7 +323,7 @@ main{flex:1;padding:18px 20px 70px;}
 .pregcheck-badge.confirmed{background:var(--primary);}
 .pregcheck-badge.preg{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:13px;font-weight:900;padding:6px 13px;border-radius:9px;letter-spacing:.02em;box-shadow:0 2px 8px rgba(26,160,134,.4);}
 .preg-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:8px;white-space:nowrap;letter-spacing:.01em;box-shadow:0 2px 7px rgba(26,160,134,.38);}
-.preg-badge.sm{font-size:10px;padding:2px 7px;border-radius:6px;box-shadow:none;}
+.preg-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;box-shadow:none;gap:2px;letter-spacing:-.02em;}
 .pregcheck-row.notpregnant{background:var(--notpregnant-row-bg);border-color:var(--notpregnant-row-border);}
 .pregcheck-row.confirmed{background:var(--green-soft);border-color:var(--primary);}
 
@@ -2668,7 +2669,7 @@ function openAllSchedule(){
   openModal(`
     <div class="modal" style="max-width:660px;">
       <h2>📋 전체 스케줄</h2>
-      <div class="modal-sub">모든 축주의 스케줄 — 최근 7일 ~ 이후 45일</div>
+      <div class="modal-sub">모든 축주의 스케줄 — 오늘 이후</div>
       <div class="allsched-list" id="allschedList">${allOwnersScheduleHtml()}</div>
       <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
     </div>
@@ -2679,7 +2680,7 @@ function allOwnersScheduleHtml(){
   // 개체별 스케줄과 동일한 규칙(scheduleRowsForOwner): 자동개체 포함·숨긴칸 제외·축주별 설정 범위
   const allRows = [];
   DATA.owners.forEach(owner => {
-    scheduleRowsForOwner(owner).forEach(r => allRows.push({ ...r, owner }));
+    scheduleRowsForOwner(owner).forEach(r => { if(r.date >= today) allRows.push({ ...r, owner }); });
   });
   allRows.sort((a,b)=>a.date.localeCompare(b.date)||(a.owner.localeCompare(b.owner))||(a.aid.localeCompare(b.aid)));
   if(!allRows.length) return `<div class="empty-state">표시할 스케줄이 없어요.</div>`;
