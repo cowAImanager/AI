@@ -127,6 +127,7 @@ header.topbar{padding:16px 20px 0;background:var(--surface);border-bottom:1px so
 .subnav button.active{color:var(--primary-dark);border-color:var(--primary);}
 
 main{flex:1;padding:18px 20px 70px;}
+@media (min-width:769px){ main{padding-left:0;padding-right:0;} }
 
 /* ---------- tag chip (signature element: ear tag) ---------- */
 .tag-chip{display:inline-flex;align-items:center;background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:12.5px;padding:5px 11px 5px 16px;border:1px solid var(--line);border-radius:4px;position:relative;overflow:hidden;box-shadow:none;white-space:nowrap;letter-spacing:0.03em;}
@@ -254,7 +255,8 @@ main{flex:1;padding:18px 20px 70px;}
 
 /* 임신감정 */
 .preg-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
-@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,1fr);} }
+.preg-summary.five{grid-template-columns:repeat(5,1fr);}
+@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,1fr);} .preg-summary.five{grid-template-columns:repeat(2,1fr);} }
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
 .preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;white-space:nowrap;}
@@ -1115,7 +1117,7 @@ function renderAnimalView(){
             <div class="info-row cols4">
               <div class="field"><label>산차</label><div class="val">
                 ${isAdmin()
-                  ? `<input type="number" class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="parity" value="${esc(a.parity)}" min="0" max="20" inputmode="numeric">`
+                  ? `<span class="ai-stepper"><button class="iconbtn step" data-action="adjustAnimalNum" data-id="${esc(a.animalId)}" data-field="parity" data-delta="-1" data-min="0" data-max="20">−</button><b class="ai-count-num">${esc(a.parity)||0}</b><button class="iconbtn step" data-action="adjustAnimalNum" data-id="${esc(a.animalId)}" data-field="parity" data-delta="1" data-min="0" data-max="20">+</button></span>`
                   : (esc(a.parity)||'—')}
               </div></div>
               <div class="field"><label>마지막 분만일</label><div class="val">
@@ -1133,7 +1135,7 @@ function renderAnimalView(){
             <div class="info-row cols2">
               <div class="field"><label>예상발정주기 (일)</label><div class="val">
                 ${isAdmin()
-                  ? `<input type="number" class="inline-edit" data-id="${esc(a.animalId)}" data-animal-field="cycleLength" value="${esc(a.cycleLength||'21')}" min="17" max="26" inputmode="numeric">`
+                  ? `<span class="ai-stepper"><button class="iconbtn step" data-action="adjustAnimalNum" data-id="${esc(a.animalId)}" data-field="cycleLength" data-delta="-1" data-min="17" data-max="26">−</button><b class="ai-count-num">${esc(a.cycleLength||'21')}</b><button class="iconbtn step" data-action="adjustAnimalNum" data-id="${esc(a.animalId)}" data-field="cycleLength" data-delta="1" data-min="17" data-max="26">+</button><span style="font-size:13px;color:var(--ink-soft);">일</span></span>`
                   : (a.cycleLength?esc(a.cycleLength)+'일':(esc(lastNonEmpty(recs,'expectedCycle'))||'—'))}
               </div></div>
               <div class="field"><label>수정 난이도</label><div class="val">
@@ -1622,18 +1624,31 @@ function renderPregCheckView(){
   // 수태율 = '1차 임신감정(O/X)이 난 라운드'만 집계 (미감정 제외, 연수정은 그 라운드 1건, 분만 여부 무관)
   const diagRecs = DATA.records.filter(r => r.owner===UI.owner && ['O','X'].includes((r.pregnant||'').trim().toUpperCase()));
   const diagORecs = diagRecs.filter(r => (r.pregnant||'').trim().toUpperCase()==='O');
-  // 수정(라운드) 기준: 1차감정 1건 = 1라운드, O면 성공
+  // 수정당 수태율: 1차감정 1건 = 1수정, O면 성공
   const totalServices = diagRecs.length;
   const svcSuccess = diagORecs.length;
   const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
-  // 개체 기준: 1차감정 받은 개체 중 O를 받은 적 있는 개체
-  const bred = new Set(diagRecs.map(r=>r.animalId)).size;
-  const cowSuccess = new Set(diagORecs.map(r=>r.animalId)).size;
-  const rateCow = bred ? Math.round(cowSuccess / bred * 100) : 0;
+  // 평균 수정횟수(서비스/수태) = 총 수정 ÷ 수태(O)
+  const avgServices = svcSuccess ? (totalServices / svcSuccess).toFixed(1) : '—';
+  // 첫수정 수태율: 개체별로 1차감정을 시간순 정렬 → 'X 없이 바로 O'로 시작한 시도 비율
+  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const byAnimal = {};
+  diagRecs.forEach(r => { (byAnimal[r.animalId] = byAnimal[r.animalId] || []).push(r); });
+  let fsSuccess = 0, fsTotal = 0;
+  Object.values(byAnimal).forEach(list => {
+    list.sort((a,b)=> dkeyP(a).localeCompare(dkeyP(b)));
+    let xStreak = 0;
+    list.forEach(r => {
+      if((r.pregnant||'').trim().toUpperCase()==='O'){ fsTotal++; if(xStreak===0) fsSuccess++; xStreak = 0; }
+      else { xStreak++; }
+    });
+    if(xStreak > 0) fsTotal++;   // 아직 수태 못 한(재수정 중) 시도도 첫수정 분모에 포함
+  });
+  const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
 
   return `
     <div class="panel">
-      <div class="preg-summary">
+      <div class="preg-summary five">
         <div class="preg-stat">
           <div class="preg-stat-num">${active.length}</div>
           <div class="preg-stat-label">임신감정 대상</div>
@@ -1642,13 +1657,17 @@ function renderPregCheckView(){
           <div class="preg-stat-num">${pregnant.length}</div>
           <div class="preg-stat-label">임신중</div>
         </div>
-        <div class="preg-stat ratecol">
-          <div class="preg-stat-num">${rateCow}%</div>
-          <div class="preg-stat-label">수태율(개체별) <span class="preg-stat-sub">${cowSuccess}/${bred}두</span></div>
-        </div>
         <div class="preg-stat ratecol2">
           <div class="preg-stat-num">${rateSvc}%</div>
-          <div class="preg-stat-label">수태율(수정) <span class="preg-stat-sub">${svcSuccess}/${totalServices}건</span></div>
+          <div class="preg-stat-label">수태율(수정당) <span class="preg-stat-sub">${svcSuccess}/${totalServices}건</span></div>
+        </div>
+        <div class="preg-stat ratecol">
+          <div class="preg-stat-num">${rateFirst}%</div>
+          <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">${fsSuccess}/${fsTotal}건</span></div>
+        </div>
+        <div class="preg-stat">
+          <div class="preg-stat-num">${avgServices}</div>
+          <div class="preg-stat-label">평균 수정횟수 <span class="preg-stat-sub">수태 1건당</span></div>
         </div>
       </div>
       <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
@@ -3094,6 +3113,21 @@ const ACTIONS = {
     if(!a) return;
     a.fattening = !a.fattening;
     toast(a.fattening ? '비육전환했어요. 번식 진료 대상에서 제외돼요.' : '번식 대상으로 복귀했어요.');
+    saveState(); renderMain();
+  },
+  adjustAnimalNum: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===ds.id);
+    if(!a) return;
+    const field = ds.field;
+    const def = (field==='cycleLength') ? 21 : 0;
+    const cur = parseInt(a[field],10);
+    let next = (isNaN(cur)?def:cur) + parseInt(ds.delta,10);
+    const min = ds.min!=null ? parseInt(ds.min,10) : 0;
+    const max = ds.max!=null ? parseInt(ds.max,10) : 999;
+    if(next<min) next = min;
+    if(next>max) next = max;
+    a[field] = String(next);
     saveState(); renderMain();
   },
   adjustAiCount: ds=>{
