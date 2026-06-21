@@ -861,9 +861,10 @@ function animalRecords(animalId){
   return DATA.records.filter(r=>r.owner===UI.owner && r.animalId===animalId)
     .sort((a,b)=> recordSortKey(b) - recordSortKey(a));
 }
-// 한 기록의 이벤트 날짜(진료/발정/수정/2차수정/분만) 중 가장 최신 시각
+// 한 기록에 찍힌 모든 날짜(진료/발정/수정/2차수정/분만/동기화) 중 가장 늦은 날짜 = 정렬 위치
 function recordSortKey(r){
   const cand = [r.examDate, r.estrusDate, r.aiDate, r.aiDate2, r.calvingDate];
+  for(let i=1;i<=SYNC_STEPS;i++) cand.push(r['sync'+i+'Date']);
   const ts = cand.filter(Boolean)
     .map(d => new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime())
     .filter(t => !Number.isNaN(t));
@@ -1187,7 +1188,7 @@ function renderRecordCard(r){
         ${kv('직장검사', rectalSummary(r))}
         ${kv('초음파', ultraSummary(r))}
         ${(r.uterineDisease||'').trim()?`<span class="kv"><b>자궁질환</b> ${esc(r.uterineDisease.trim())}</span>`:''}
-        ${(r.ovarianDisease||'').trim()?`<span class="kv"><b>난소질환</b> ${esc(r.ovarianDisease.trim())}${/낭종/.test(r.ovarianDisease)?` <span class="dbl-badge" style="background:#A32D2D;">낭종</span>`:''}</span>`:''}
+        ${(r.ovarianDisease||'').trim()?`<span class="kv"><b>난소질환</b> ${esc(r.ovarianDisease.trim())}</span>`:''}
         ${kv('호르몬처치', r.hormoneTreatment)}
         ${r.doubleAi && r.aiDate2 ? kv('2차 수정일시', fmtShort(r.aiDate2)) : ''}
         ${kv('1차 감정', r.pregnant)}
