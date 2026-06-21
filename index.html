@@ -861,14 +861,11 @@ function animalRecords(animalId){
   return DATA.records.filter(r=>r.owner===UI.owner && r.animalId===animalId)
     .sort((a,b)=> recordSortKey(b) - recordSortKey(a));
 }
-// 한 기록에 찍힌 모든 날짜(진료/발정/수정/2차수정/분만/동기화) 중 가장 늦은 날짜 = 정렬 위치
+// 기록의 대표 날짜 = 진료일 우선, 없으면 발정→수정→분만→동기화 순. (동기화 미래일정이 진료일을 덮지 않음)
 function recordSortKey(r){
-  const cand = [r.examDate, r.estrusDate, r.aiDate, r.aiDate2, r.calvingDate];
-  for(let i=1;i<=SYNC_STEPS;i++) cand.push(r['sync'+i+'Date']);
-  const ts = cand.filter(Boolean)
-    .map(d => new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime())
-    .filter(t => !Number.isNaN(t));
-  return ts.length ? Math.max(...ts) : -1;
+  const d = r.examDate || r.estrusDate || r.aiDate || r.calvingDate || firstSyncDate(r);
+  if(!d) return -1;
+  return new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime();
 }
 function lastNonEmpty(recs, field){
   for(const r of recs){ if(r[field]) return r[field]; }
