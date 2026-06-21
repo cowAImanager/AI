@@ -308,7 +308,7 @@ main{flex:1;padding:18px 20px 70px;}
 .dbl-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:.02em;vertical-align:middle;}
 .preg-stage2.disabled{opacity:.4;pointer-events:none;}
 .pregcheck-row.fattened{opacity:.9;}
-.pregcheck-row .fatten-badge.sm{margin-left:6px;}
+.pregcheck-row .fatten-badge.sm{margin-left:6px;font-size:12px;padding:5px 11px;border-radius:7px;gap:3px;letter-spacing:-.01em;}
 .sched-x{background:none;border:none;color:var(--notpregnant-bg,#C0392B);font-size:13px;font-weight:800;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;flex-shrink:0;}
 .sched-x:hover{background:rgba(192,57,43,.12);}
 .inline-edit{font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:100%;max-width:150px;}
@@ -585,13 +585,18 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-list{gap:6px;}
   .pregcheck-row{padding:9px 11px;gap:8px;border-radius:9px;flex-wrap:nowrap;}
   .pregcheck-row .tag-chip{flex:0 0 auto;}
-  .pregcheck-mid{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:1 1 auto;min-width:0;}
+  .pregcheck-mid{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:1 1 auto;min-width:0;overflow:hidden;}
+  .pregcheck-mid .pregcheck-date{display:none;}
   .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .pregcheck-mid .pregcheck-days{flex:0 0 auto;}
   .pregcheck-mid .preg-tags{flex:0 0 auto;}
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
-  .pregcheck-badge{font-size:11px;padding:4px 9px;}
-  .pregcheck-badge.preg{font-size:11px;padding:4px 9px;}
+  .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
+  .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant{font-size:10px;padding:3px 7px;}
+  .pregcheck-mid .pregcheck-date{font-size:10.5px;}
+  .pregcheck-mid .pregcheck-days{font-size:11px;}
+  .pregcheck-mid .preg-tags .preg-tag{font-size:9.5px;padding:2px 6px;}
+  .pregcheck-row .fatten-badge.sm{font-size:9px;padding:3px 6px;}
 
   /* 질환 행 — 한 줄 압축 */
   .disease-row{flex-wrap:nowrap;gap:8px;overflow:hidden;}
@@ -1780,7 +1785,7 @@ function renderPregCheckView(){
       tags.push(`<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
       if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
       if(vwp) tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
-      badge = `<span class="pregcheck-badge confirmed">🐮 분만완료</span>`;
+      badge = `<span class="pregcheck-badge confirmed">🐮 <span class="badge-label">분만완료</span></span>`;
     } else if(row.isPreg){
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
@@ -1788,12 +1793,12 @@ function renderPregCheckView(){
         else { tags.push(`<span class="preg-tag overdue">분만예정 ${-dd}일 지남</span>`); rowClass='overdue'; }
       }
       badge = (!row.calved && row.expCalv && daysBetween(todayStr(), row.expCalv) < 0)
-        ? `<span class="pregcheck-badge">🔴 분만 확인 필요</span>`
-        : `<span class="pregcheck-badge preg">🍼 임신중</span>`;
+        ? `<span class="pregcheck-badge">🔴 <span class="badge-label">분만 확인 필요</span></span>`
+        : `<span class="pregcheck-badge preg">🍼 <span class="badge-label">임신중</span></span>`;
     } else if(isNotPregnant){
-      badge = `<span class="pregcheck-badge notpregnant">🟠 비임신${row.fattening?'':' · 재수정 대기'}</span>`;
+      badge = `<span class="pregcheck-badge notpregnant">🟠 <span class="badge-label">비임신${row.fattening?'':' · 재수정 대기'}</span></span>`;
     } else if(needsCheck){
-      badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`;
+      badge = `<span class="pregcheck-badge">🔴 <span class="badge-label">임신감정 필요</span></span>`;
     }
 
     const fattenBadge = row.fattening ? `<span class="fatten-badge sm">🥩 비육전환</span>` : '';
@@ -1801,7 +1806,7 @@ function renderPregCheckView(){
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
-        <span class="pregcheck-date">${row.aiDate?('수정일 '+fmtShort(row.aiDate)):'수정기록 없음'}</span>
+        <span class="pregcheck-date">${row.aiDate?('<span class="pcd-prefix">수정일 </span>'+fmtShort(row.aiDate)):'수정기록 없음'}</span>
         ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
