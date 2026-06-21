@@ -1338,7 +1338,20 @@ function buildAutoSchedule(owner){
       .sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     if(!recs.length) return;
     if(isCurrentlyPregnant(recs)) return;                                    // 임신 중(분만 전) 제외
-    if(awaitingPregOutcome(recs)) return;                                    // 수정 후 감정 결과 대기 중 → 발정확인 안 넣음 (1차 X 뜨면 다시)
+    if(awaitingPregOutcome(recs)){                                           // 수정 후 감정 결과 대기 중
+      const aiRecs = recs.filter(r=>r.aiDate);
+      const latestAi = aiRecs.reduce((m,r)=> (!m || r.aiDate > m.aiDate) ? r : m, null);
+      if(latestAi){
+        const range = DATA.scheduleRange[owner];
+        const end = (range && range.end) ? range.end : addDays(todayStr(), 30);
+        const todayS = todayStr();
+        let d = addDays(dateOnly(latestAi.aiDate), 40);                       // 수정일+40일
+        if(d < todayS) d = todayS;                                           // 이미 지났으면 오늘부터
+        let guard = 0;
+        while(d <= end && guard++ < 400){ add(a.animalId, d, '임신감정'); d = addDays(d, 1); }  // 범위 끝까지 매일
+      }
+      return;                                                                // 발정확인은 안 넣음 (1차 X 뜨면 다시)
+    }
     const est = estimateCycleToday(a, recs);
     if(!est || typeof est.day!=='number' || !est.baseDate) return;            // 낭종/판정불가/수동미입력 제외
     const cycleLen = est.cycleLen;
