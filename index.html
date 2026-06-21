@@ -953,8 +953,11 @@ function calvedAfterPregnancy(recs){
 function isCurrentlyPregnant(recs){
   if(!recs || !recs.length) return false;
   const sorted = recs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-  if((lastNonEmpty(sorted,'pregnant')||'').trim().toUpperCase()!=='O') return false; // 최신 1차가 O 아님(X 재검 등)
-  if(calvedAfterPregnancy(recs)) return false;                                        // 임신 후 분만함
+  const aiRecs = recs.filter(r=>r.aiDate);
+  const latestAiTs = aiRecs.length ? Math.max(...aiRecs.map(sortKeyOf)) : -Infinity;
+  const diagPool = sorted.filter(r => sortKeyOf(r) >= latestAiTs);   // 최근 수정 이후의 감정만
+  if((lastNonEmpty(diagPool,'pregnant')||'').trim().toUpperCase()!=='O') return false; // 최근 수정 후 1차 O 아님
+  if(calvedAfterPregnancy(recs)) return false;                                          // 임신 후 분만함
   return true;
 }
 function cycleDayRange(p){
@@ -1461,10 +1464,12 @@ function renderPregCheckView(){
     const allRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
     const aiRecs = allRecs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     const sorted = allRecs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    // 각 감정의 가장 최근 값 (서로 다른 진료에 있을 수 있어 개별로 찾음)
-    const preg1 = (lastNonEmpty(sorted,'pregnant')||'').trim();
-    const preg2 = (lastNonEmpty(sorted,'pregnant2')||'').trim();
-    const fsex  = (lastNonEmpty(sorted,'fetalSex')||'').trim();
+    // 감정은 '가장 최근 수정 이후'의 것만 현재 상태로 인정 (지난 수정의 감정은 무시)
+    const latestAiTs = aiRecs.length ? sortKeyOf(aiRecs[0]) : -Infinity;
+    const diagPool = sorted.filter(r => sortKeyOf(r) >= latestAiTs);
+    const preg1 = (lastNonEmpty(diagPool,'pregnant')||'').trim();
+    const preg2 = (lastNonEmpty(diagPool,'pregnant2')||'').trim();
+    const fsex  = (lastNonEmpty(diagPool,'fetalSex')||'').trim();
     // 수정기록도 없고 감정 표기도 전혀 없으면 제외
     if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs)) return;
     const aiRec = aiRecs[0] || null;
@@ -1539,8 +1544,9 @@ function renderPregCheckView(){
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
 
-  // 수정 = 수정상세정보의 KPN(정액번호)이 기입된 기록만 카운트
-  const aiServiceRecs = DATA.records.filter(r => r.owner===UI.owner && (r.kpn||'').trim());
+  // 수정 1회 = 실제 수정일(aiDate)과 KPN(정액번호)이 모두 있는 기록만 카운트
+  // (임신감정 기록처럼 KPN만 딸려온 건 제외)
+  const aiServiceRecs = DATA.records.filter(r => r.owner===UI.owner && r.aiDate && (r.kpn||'').trim());
   const totalServices = aiServiceRecs.length;                  // 총 수정횟수
   const bred = new Set(aiServiceRecs.map(r=>r.animalId)).size; // 수정한 두수
   const rateCow = bred ? Math.round(pregnant.length / bred * 100) : 0;
