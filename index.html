@@ -132,6 +132,26 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .subnav::-webkit-scrollbar{display:none;}
 .subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto;}
 .subnav button.active{color:var(--primary-dark);border-color:var(--primary);}
+.global-search-bar{display:flex;align-items:center;gap:7px;margin:10px 0 2px;padding:6px 8px 6px 13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;position:relative;max-width:360px;transition:border-color .15s,box-shadow .15s;}
+.global-search-bar:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring,rgba(0,166,156,.13));}
+.global-search-bar .gs-icon{display:inline-flex;color:var(--ink-soft);flex:0 0 auto;}
+.global-search-bar .gs-icon svg{width:15px;height:15px;}
+.gs-input{flex:1 1 auto;min-width:0;border:none;background:none;font-family:inherit;font-size:13px;color:var(--ink);outline:none;}
+.gs-input::placeholder{color:var(--ink-soft);font-size:12.5px;}
+.gs-clear{flex:0 0 auto;border:none;background:var(--ink-soft);color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;opacity:.65;}
+.gs-clear svg{width:11px;height:11px;}
+.gs-clear:hover{opacity:1;}
+.gs-input:placeholder-shown ~ .gs-clear{display:none;}
+.sr-list{display:flex;flex-direction:column;gap:8px;}
+.sr-row{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--surface);display:flex;flex-direction:column;gap:7px;}
+.sr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sr-owner{font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+.sr-idtag{font-size:11px;font-weight:700;color:var(--primary-dark);background:var(--green-soft);border:1px solid var(--primary);border-radius:6px;padding:2px 7px;}
+.sr-snips{display:flex;flex-direction:column;gap:4px;}
+.sr-snip{font-size:13px;color:var(--ink);line-height:1.4;}
+.sr-snip b{color:var(--ink-soft);font-weight:700;font-size:11.5px;margin-right:5px;}
+.sr-more{font-size:11.5px;color:var(--ink-soft);font-weight:600;}
+.gs-mark{background:var(--tag-yellow);color:#5a4500;border-radius:3px;padding:0 2px;font-weight:700;}
 
 main{flex:1;padding:18px 20px 70px;}
 
@@ -215,7 +235,8 @@ main{flex:1;padding:18px 20px 70px;}
 .breeding-grid{align-items:start;}
 .pair-grid{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:24px;justify-content:start;}
 .breeding-grid .field label{min-height:15px;white-space:nowrap;}
-.breeding-grid .val{min-height:34px;font-size:13px;font-weight:600;}
+.breeding-grid .val{min-height:32px;line-height:32px;font-size:13px;font-weight:600;}
+.breeding-grid .val .kv2-note,.breeding-grid .val > div{line-height:1.35;}
 .breeding-grid .inline-edit,.breeding-grid .inline-edit.num,.breeding-grid .inline-edit.sel,.breeding-grid input[type=date].inline-edit{height:32px;box-sizing:border-box;vertical-align:middle;font-size:13px;}
 .breeding-grid .kv2-unit{vertical-align:middle;font-size:13px;}
 .breeding-grid .cycle-today-main{font-size:13px;font-weight:700;}
@@ -653,6 +674,16 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .ai-stepper .iconbtn.step{width:25px;height:25px;font-size:15px;border-radius:6px;}
   .ai-stepper .ai-count-num{font-size:15px;min-width:16px;}
 
+  /* 진료·수정 기록 카드 — 모바일 축소 */
+  .record-card{padding:11px 12px;margin-top:8px;}
+  .record-body{font-size:12.5px;gap:4px;margin-top:8px;line-height:1.4;}
+  .record-body .kv{gap:6px;padding-bottom:5px;}
+  .record-body .kv b{font-size:11px;min-width:74px;}
+  .date-pill{font-size:10.5px;padding:3px 7px;}
+  .record-dates{gap:6px;}
+  .record-notes{font-size:12.5px;padding:7px 10px;margin-top:6px;line-height:1.4;}
+  .record-card .row1 .iconbtn{font-size:11.5px;padding:3px 7px;}
+
   /* 날짜별 카드 더 조밀하게 */
   .data-table tr{padding:9px 11px;margin-bottom:7px;border-radius:8px;}
   .data-table td{font-size:12.5px;padding:2px 0;}
@@ -763,6 +794,7 @@ let UI = {
   schedMode: null,       // null(자동) | grid | list
   selectedAnimal: null,
   animalSearch: '',
+  globalSearch: '',
   dateMode: 'exam',       // exam | ai
   dateFrom: '',
   dateTo: '',
@@ -858,6 +890,7 @@ function svgIcon(name, size){
     arrowUp:'<path d="M12 20V5M6 11l6-6 6 6"/>',
     arrowDown:'<path d="M12 4v15M6 13l6 6 6-6"/>',
     dna:'<path d="M8 3c0 5 8 5 8 9.5S8 17 8 21"/><path d="M16 3c0 5-8 5-8 9.5S16 17 16 21"/><path d="M9.2 7h5.6M9.2 17h5.6"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8 5.9 18.1M18.1 5.9 19.8 4.2"/>',
     moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>'
   };
@@ -1042,6 +1075,11 @@ function render(){
       </div>
       <div class="owner-tabs">${renderOwnerTabs()}</div>
       <div class="subnav">${renderSubnav()}</div>
+      <div class="global-search-bar">
+        <span class="gs-icon">${svgIcon('search',16)}</span>
+        <input id="globalSearchInput" class="gs-input" placeholder="전체 검색 — 개체번호·비고·질환·소견" value="${esc(UI.globalSearch)}" autocomplete="off">
+        <button class="gs-clear" data-action="clearGlobalSearch" aria-label="검색 지우기">${svgIcon('x',15)}</button>
+      </div>
     </header>
     <main id="main"></main>
   `;
@@ -1076,10 +1114,99 @@ function renderSubnav(){
   `).join('');
 }
 
+/* ============================================================
+   전체 검색 (개체번호·비고·소견·질환·호르몬·축주 등 모든 텍스트)
+============================================================ */
+function gsHighlight(text, q){
+  const e = esc(String(text));
+  const eq = esc(q).trim();
+  if(!eq) return e;
+  try{
+    const re = new RegExp(eq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'ig');
+    return e.replace(re, m=>`<mark class="gs-mark">${m}</mark>`);
+  }catch(err){ return e; }
+}
+function renderSearchResults(){
+  const q = UI.globalSearch.trim();
+  if(!q) return '';
+  const ql = q.toLowerCase();
+  const qn = q.replace(/\s/g,'').toLowerCase();
+  const FIELD_LABELS = {
+    notes:'비고', hormoneTreatment:'호르몬·처치', ultrasound:'초음파', ultraOvaryL:'좌난소',
+    ultraOvaryR:'우난소', uterineDisease:'자궁', ovarianDisease:'난소', estrusInfo:'발정소견',
+    kpn:'KPN', calfSex:'송아지', expectedCycle:'발정주기', memo:'메모', rectalExam:'직장검사'
+  };
+  const SKIP = new Set(['id','owner','animalId','done','skipped']);
+  const groups = {};
+  const ensure = (owner, animalId) => {
+    const k = owner+'|'+animalId;
+    return (groups[k] = groups[k] || { owner, animalId, idHit:false, hits:[] });
+  };
+  // 개체(혈통·번호)
+  DATA.animals.forEach(a => {
+    const idHit = a.animalId.replace(/\s/g,'').toLowerCase().includes(qn);
+    let g = null;
+    if(idHit){ g = ensure(a.owner, a.animalId); g.idHit = true; }
+    ['breed','sire','damSire','damDamSire'].forEach(f => {
+      if((a[f]||'').toLowerCase().includes(ql)){
+        g = g || ensure(a.owner, a.animalId);
+        g.hits.push({ label:({breed:'품종',sire:'부',damSire:'외조부',damDamSire:'외외증조부'})[f], text:a[f] });
+      }
+    });
+  });
+  // 기록(모든 텍스트 필드)
+  DATA.records.forEach(r => {
+    const idHit = (r.animalId||'').replace(/\s/g,'').toLowerCase().includes(qn);
+    const snips = [];
+    for(const k in r){
+      if(SKIP.has(k)) continue;
+      const v = r[k];
+      if(typeof v==='string' && v && v.toLowerCase().includes(ql)){
+        snips.push({ label: FIELD_LABELS[k] || k, text: v });
+      }
+    }
+    if(idHit || snips.length){
+      const g = ensure(r.owner, r.animalId);
+      if(idHit) g.idHit = true;
+      snips.forEach(s => g.hits.push(s));
+    }
+  });
+  const list = Object.values(groups);
+  if(!list.length){
+    return `<div class="panel"><div class="empty-state">'${esc(q)}' 검색 결과가 없어요.<br><span style="font-size:13px;color:var(--ink-soft);">개체번호·비고·소견·질환·호르몬·혈통 등에서 찾아요.</span></div></div>`;
+  }
+  list.sort((a,b) => (b.owner===UI.owner?1:0)-(a.owner===UI.owner?1:0) || a.owner.localeCompare(b.owner) || a.animalId.localeCompare(b.animalId));
+  const rows = list.map(g => {
+    // 중복 스니펫 제거
+    const seen = new Set();
+    const uniq = g.hits.filter(h => { const key=h.label+'|'+h.text; if(seen.has(key)) return false; seen.add(key); return true; });
+    const shown = uniq.slice(0,4);
+    const more = uniq.length - shown.length;
+    const snipHtml = shown.map(h => `<span class="sr-snip"><b>${esc(h.label)}</b> ${gsHighlight(h.text, q)}</span>`).join('');
+    return `
+      <div class="sr-row">
+        <div class="sr-head">
+          <span class="tag-chip" data-animal-id="${esc(g.animalId)}" data-owner="${esc(g.owner)}">${esc(g.animalId)}</span>
+          <span class="sr-owner">${esc(g.owner)}</span>
+          ${g.idHit?'<span class="sr-idtag">개체번호 일치</span>':''}
+        </div>
+        ${snipHtml?`<div class="sr-snips">${snipHtml}${more>0?`<span class="sr-more">+${more}건</span>`:''}</div>`:''}
+      </div>`;
+  }).join('');
+  return `
+    <div class="panel">
+      <div class="section-title"><span>검색 결과 — '${esc(q)}' (${list.length}두)</span></div>
+      <div class="sr-list">${rows}</div>
+    </div>`;
+}
+
 function renderMain(){
-  const main = document.getElementById('main');
   const prevList = document.getElementById('animalListBox');
   const prevScroll = prevList ? prevList.scrollTop : null;
+  if(UI.globalSearch.trim()){
+    main.innerHTML = renderSearchResults();
+    return;
+  }
   if(UI.view==='animal') main.innerHTML = renderAnimalView();
   else if(UI.view==='date') main.innerHTML = renderDateView();
   else if(UI.view==='owner') main.innerHTML = renderOwnerInfoView();
@@ -3362,6 +3489,7 @@ const ACTIONS = {
   deleteRecordInModal: ()=>{ if(!isAdmin()) return noAdminToast(); closeModal(); actionDeleteRecord(modalCtx.id); },
   setDateMode: ds=>{ UI.dateMode=ds.mode; renderMain(); },
   resetDateFilters: ()=>{ UI.dateFrom=''; UI.dateTo=''; UI.dateSearch=''; renderMain(); },
+  clearGlobalSearch: ()=>{ UI.globalSearch=''; const i=document.getElementById('globalSearchInput'); if(i) i.value=''; renderMain(); },
   clearDateFrom: ()=>{ UI.dateFrom=''; renderMain(); },
   clearDateTo: ()=>{ UI.dateTo=''; renderMain(); },
   shiftRange: ds=>{ const r=DATA.scheduleRange[UI.owner]; const n=parseInt(ds.dir,10); r.start=addDays(r.start,n); r.end=addDays(r.end,n); saveState(); renderMain(); },
@@ -3451,6 +3579,7 @@ function initEvents(){
       const owner = chip.dataset.owner;
       if(owner && DATA.owners.includes(owner)) UI.owner = owner;
       if(document.getElementById('modalRoot')) closeModal();
+      if(UI.globalSearch){ UI.globalSearch=''; const gi=document.getElementById('globalSearchInput'); if(gi) gi.value=''; }
       UI.view = 'animal';
       UI.selectedAnimal = id;
       renderMain();
@@ -3474,6 +3603,10 @@ function initEvents(){
       const box=document.getElementById('dateRowsBox');
       if(box){ box.innerHTML=dateViewRows(); }
       else { pendingFocus={id:t.id,pos:t.selectionStart}; renderMain(); }
+    }
+    else if(t.id==='globalSearchInput'){
+      UI.globalSearch=t.value;
+      renderMain();
     }
   });
   document.addEventListener('change', e=>{
