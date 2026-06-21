@@ -132,7 +132,7 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .subnav::-webkit-scrollbar{display:none;}
 .subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto;}
 .subnav button.active{color:var(--primary-dark);border-color:var(--primary);}
-.global-search-bar{display:flex;align-items:center;gap:7px;margin:10px 0 2px;padding:6px 8px 6px 13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;position:relative;max-width:360px;transition:border-color .15s,box-shadow .15s;}
+.global-search-bar{display:flex;align-items:center;gap:7px;margin:0;padding:5px 8px 5px 12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;position:relative;width:190px;transition:border-color .15s,box-shadow .15s;}
 .global-search-bar:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring,rgba(0,166,156,.13));}
 .global-search-bar .gs-icon{display:inline-flex;color:var(--ink-soft);flex:0 0 auto;}
 .global-search-bar .gs-icon svg{width:15px;height:15px;}
@@ -636,7 +636,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-mid .pregcheck-date{display:none;}
   .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .pregcheck-mid .pregcheck-days{flex:0 0 auto;}
-  .pregcheck-mid .preg-tags{flex:0 0 auto;}
+  .pregcheck-mid .preg-tags{flex:0 0 auto;display:none;}
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant{font-size:10px;padding:3px 7px;}
@@ -706,6 +706,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .title-row h1 .brand-badge svg{width:22px;height:22px;}
   .header-actions{gap:5px;}
   .header-actions .btn-label{display:none;}
+  .global-search-bar{flex:1 1 130px;width:auto;min-width:110px;}
   .header-actions .btn.small{padding:5px 9px;font-size:14px;}
   .status-badge .btn-label{display:none;}
   .status-badge{font-size:13px;padding:4px 8px;}
@@ -1062,6 +1063,11 @@ function render(){
       <div class="title-row">
         <h1><span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></span>번식진료기록부 <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">Reproduction Manager</span></h1>
         <div class="header-actions">
+          <div class="global-search-bar">
+            <span class="gs-icon">${svgIcon('search',16)}</span>
+            <input id="globalSearchInput" class="gs-input" placeholder="검색" value="${esc(UI.globalSearch)}" autocomplete="off">
+            <button class="gs-clear" data-action="clearGlobalSearch" aria-label="검색 지우기">${svgIcon('x',15)}</button>
+          </div>
           ${isAdmin()
             ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">${svgIcon('lockOpen')}<span class="btn-label">관리자 모드</span></button>`
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">관리자</span></button>`
@@ -1075,11 +1081,6 @@ function render(){
       </div>
       <div class="owner-tabs">${renderOwnerTabs()}</div>
       <div class="subnav">${renderSubnav()}</div>
-      <div class="global-search-bar">
-        <span class="gs-icon">${svgIcon('search',16)}</span>
-        <input id="globalSearchInput" class="gs-input" placeholder="전체 검색 — 개체번호·비고·질환·소견" value="${esc(UI.globalSearch)}" autocomplete="off">
-        <button class="gs-clear" data-action="clearGlobalSearch" aria-label="검색 지우기">${svgIcon('x',15)}</button>
-      </div>
     </header>
     <main id="main"></main>
   `;
