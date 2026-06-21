@@ -88,7 +88,7 @@ body,button,input,select,textarea{word-break:keep-all;overflow-wrap:break-word;}
 .app{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
 
 /* ---------- header ---------- */
-header.topbar{padding:16px 20px 0;background:var(--surface);border-bottom:1px solid var(--line);border-top:3px solid var(--primary);}
+header.topbar{padding:16px 0 0;margin:0 20px;background:var(--surface);border-bottom:1px solid var(--line);border-top:3px solid var(--primary);}
 .title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .title-row h1{font-weight:900;font-size:20px;margin:0;letter-spacing:-0.02em;color:var(--primary-dark);display:flex;align-items:center;gap:9px;}
 .brand-badge{display:inline-flex;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15));}
@@ -121,13 +121,12 @@ header.topbar{padding:16px 20px 0;background:var(--surface);border-bottom:1px so
 .owner-tab.allsched-tab{background:var(--primary-dark);}
 .owner-tab.addnew:hover{background:var(--surface-alt);}
 
-.subnav{display:flex;gap:20px;padding:14px 20px 0;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.subnav{display:flex;gap:20px;padding:14px 0 0;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .subnav::-webkit-scrollbar{display:none;}
 .subnav button{background:none;border:none;font-size:14px;font-weight:700;color:var(--ink-soft);padding:6px 2px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto;}
 .subnav button.active{color:var(--primary-dark);border-color:var(--primary);}
 
 main{flex:1;padding:18px 20px 70px;}
-@media (min-width:769px){ main{padding-left:0;padding-right:0;} }
 
 /* ---------- tag chip (signature element: ear tag) ---------- */
 .tag-chip{display:inline-flex;align-items:center;background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:12.5px;padding:5px 11px 5px 16px;border:1px solid var(--line);border-radius:4px;position:relative;overflow:hidden;box-shadow:none;white-space:nowrap;letter-spacing:0.03em;}
@@ -254,13 +253,13 @@ main{flex:1;padding:18px 20px 70px;}
 .kv-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 
 /* 임신감정 */
-.preg-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
-.preg-summary.five{grid-template-columns:repeat(5,1fr);}
-@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,1fr);} .preg-summary.five{grid-template-columns:repeat(2,1fr);} }
+.preg-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
+.preg-summary.five{grid-template-columns:repeat(5,minmax(0,1fr));}
+@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));} .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));} }
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
-.preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;white-space:nowrap;}
-.preg-stat-sub{font-weight:700;font-size:10px;color:var(--primary-dark);}
+.preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
+.preg-stat-sub{display:block;margin-top:3px;font-weight:700;font-size:10px;color:var(--primary-dark);white-space:nowrap;}
 .preg-stat.pregcol{background:var(--green-soft);}
 .preg-stat.pregcol .preg-stat-num{color:var(--primary-dark);}
 .preg-stat.ratecol{background:var(--accent-soft);}
@@ -859,12 +858,18 @@ function renderSubnav(){
 
 function renderMain(){
   const main = document.getElementById('main');
+  const prevList = document.getElementById('animalListBox');
+  const prevScroll = prevList ? prevList.scrollTop : null;
   if(UI.view==='animal') main.innerHTML = renderAnimalView();
   else if(UI.view==='date') main.innerHTML = renderDateView();
   else if(UI.view==='owner') main.innerHTML = renderOwnerInfoView();
   else if(UI.view==='pregcheck') main.innerHTML = renderPregCheckView();
   else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
   else main.innerHTML = renderScheduleView();
+  if(prevScroll!=null){
+    const newList = document.getElementById('animalListBox');
+    if(newList) newList.scrollTop = prevScroll;
+  }
   if(pendingFocus){
     const el = document.getElementById(pendingFocus.id);
     if(el){ el.focus(); try{ el.setSelectionRange(pendingFocus.pos, pendingFocus.pos); }catch(e){} }
@@ -1630,19 +1635,25 @@ function renderPregCheckView(){
   const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
   // 평균 수정횟수(서비스/수태) = 총 수정 ÷ 수태(O)
   const avgServices = svcSuccess ? (totalServices / svcSuccess).toFixed(1) : '—';
-  // 첫수정 수태율: 개체별로 1차감정을 시간순 정렬 → 'X 없이 바로 O'로 시작한 시도 비율
+  // 첫수정 수태율: '내수정 1'을 한 수정(=내가 한 그 사이클 첫 수정)이 분모.
+  //   같은 사이클(다음 내수정1 전까지)에 내수정2(재수정)가 없고 임신감정 O면 첫수정 수태.
   const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
-  const byAnimal = {};
-  diagRecs.forEach(r => { (byAnimal[r.animalId] = byAnimal[r.animalId] || []).push(r); });
+  const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
+  const allByAnimal = {};
+  DATA.records.filter(r=>r.owner===UI.owner).forEach(r => { (allByAnimal[r.animalId] = allByAnimal[r.animalId] || []).push(r); });
   let fsSuccess = 0, fsTotal = 0;
-  Object.values(byAnimal).forEach(list => {
+  Object.values(allByAnimal).forEach(list => {
     list.sort((a,b)=> dkeyP(a).localeCompare(dkeyP(b)));
-    let xStreak = 0;
-    list.forEach(r => {
-      if((r.pregnant||'').trim().toUpperCase()==='O'){ fsTotal++; if(xStreak===0) fsSuccess++; xStreak = 0; }
-      else { xStreak++; }
+    const firstIdx = [];
+    list.forEach((r,i)=>{ if(inh(r)==='1' && r.aiDate) firstIdx.push(i); });   // 내수정1 실제수정 = 첫수정
+    firstIdx.forEach((startI, k) => {
+      fsTotal++;
+      const endI = (k+1 < firstIdx.length) ? firstIdx[k+1] : list.length;       // 다음 첫수정 전까지가 한 사이클
+      const cycle = list.slice(startI, endI);
+      const hasReAI = cycle.some(r => { const n = parseInt(inh(r),10); return n >= 2; });   // 재수정(내수정2+) 있었나
+      const hasO = cycle.some(r => (r.pregnant||'').trim().toUpperCase()==='O');             // 그 사이클 임신감정 O
+      if(!hasReAI && hasO) fsSuccess++;
     });
-    if(xStreak > 0) fsTotal++;   // 아직 수태 못 한(재수정 중) 시도도 첫수정 분모에 포함
   });
   const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
 
@@ -1659,15 +1670,15 @@ function renderPregCheckView(){
         </div>
         <div class="preg-stat ratecol2">
           <div class="preg-stat-num">${rateSvc}%</div>
-          <div class="preg-stat-label">수태율(수정당) <span class="preg-stat-sub">${svcSuccess}/${totalServices}건</span></div>
+          <div class="preg-stat-label">수정횟수대비 수태율 <span class="preg-stat-sub">수태 ${svcSuccess} / 수정 ${totalServices}</span></div>
         </div>
         <div class="preg-stat ratecol">
           <div class="preg-stat-num">${rateFirst}%</div>
-          <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">${fsSuccess}/${fsTotal}건</span></div>
+          <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">수태 ${fsSuccess} / 첫수정 ${fsTotal}</span></div>
         </div>
         <div class="preg-stat">
-          <div class="preg-stat-num">${avgServices}</div>
-          <div class="preg-stat-label">평균 수정횟수 <span class="preg-stat-sub">수태 1건당</span></div>
+          <div class="preg-stat-num">${avgServices}<span style="font-size:14px;font-weight:700;">회</span></div>
+          <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${totalServices} / 수태 ${svcSuccess}</span></div>
         </div>
       </div>
       <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
