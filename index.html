@@ -88,7 +88,7 @@ body,button,input,select,textarea{word-break:keep-all;overflow-wrap:break-word;}
 .app{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
 
 /* ---------- header ---------- */
-header.topbar{padding:16px 0 0;margin:0 20px;background:var(--surface);border-bottom:1px solid var(--line);border-top:3px solid var(--primary);}
+header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border-bottom:1px solid var(--line);border-top:3px solid var(--primary);}
 .title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .title-row h1{font-weight:900;font-size:20px;margin:0;letter-spacing:-0.02em;color:var(--primary-dark);display:flex;align-items:center;gap:9px;}
 .brand-badge{display:inline-flex;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15));}
@@ -1636,9 +1636,11 @@ function renderPregCheckView(){
   // 평균 수정횟수(서비스/수태) = 총 수정 ÷ 수태(O)
   const avgServices = svcSuccess ? (totalServices / svcSuccess).toFixed(1) : '—';
   // 첫수정 수태율: '내수정 1'을 한 수정(=내가 한 그 사이클 첫 수정)이 분모.
-  //   같은 사이클(다음 내수정1 전까지)에 내수정2(재수정)가 없고 임신감정 O면 첫수정 수태.
+  //   단, 결과(감정 O 또는 X)가 난 사이클만 분모 — 아직 감정 안 한 대기중은 제외.
+  //   분자: 그 사이클에 재수정(내수정2+) 없이 임신감정 O.
   const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
   const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
+  const pregOf = r => (r.pregnant||'').trim().toUpperCase();
   const allByAnimal = {};
   DATA.records.filter(r=>r.owner===UI.owner).forEach(r => { (allByAnimal[r.animalId] = allByAnimal[r.animalId] || []).push(r); });
   let fsSuccess = 0, fsTotal = 0;
@@ -1647,11 +1649,13 @@ function renderPregCheckView(){
     const firstIdx = [];
     list.forEach((r,i)=>{ if(inh(r)==='1' && r.aiDate) firstIdx.push(i); });   // 내수정1 실제수정 = 첫수정
     firstIdx.forEach((startI, k) => {
-      fsTotal++;
       const endI = (k+1 < firstIdx.length) ? firstIdx[k+1] : list.length;       // 다음 첫수정 전까지가 한 사이클
       const cycle = list.slice(startI, endI);
+      const hasResult = cycle.some(r => pregOf(r)==='O' || pregOf(r)==='X');     // 결과(O/X) 난 사이클만 분모
+      if(!hasResult) return;                                                     // 대기중 첫수정은 제외
+      fsTotal++;
       const hasReAI = cycle.some(r => { const n = parseInt(inh(r),10); return n >= 2; });   // 재수정(내수정2+) 있었나
-      const hasO = cycle.some(r => (r.pregnant||'').trim().toUpperCase()==='O');             // 그 사이클 임신감정 O
+      const hasO = cycle.some(r => pregOf(r)==='O');                             // 그 사이클 임신감정 O
       if(!hasReAI && hasO) fsSuccess++;
     });
   });
@@ -2669,25 +2673,12 @@ function openAllSchedule(){
 }
 function allOwnersScheduleHtml(){
   const today = todayStr();
-  const range = { start: addDays(today,-7), end: addDays(today, 45) };
-  const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
+  // 개체별 스케줄과 동일한 규칙(scheduleRowsForOwner): 자동개체 포함·숨긴칸 제외·축주별 설정 범위
   const allRows = [];
   DATA.owners.forEach(owner => {
-    ensureOwnerMeta(owner);
-    const auto = buildAutoSchedule(owner);
-    const ids = DATA.scheduleAnimals[owner] || [];
-    ids.forEach(aid => {
-      dates.forEach(d => {
-        const manual = DATA.schedule.find(s=>s.owner===owner && s.animalId===aid && s.date===d);
-        const autoEntries = (auto[aid]||{})[d] || [];
-        const note = manual ? manual.note : autoEntries.join(' / ');
-        if(!note) return;
-        const done = isCellDone(owner, aid, d);
-        allRows.push({ owner, aid, date:d, note, done, isAuto:!manual&&!!autoEntries.length });
-      });
-    });
+    scheduleRowsForOwner(owner).forEach(r => allRows.push({ ...r, owner }));
   });
-  allRows.sort((a,b)=>a.date.localeCompare(b.date)||(a.aid.localeCompare(b.aid)));
+  allRows.sort((a,b)=>a.date.localeCompare(b.date)||(a.owner.localeCompare(b.owner))||(a.aid.localeCompare(b.aid)));
   if(!allRows.length) return `<div class="empty-state">표시할 스케줄이 없어요.</div>`;
   let html = '';
   let lastDate = '';
