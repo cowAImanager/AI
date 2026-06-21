@@ -380,6 +380,10 @@ main{flex:1;padding:18px 20px 70px;}
 .sched-cell-inner input{flex:1;min-width:0;}
 .done-btn{width:20px;height:20px;flex-shrink:0;border:1px solid var(--line);background:var(--surface-alt);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;padding:0;margin-left:2px;}
 .done-btn.is-done{background:var(--primary);color:#fff;border-color:var(--primary);}
+.skip-btn{width:20px;height:20px;flex-shrink:0;border:1px solid var(--line);background:var(--surface-alt);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;padding:0;margin-left:2px;}
+.skip-btn.is-skip{background:var(--notpregnant-bg,#C0392B);color:#fff;border-color:var(--notpregnant-bg,#C0392B);}
+.sched-cell.skipped input{text-decoration:line-through;opacity:.45;}
+.allsched-item.skipped .allsched-note{text-decoration:line-through;opacity:.55;}
 
 /* 전체 스케줄 */
 
@@ -704,6 +708,7 @@ function ensureOwnerMeta(owner){
   if(!DATA.ownerProfiles) DATA.ownerProfiles = {};
   if(!DATA.ownerProfiles[owner]) DATA.ownerProfiles[owner] = defaultOwnerProfile();
   if(!DATA.completedCells) DATA.completedCells = {};
+  if(!DATA.skippedCells) DATA.skippedCells = {};
   if(!DATA.dismissedCells) DATA.dismissedCells = {};
   if(!DATA.ownerFlags) DATA.ownerFlags = {};
   if(!DATA.ownerFlags[owner]) DATA.ownerFlags[owner] = { favorite:false, archived:false };
@@ -718,6 +723,7 @@ function archivedOwners(){ return DATA.owners.filter(ownerArch); }
 // completedCells 키: "owner|animalId|date"
 function cellKey(owner, aid, date){ return `${owner}|${aid}|${date}`; }
 function isCellDone(owner, aid, date){ return !!(DATA.completedCells||{})[cellKey(owner,aid,date)]; }
+function isCellSkipped(owner, aid, date){ return !!(DATA.skippedCells||{})[cellKey(owner,aid,date)]; }
 function isCellDismissed(owner, aid, date){ return !!(DATA.dismissedCells||{})[cellKey(owner,aid,date)]; }
 function dismissCell(owner, aid, date){
   if(!DATA.dismissedCells) DATA.dismissedCells = {};
@@ -727,7 +733,14 @@ function toggleCellDone(owner, aid, date){
   if(!DATA.completedCells) DATA.completedCells = {};
   const k = cellKey(owner, aid, date);
   if(DATA.completedCells[k]) delete DATA.completedCells[k];
-  else DATA.completedCells[k] = true;
+  else { DATA.completedCells[k] = true; if(DATA.skippedCells) delete DATA.skippedCells[k]; }  // 완료 켜면 '안 함' 해제
+  saveState();
+}
+function toggleCellSkip(owner, aid, date){
+  if(!DATA.skippedCells) DATA.skippedCells = {};
+  const k = cellKey(owner, aid, date);
+  if(DATA.skippedCells[k]) delete DATA.skippedCells[k];
+  else { DATA.skippedCells[k] = true; if(DATA.completedCells) delete DATA.completedCells[k]; }   // '안 함' 켜면 완료 해제
   saveState();
 }
 
@@ -1422,7 +1435,7 @@ function scheduleRowsForOwner(owner){
       if(!manual && autoEntries.length && isCellDismissed(owner, aid, d)) return;
       const note = manual ? manual.note : autoEntries.join(' / ');
       if(!note) return;
-      rows.push({ aid, date:d, note, done:isCellDone(owner,aid,d), isAuto: !manual && !!autoEntries.length, manual: !!manual });
+      rows.push({ aid, date:d, note, done:isCellDone(owner,aid,d), skipped:isCellSkipped(owner,aid,d), isAuto: !manual && !!autoEntries.length, manual: !!manual });
     });
   });
   rows.sort((a,b)=> a.date.localeCompare(b.date) || a.aid.localeCompare(b.aid));
@@ -1446,11 +1459,11 @@ function renderScheduleAgenda(){
         body += `<div class="allsched-date ${r.date===today?'allsched-today':''}">${fmtShort(r.date)} (${weekdayKr(r.date)})${r.date===today?' · 오늘':''}</div>`;
       }
       const tappable = r.manual && isAdmin();
-      body += `<div class="allsched-item ${r.done?'done':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
+      body += `<div class="allsched-item ${r.done?'done':''} ${r.skipped?'skipped':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
         <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
         <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
-        <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" title="${r.done?'완료취소':'완료처리'}">✓</button>
-        ${(r.isAuto && isAdmin())?`<button class="sched-x" data-action="dismissSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" title="이 자동 일정 숨기기">✕</button>`:''}
+        <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="함(완료)">✓</button>
+        <button class="skip-btn ${r.skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="안 함">✕</button>
       </div>`;
     });
   }
@@ -1492,12 +1505,13 @@ function renderScheduleGrid(){
       const displayVal = manual ? manual.note : autoText;
       const isAuto = !manual && !!autoText;
       const done = isCellDone(UI.owner, aid, d);
+      const skipped = isCellSkipped(UI.owner, aid, d);
       const hasContent = !!(displayVal);
-      return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''}">
+      return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''} ${skipped&&hasContent?'skipped':''}">
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
-          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="${done?'완료취소':'완료처리'}">✓</button>`:''}
-          ${(isAuto && isAdmin())?`<button class="sched-x" data-action="dismissSchedItem" data-aid="${esc(aid)}" data-date="${d}" title="이 자동 일정 안 함(숨김)">✕</button>`:''}
+          ${hasContent?`<button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">✓</button>`:''}
+          ${hasContent?`<button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">✕</button>`:''}
         </div>
       </td>`;
     }).join('');
@@ -2696,12 +2710,13 @@ function allOwnersScheduleHtml(){
       html += `<div class="allsched-date ${isToday?'allsched-today':''}">${row.date} (${weekdayKr(row.date)})</div>`;
     }
     const done = row.done;
-    html += `<div class="allsched-item ${done?'done':''} ${row.isAuto?'auto':''}">
+    const skipped = isCellSkipped(row.owner, row.aid, row.date);
+    html += `<div class="allsched-item ${done?'done':''} ${skipped?'skipped':''} ${row.isAuto?'auto':''}">
       <span class="tag-chip sm" data-animal-id="${esc(row.aid)}" data-owner="${esc(row.owner)}">${esc(row.aid)}</span>
       <span class="allsched-owner">${esc(row.owner)}</span>
       <span class="allsched-note">${esc(row.note)}</span>
-      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="${done?'완료취소':'완료처리'}">✓</button>
-      ${isAdmin()?`<button class="sched-x" data-action="cancelSchedAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" data-manual="${row.manual?1:''}" title="${row.manual?'이 일정 삭제':'이 자동 일정 안 함(숨김)'}">✕</button>`:''}
+      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="함(완료)">✓</button>
+      <button class="skip-btn ${skipped?'is-skip':''}" data-action="toggleCellSkipAll" data-owner="${esc(row.owner)}" data-aid="${esc(row.aid)}" data-date="${row.date}" title="안 함">✕</button>
     </div>`;
   });
   return html;
@@ -3182,18 +3197,15 @@ const ACTIONS = {
   cellDoneToggle: (ds, e)=>{
     if(!isAdmin()) return noAdminToast();
     toggleCellDone(UI.owner, ds.aid, ds.date);
-    const btn = e && e.target ? e.target.closest('.done-btn') : null;
-    if(btn){
-      const nowDone = isCellDone(UI.owner, ds.aid, ds.date);
-      btn.classList.toggle('is-done', nowDone);
-      btn.title = nowDone ? '완료취소' : '완료처리';
-      const cell = btn.closest('.sched-cell') || btn.closest('.allsched-item');
-      if(cell) cell.classList.toggle('done', nowDone);
-    } else {
-      renderMain();
-    }
+    renderMain();
+  },
+  cellSkipToggle: (ds, e)=>{
+    if(!isAdmin()) return noAdminToast();
+    toggleCellSkip(UI.owner, ds.aid, ds.date);
+    renderMain();
   },
   toggleCellDoneAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellDone(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
+  toggleCellSkipAll: ds=>{ if(!isAdmin()) return noAdminToast(); toggleCellSkip(ds.owner, ds.aid, ds.date); const el=document.getElementById('allschedList'); if(el) el.innerHTML=allOwnersScheduleHtml(); },
   cancelSchedAll: ds=>{
     if(!isAdmin()) return noAdminToast();
     if(ds.manual){
