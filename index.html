@@ -289,6 +289,7 @@ main{flex:1;padding:18px 20px 70px;}
 .dbl-toggle{cursor:pointer;}
 .dbl-toggle.on{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important;}
 .dbl-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:.02em;vertical-align:middle;}
+.preg-stage2.disabled{opacity:.4;pointer-events:none;}
 .inline-edit{font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:100%;max-width:150px;}
 .inline-edit:focus{outline:none;border-color:var(--primary);background:var(--surface);}
 .inline-edit:hover{border-color:var(--primary);}
@@ -1503,8 +1504,10 @@ function renderPregCheckView(){
 
     const tags = [];
     if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
-    if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
-    if(row.fsex)  tags.push(`<span class="preg-tag sex">성 ${esc(row.fsex)}</span>`);
+    if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
+      if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
+      if(row.fsex)  tags.push(`<span class="preg-tag sex">성 ${esc(row.fsex)}</span>`);
+    }
 
     let badge = '';
     if(row.calved){
@@ -1525,7 +1528,7 @@ function renderPregCheckView(){
         ? `<span class="pregcheck-badge">🔴 분만 확인 필요</span>`
         : `<span class="pregcheck-badge preg">🍼 임신중</span>`;
     } else if(isNotPregnant){
-      badge = `<span class="pregcheck-badge notpregnant">🟠 비임신진단</span>`;
+      badge = `<span class="pregcheck-badge notpregnant">🟠 비임신 · 재수정 대기</span>`;
     } else if(needsCheck){
       badge = `<span class="pregcheck-badge">🔴 임신감정 필요</span>`;
     }
@@ -1951,12 +1954,12 @@ function openRecordModal(record, owner, presetAnimalId){
           <label>1차 감정</label>
           <input type="text" id="f_pregnant" value="${esc(r.pregnant)}">
           <div class="chips-inline">
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="O">O (임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="X">X (비임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="재검필요">재검필요</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="O" data-then="refreshPregStage">O (임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="X" data-then="refreshPregStage">X (비임신)</button>
+            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="재검필요" data-then="refreshPregStage">재검필요</button>
           </div>
         </div>
-        <div class="field">
+        <div class="field preg-stage2" id="preg-stage2-wrap">
           <label>2차 감정</label>
           <input type="text" id="f_pregnant2" value="${esc(r.pregnant2||'')}">
           <div class="chips-inline">
@@ -1965,7 +1968,7 @@ function openRecordModal(record, owner, presetAnimalId){
             <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="재검필요">재검필요</button>
           </div>
         </div>
-        <div class="field">
+        <div class="field preg-stage2" id="preg-stagesex-wrap">
           <label>성 감정</label>
           <input type="text" id="f_fetalSex" value="${esc(r.fetalSex)}">
           <div class="chips-inline">
@@ -1975,6 +1978,7 @@ function openRecordModal(record, owner, presetAnimalId){
           </div>
         </div>
       </div>
+      <div class="sync-proto-hint" id="preg-x-hint" style="display:none;">1차 감정이 X(비임신)예요. 추가 감정 없이 재수정 대기로 넘어가요.</div>
 
       <div class="fieldset-title">분만</div>
       <div class="form-grid">
@@ -2055,6 +2059,7 @@ function openRecordModal(record, owner, presetAnimalId){
       </div>
     </div>
   `);
+  refreshPregStage();
 }
 
 function actionCalcInterval(){
@@ -2919,6 +2924,21 @@ function openOwnerManage(){
   `);
 }
 
+function refreshPregStage(){
+  const v = ((document.getElementById('f_pregnant')||{}).value||'').trim().toUpperCase();
+  const isX = v==='X';
+  ['preg-stage2-wrap','preg-stagesex-wrap'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.classList.toggle('disabled', isX);
+    el.querySelectorAll('input,button').forEach(c=>{ c.disabled = isX; });
+  });
+  const hint=document.getElementById('preg-x-hint'); if(hint) hint.style.display = isX?'':'none';
+  if(isX){
+    const p2=document.getElementById('f_pregnant2'); if(p2) p2.value='';
+    const fs=document.getElementById('f_fetalSex'); if(fs) fs.value='';
+  }
+}
 const ACTIONS = {
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
   addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
@@ -3036,7 +3056,7 @@ const ACTIONS = {
   editSchedItem: ds=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(ds.aid, ds.date); },
   saveSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSchedItem(); },
   deleteSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionDeleteSchedItem(); },
-  fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; },
+  fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; if(ds.then==='refreshPregStage') refreshPregStage(); },
   appendField: ds=>{ const el=document.getElementById(ds.target); if(!el) return; const cur=el.value.trim(); const tok=ds.val; const has=cur.split(/[,\s]+/).filter(Boolean).includes(tok); if(has) return; el.value = cur ? cur+', '+tok : tok; },
   calcInterval: ()=>actionCalcInterval(),
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
@@ -3089,6 +3109,7 @@ function initEvents(){
       const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===t.dataset.id);
       if(a){ a[t.dataset.animalField] = t.value; saveState(); renderMain(); }
     }
+    else if(t.id==='f_pregnant'){ refreshPregStage(); }
     else if(t.id==='f_sync1Date' && UI.activeSyncProtocol){
       fillSyncProtocolDates(UI.activeSyncProtocol, t.value);
     }
