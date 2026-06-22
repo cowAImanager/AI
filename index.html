@@ -305,7 +305,22 @@ main{flex:1;padding:18px 20px 70px;}
 /* 임신감정 */
 .preg-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
 .preg-summary.five{grid-template-columns:repeat(5,minmax(0,1fr));}
-@media (max-width:560px){ .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));} .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:560px){
+  .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));}
+  /* 임신감정: 1줄 2칸(대상·임신중) + 2줄 3칸 */
+  .preg-summary.preg-five{grid-template-columns:repeat(6,1fr);}
+  .preg-summary.preg-five > :nth-child(1),
+  .preg-summary.preg-five > :nth-child(2){grid-column:span 3;}
+  .preg-summary.preg-five > :nth-child(3),
+  .preg-summary.preg-five > :nth-child(4),
+  .preg-summary.preg-five > :nth-child(5){grid-column:span 2;}
+  /* 질환: 5칸 한 줄 */
+  .preg-summary.disease-five{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;}
+  .preg-summary.disease-five .preg-stat{padding:8px 3px;}
+  .preg-summary.disease-five .preg-stat-num{font-size:17px;}
+  .preg-summary.disease-five .preg-stat-label{font-size:9px;line-height:1.2;letter-spacing:-.02em;}
+}
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
 .preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
@@ -637,7 +652,13 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-mid .pregcheck-date{display:none;}
   .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .pregcheck-mid .pregcheck-days{flex:0 0 auto;}
-  .pregcheck-mid .preg-tags{flex:0 0 auto;display:none;}
+  .pregcheck-mid .preg-tags{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;}
+  .pregcheck-mid .preg-tags .preg-tag.pos,
+  .pregcheck-mid .preg-tags .preg-tag.neg,
+  .pregcheck-mid .preg-tags .preg-tag.rechk,
+  .pregcheck-mid .preg-tags .preg-tag.sex,
+  .pregcheck-mid .preg-tags .preg-tag.calf{display:none;}
+  .pregcheck-badge.preg{display:none;}
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant{font-size:10px;padding:3px 7px;}
@@ -2011,7 +2032,7 @@ function renderPregCheckView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary five">
+      <div class="preg-summary five preg-five">
         <div class="preg-stat">
           <div class="preg-stat-num">${active.length}</div>
           <div class="preg-stat-label">임신감정 대상</div>
@@ -2094,7 +2115,7 @@ function renderDiseaseView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary five">
+      <div class="preg-summary five disease-five">
         <div class="preg-stat">
           <div class="preg-stat-num">${animalsSet.size}</div>
           <div class="preg-stat-label">질환 개체</div>
