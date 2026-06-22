@@ -658,7 +658,6 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-mid .preg-tags .preg-tag.rechk,
   .pregcheck-mid .preg-tags .preg-tag.sex,
   .pregcheck-mid .preg-tags .preg-tag.calf{display:none;}
-  .pregcheck-badge.preg{display:none;}
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant{font-size:10px;padding:3px 7px;}
@@ -1958,12 +1957,15 @@ function renderPregCheckView(){
     } else if(row.isPreg){
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
-        if(dd >= 0) tags.push(`<span class="preg-tag due">분만 D-${dd}</span>`);
-        else { tags.push(`<span class="preg-tag overdue">분만예정 ${-dd}일 지남</span>`); rowClass='overdue'; }
+        if(dd >= 0){
+          badge = `<span class="pregcheck-badge preg"><span class="badge-label">분만 D-${dd}</span></span>`;
+        } else {
+          rowClass='overdue';
+          badge = `<span class="pregcheck-badge"><span class="badge-label">분만 확인 필요</span></span>`;
+        }
+      } else {
+        badge = `<span class="pregcheck-badge preg"><span class="badge-label">임신중</span></span>`;
       }
-      badge = (!row.calved && row.expCalv && daysBetween(todayStr(), row.expCalv) < 0)
-        ? `<span class="pregcheck-badge"><span class="badge-label">분만 확인 필요</span></span>`
-        : `<span class="pregcheck-badge preg"><span class="badge-label">임신중</span></span>`;
     } else if(isNotPregnant){
       badge = `<span class="pregcheck-badge notpregnant"><span class="badge-label">비임신${row.fattening?'':' · 재수정 대기'}</span></span>`;
     } else if(needsCheck){
