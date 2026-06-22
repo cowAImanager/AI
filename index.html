@@ -388,6 +388,7 @@ main{flex:1;padding:18px 20px 70px;}
 .pregcheck-badge.notpregnant{background:var(--notpregnant-bg);}
 .pregcheck-badge.confirmed{background:var(--primary);}
 .pregcheck-badge.preg{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:12px;font-weight:800;padding:5px 11px;border-radius:7px;letter-spacing:0;box-shadow:none;}
+.pregcheck-badge.unknown{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--line);font-size:12px;font-weight:800;padding:5px 11px;border-radius:7px;}
 .preg-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:8px;white-space:nowrap;letter-spacing:.01em;box-shadow:0 2px 7px rgba(26,160,134,.38);}
 .preg-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;box-shadow:none;gap:2px;letter-spacing:-.02em;}
 .pregcheck-row.notpregnant{background:var(--notpregnant-row-bg);border-color:var(--notpregnant-row-border);}
@@ -1964,7 +1965,7 @@ function renderPregCheckView(){
           badge = `<span class="pregcheck-badge"><span class="badge-label">분만 확인 필요</span></span>`;
         }
       } else {
-        badge = `<span class="pregcheck-badge preg"><span class="badge-label">임신중</span></span>`;
+        badge = `<span class="pregcheck-badge unknown"><span class="badge-label">알 수 없음</span></span>`;
       }
     } else if(isNotPregnant){
       badge = `<span class="pregcheck-badge notpregnant"><span class="badge-label">비임신${row.fattening?'':' · 재수정 대기'}</span></span>`;
