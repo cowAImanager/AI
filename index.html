@@ -32,6 +32,9 @@
   --sync-text:#5040A0;
   --estrus-text:#1E4D7A;
   --notpregnant-bg:#C0392B;
+  --notpregnant-soft:#FBEDEC;
+  --fatten-soft:#F1E7E1;
+  --fatten-ink:#7B4A33;
   --notpregnant-row-bg:#FBEAE8;
   --notpregnant-row-border:#E0A9A2;
   --overdue-days-text:#B03020;
@@ -60,6 +63,9 @@ html[data-theme="dark"]{
   --sync-text:#C0B0F0;
   --estrus-text:#88BCEE;
   --notpregnant-bg:#E06A5C;
+  --notpregnant-soft:#3a2522;
+  --fatten-soft:#332620;
+  --fatten-ink:#C8A18C;
   --notpregnant-row-bg:#3A2422;
   --notpregnant-row-border:#7A4540;
   --overdue-days-text:#FF8A78;
@@ -386,6 +392,11 @@ main{flex:1;padding:18px 20px 70px;}
 .pregcheck-status{font-size:12px;color:var(--ink-soft);background:var(--surface-alt);padding:3px 9px;border-radius:7px;font-weight:600;}
 .pregcheck-badge{font-size:12px;font-weight:800;color:#fff;background:var(--accent);padding:5px 11px;border-radius:7px;margin-left:auto;}
 .pregcheck-badge.notpregnant{background:var(--notpregnant-bg);}
+.pregcheck-end{margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;}
+.pregcheck-end .pregcheck-badge{margin-left:0;}
+.preg-subtag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;flex:0 0 auto;}
+.preg-subtag.red{background:var(--notpregnant-soft);color:var(--notpregnant-bg);}
+.preg-subtag.brown{background:var(--fatten-soft);color:var(--fatten-ink);}
 .pregcheck-badge.confirmed{background:var(--primary);}
 .pregcheck-badge.preg{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:12px;font-weight:800;padding:5px 11px;border-radius:7px;letter-spacing:0;box-shadow:none;}
 .pregcheck-badge.unknown{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--line);font-size:12px;font-weight:800;padding:5px 11px;border-radius:7px;}
@@ -661,7 +672,9 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-mid .preg-tags .preg-tag.calf{display:none;}
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
-  .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant{font-size:10px;padding:3px 7px;}
+  .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant,.pregcheck-badge.unknown{font-size:10px;padding:3px 7px;}
+  .pregcheck-end{gap:5px;}
+  .preg-subtag{font-size:9.5px;padding:2px 6px;}
   .pregcheck-mid .pregcheck-date{font-size:10.5px;}
   .pregcheck-mid .pregcheck-days{font-size:11px;}
   .pregcheck-mid .preg-tags .preg-tag{font-size:9.5px;padding:2px 6px;}
@@ -1968,12 +1981,16 @@ function renderPregCheckView(){
         badge = `<span class="pregcheck-badge unknown"><span class="badge-label">알 수 없음</span></span>`;
       }
     } else if(isNotPregnant){
-      badge = `<span class="pregcheck-badge notpregnant"><span class="badge-label">비임신${row.fattening?'':' · 재수정 대기'}</span></span>`;
+      badge = `<span class="pregcheck-badge notpregnant"><span class="badge-label">비임신</span></span>`;
     } else if(needsCheck){
       badge = `<span class="pregcheck-badge"><span class="badge-label">임신감정 필요</span></span>`;
     }
 
-    const fattenBadge = row.fattening ? `<span class="fatten-badge sm">비육전환</span>` : '';
+    // 보조태그: 배지 왼쪽에 같은 모양으로 (비육전환=갈색 / 재수정 대기=빨강)
+    let subTag = '';
+    if(row.fattening) subTag = `<span class="preg-subtag brown">비육전환</span>`;
+    else if(isNotPregnant) subTag = `<span class="preg-subtag red">재수정 대기</span>`;
+
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
@@ -1982,7 +1999,7 @@ function renderPregCheckView(){
         ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
-      ${badge}${fattenBadge}
+      <span class="pregcheck-end">${subTag}${badge}</span>
     </div>
   `;
   };
