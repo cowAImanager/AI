@@ -215,6 +215,8 @@ main{flex:1;padding:18px 20px 70px;}
 .info-panel::before{display:none;}
 .info-panel-title{font-size:12px;font-weight:800;letter-spacing:.02em;display:flex;align-items:center;gap:6px;color:var(--ink);}
 .info-panel-title .ic{color:var(--primary);}
+.rec-title{margin:22px 0 10px;}
+.rec-title .rec-add-btn{margin-left:auto;font-size:11px;padding:4px 10px;font-weight:700;}
 .info-panel.breeding .info-panel-title .ic{color:var(--accent);}
 .info-panel.pedigree .info-panel-title{color:var(--ink);}
 .info-panel.breeding .info-panel-title{color:var(--ink);}
@@ -238,16 +240,16 @@ main{flex:1;padding:18px 20px 70px;}
   .info-row.cols3,.info-row.cols4{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 .info-row .field label{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;letter-spacing:.02em;}
-.info-row .field .val{font-size:14px;font-weight:600;}
+.info-row .field .val{font-size:10.5px;font-weight:600;}
 .breeding-grid{align-items:start;}
 .pair-grid{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:24px;justify-content:start;}
 .breeding-grid .field label{min-height:15px;white-space:nowrap;}
-.breeding-grid .val{min-height:32px;line-height:32px;font-size:13px;font-weight:600;}
+.breeding-grid .val{min-height:26px;line-height:26px;font-size:10.5px;font-weight:600;}
 .breeding-grid .val .kv2-note,.breeding-grid .val > div{line-height:1.35;}
-.breeding-grid .inline-edit,.breeding-grid .inline-edit.num,.breeding-grid .inline-edit.sel,.breeding-grid input[type=date].inline-edit{height:32px;box-sizing:border-box;vertical-align:middle;font-size:13px;}
-.breeding-grid .kv2-unit{vertical-align:middle;font-size:13px;}
-.breeding-grid .cycle-today-main{font-size:13px;font-weight:700;}
-.breeding-grid .fatten-badge,.breeding-grid .fatten-btn,.breeding-grid .btn.small,.breeding-grid .btn.secondary.small{height:32px;box-sizing:border-box;display:inline-flex;align-items:center;vertical-align:middle;font-size:13px;}
+.breeding-grid .inline-edit,.breeding-grid .inline-edit.num,.breeding-grid .inline-edit.sel,.breeding-grid input[type=date].inline-edit{height:26px;box-sizing:border-box;vertical-align:middle;font-size:10.5px;padding:2px 6px;}
+.breeding-grid .kv2-unit{vertical-align:middle;font-size:10.5px;}
+.breeding-grid .cycle-today-main{font-size:10.5px;font-weight:700;}
+.breeding-grid .fatten-badge,.breeding-grid .fatten-btn,.breeding-grid .btn.small,.breeding-grid .btn.secondary.small{height:26px;box-sizing:border-box;display:inline-flex;align-items:center;vertical-align:middle;font-size:10.5px;padding:0 9px;}
 
 /* 좌측 목록 품종 그림 */
 .list-id-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;}
@@ -273,7 +275,8 @@ main{flex:1;padding:18px 20px 70px;}
   .calc-results{grid-template-columns:1fr;}
 }
 
-.section-title{font-size:17px;font-weight:800;color:var(--ink);margin:26px 0 12px;display:flex;justify-content:space-between;align-items:center;padding-bottom:5px;border-bottom:2px solid var(--primary);letter-spacing:-.01em;}
+.section-title{font-size:14px;font-weight:800;color:var(--ink);margin:24px 0 11px;display:flex;justify-content:space-between;align-items:center;padding-bottom:5px;border-bottom:2px solid var(--primary);letter-spacing:-.01em;}
+.section-title .btn.small{font-size:11px;padding:4px 9px;}
 .section-title::before{content:"";display:inline-block;width:4px;height:17px;background:var(--primary);margin-right:8px;border-radius:1px;vertical-align:-2px;}
 .section-title>span:first-child{flex:1;}
 
@@ -287,21 +290,21 @@ main{flex:1;padding:18px 20px 70px;}
 
 /* 동기화 */
 .sync-proto-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 4px;}
-.sync-proto-label{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-right:2px;}
-.sync-proto-btn{border:1px solid var(--primary);background:var(--green-soft);color:var(--primary-dark);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;}
+.sync-proto-label{font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-right:2px;}
+.sync-proto-btn{border:1px solid var(--primary);background:var(--green-soft);color:var(--primary-dark);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;}
 .sync-proto-btn:hover{background:var(--primary);color:#fff;}
 .sync-proto-btn.clear{border-color:var(--line);background:var(--surface-alt);color:var(--ink-soft);font-weight:700;}
 .sync-proto-btn.clear:hover{background:var(--line);color:var(--ink);}
 .sync-proto-hint{font-size:11.5px;color:var(--ink-soft);margin:2px 0 8px;}
 .sync-list{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
-.sync-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.sync-row select{min-width:140px;}
-.sync-row input[type=date]{min-width:110px;}
-.sync-row input[type=time]{min-width:88px;}
-.sync-num{width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.sync-row select{flex:1.4;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
-.sync-row input[type=date]{flex:1;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
-.sync-row input[type=time]{flex:.8;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);}
+.sync-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.sync-row select{min-width:120px;}
+.sync-row input[type=date]{min-width:104px;}
+.sync-row input[type=time]{min-width:80px;}
+.sync-num{width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sync-row select{flex:1.4;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row input[type=date]{flex:1;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row input[type=time]{flex:.8;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
 .sync-row select:focus,.sync-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .kv-row .kv-name{flex:1.3;}
 .kv-row .kv-amount{flex:1;}
@@ -414,10 +417,10 @@ main{flex:1;padding:18px 20px 70px;}
 .date-pill.ai{background:var(--accent-soft);color:var(--ai-text);}
 .date-pill.sync{background:var(--sync-bg);color:var(--sync-text);}
 .record-body{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.5;display:flex;flex-direction:column;gap:7px;}
-.record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;}
+.record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;font-size:12px;}
 .record-body .kv:last-child{border-bottom:none;padding-bottom:0;}
-.record-body .kv b{color:var(--primary-dark);font-weight:800;font-size:12.5px;min-width:92px;flex-shrink:0;}
-.record-notes{margin-top:8px;color:var(--ink);font-size:14px;background:var(--bg);padding:9px 12px;border-radius:8px;line-height:1.5;}
+.record-body .kv b{color:var(--primary-dark);font-weight:800;font-size:12px;min-width:88px;flex-shrink:0;}
+.record-notes{margin-top:8px;color:var(--ink);font-size:12px;background:var(--bg);padding:8px 11px;border-radius:8px;line-height:1.5;}
 
 /* ---------- date view ---------- */
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
@@ -601,13 +604,19 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 /* ---------- modal ---------- */
 .modal-overlay{position:fixed;inset:0;background:rgba(20,24,18,.5);display:flex;align-items:center;justify-content:center;padding:18px;z-index:200;}
 .modal{background:var(--surface);border-radius:8px;padding:24px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(0,0,0,.1);}
-.modal h2{margin:0 0 4px;font-size:18px;color:var(--primary-dark);}
+.modal h2{margin:0 0 4px;font-size:16px;color:var(--primary-dark);}
 .modal .modal-sub{font-size:12px;color:var(--ink-soft);margin-bottom:16px;}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px 14px;}
+.date-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px 10px;}
+.date-grid .field label{font-size:10px;margin-bottom:2px;}
+.date-grid .field input{height:28px;padding:3px 7px;font-size:11.5px;}
+.date-grid .field-pair input[type=time]{max-width:84px;}
+.date-grid .field-pair input{min-width:0;flex:1 1 60px;}
+.date-grid .dbl-toggle{font-size:10.5px;padding:5px 8px;}
 .form-grid.full{grid-template-columns:1fr;}
 .field{display:flex;flex-direction:column;gap:4px;}
-.field label{font-size:11px;color:var(--ink-soft);font-weight:700;}
-.field input,.field select,.field textarea{padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;width:100%;background:var(--bg);}
+.field label{font-size:10.5px;color:var(--ink-soft);font-weight:700;}
+.field input,.field select,.field textarea{padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;width:100%;background:var(--bg);}
 .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .field textarea{resize:vertical;min-height:56px;}
 .field-pair{display:flex;gap:6px;flex-wrap:wrap;}
@@ -616,8 +625,39 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .field.checkbox input{width:auto;}
 .chips-inline{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
 .chips-inline button{border:1px solid var(--line);background:var(--surface-alt);border-radius:7px;padding:3px 9px;font-size:11.5px;cursor:pointer;font-weight:600;}
-.fieldset-title{font-size:12.5px;font-weight:700;color:var(--primary-dark);margin:18px 0 4px;padding-top:14px;border-top:1px solid var(--line);}
-.legacy-note{font-size:11.5px;color:var(--ink-soft);background:var(--bg);border-radius:7px;padding:7px 10px;margin:6px 0 4px;}
+.fieldset-title{font-size:11.5px;font-weight:700;color:var(--primary-dark);margin:16px 0 4px;padding-top:12px;border-top:1px solid var(--line);}
+.ovary-field .ov-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:2px;}
+.ox-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px;}
+.ox-compact{flex-direction:row !important;align-items:center;justify-content:space-between;gap:8px;}
+.ox-compact label{flex:1 1 auto;font-size:11px;}
+.ox-toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:0 0 auto;}
+.ox-btn{border:none;background:var(--bg);color:var(--ink-soft);font-family:inherit;font-size:11px;font-weight:800;padding:4px 11px;cursor:pointer;}
+.ox-btn+.ox-btn{border-left:1px solid var(--line);}
+.ox-btn.on{background:var(--primary);color:#fff;}
+.ox-btn.on.x{background:var(--notpregnant-bg);}
+.seg-toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:0 0 auto;}
+.seg-tbtn{border:none;background:var(--bg);color:var(--ink-soft);font-family:inherit;font-size:11px;font-weight:800;padding:4px 10px;cursor:pointer;}
+.seg-tbtn+.seg-tbtn{border-left:1px solid var(--line);}
+.seg-tbtn.on{background:var(--primary);color:#fff;}
+.seg-tbtn.on[data-val="X"]{background:var(--notpregnant-bg);}
+.ov-seg-group{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);}
+.ov-seg{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;}
+.ov-seg+.ov-seg{border-left:1px solid var(--line);}
+.ov-seg.on{background:var(--primary);color:#fff;}
+.ov-num-wrap{position:relative;display:inline-flex;align-items:center;}
+.ov-num-wrap input{width:72px;padding:7px 26px 7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
+.ov-num-wrap input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+.ov-num-wrap .ov-unit{position:absolute;right:9px;font-size:12px;color:var(--ink-soft);font-weight:700;pointer-events:none;}
+.ov-add{border:1px solid var(--line);background:var(--surface-alt);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:11px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
+.ov-note{flex:1 1 120px;min-width:100px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
+.ov-note:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+.ov-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.ov-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--primary-dark);border:1px solid var(--primary);border-radius:7px;padding:3px 8px;font-size:11.5px;font-weight:700;}
+.ov-chip .ov-x{cursor:pointer;display:inline-flex;opacity:.6;}
+.ov-chip .ov-x:hover{opacity:1;}
+.ov-free{margin-top:7px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;width:100%;background:var(--bg);box-sizing:border-box;}
+.ov-free:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
+.legacy-note{font-size:11px;color:var(--ink-soft);background:var(--bg);border-radius:7px;padding:6px 10px;margin:6px 0 4px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;}
 .modal-actions .left{margin-right:auto;}
 details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;}
@@ -637,7 +677,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .toolbar .date-field{flex:1;min-width:0;}
   .toolbar input[type=date]{width:100%;min-width:0;padding:7px 8px;}
   .toolbar .search-input{width:100%;}
-  .section-title{font-size:14.5px;margin:16px 0 8px;padding-bottom:4px;}
+  .section-title{font-size:12.5px;margin:14px 0 8px;padding-bottom:4px;}
   .section-title::before{height:14px;}
 
   /* 통계 카드 */
@@ -694,12 +734,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .info-panel{padding:13px 0;gap:11px;}
   .info-row{gap:9px 12px;}
   .info-row .field label{font-size:10px;margin-bottom:2px;}
-  .info-row .field .val{font-size:13.5px;}
+  .info-row .field .val{font-size:10.5px;}
   .info-panel-title{font-size:11.5px;}
   /* 혈통: 3칸 한 줄 유지 (부·외조부·외외증조부 / 품종·출생·개월령) */
   .info-panel.pedigree .info-row.cols3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 8px;}
   .info-panel.pedigree .info-row.cols3 .field label{font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .info-panel.pedigree .info-row.cols3 .field .val{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .info-panel.pedigree .info-row.cols3 .field .val{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* 번식정보 라벨-값 행 */
   .pair-grid > .field:nth-child(3){margin-left:0;}
   .kv2-row{padding:7px 0;min-height:34px;gap:10px;}
@@ -712,11 +752,11 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   /* 진료·수정 기록 카드 — 모바일 축소 */
   .record-card{padding:11px 12px;margin-top:8px;}
   .record-body{font-size:12.5px;gap:4px;margin-top:8px;line-height:1.4;}
-  .record-body .kv{gap:6px;padding-bottom:5px;}
-  .record-body .kv b{font-size:11px;min-width:74px;}
+  .record-body .kv{gap:6px;padding-bottom:5px;font-size:11px;}
+  .record-body .kv b{font-size:10.5px;min-width:70px;}
   .date-pill{font-size:10.5px;padding:3px 7px;}
   .record-dates{gap:6px;}
-  .record-notes{font-size:12.5px;padding:7px 10px;margin-top:6px;line-height:1.4;}
+  .record-notes{font-size:11px;padding:6px 10px;margin-top:6px;line-height:1.4;}
   .record-card .row1 .iconbtn{font-size:11.5px;padding:3px 7px;}
 
   /* 날짜별 카드 더 조밀하게 */
@@ -1531,9 +1571,9 @@ function renderAnimalView(){
             </div>
           </div>
         </div>
-        <div class="section-title">
-          <span>진료·수정 기록 (${recs.length})</span>
-          ${isAdmin()?`<button class="btn small" data-action="addRecord" data-id="${esc(a.animalId)}">+ 기록 추가</button>`:''}
+        <div class="info-panel-title rec-title">
+          ${svgIcon('table',16)} 진료·수정 기록 (${recs.length})
+          ${isAdmin()?`<button class="btn small rec-add-btn" data-action="addRecord" data-id="${esc(a.animalId)}">+ 기록 추가</button>`:''}
         </div>
         ${recs.length ? recs.map(r=>renderRecordCard(r)).join('') : '<div class="empty-state">아직 기록이 없어요.</div>'}
       `;
@@ -1558,6 +1598,8 @@ function estrusSummary(r){
   if(r.estrusVulvar) parts.push('외음부종창/충혈 '+r.estrusVulvar);
   if(r.estrusMucus) parts.push('점액 '+r.estrusMucus);
   if(r.estrusContraction) parts.push('자궁수축 '+r.estrusContraction);
+  if(r.estrusMT) parts.push('MT '+r.estrusMT);
+  if(r.estrusST) parts.push('ST '+r.estrusST);
   if(r.estrusOther) parts.push(r.estrusOther);
   if(parts.length) return parts.join(' · ');
   return r.estrusSign || '';
@@ -2303,6 +2345,81 @@ function oxField(label, key, val){
     </div>
   </div>`;
 }
+/* 압축 O/X 토글 (입력칸 없이 라벨 + O/X 한 줄) */
+function oxToggle(label, key, val){
+  const v=(val||'').trim().toUpperCase();
+  return `<div class="field ox-compact">
+    <label>${label}</label>
+    <input type="hidden" id="f_${key}" value="${esc(v)}">
+    <span class="ox-toggle" data-key="${key}">
+      <button type="button" class="ox-btn ${v==='O'?'on':''}" data-action="oxToggle" data-key="${key}" data-ov="O">O</button>
+      <button type="button" class="ox-btn ${v==='X'?'on x':''}" data-action="oxToggle" data-key="${key}" data-ov="X">X</button>
+    </span>
+  </div>`;
+}
+/* 압축 다중 토글 (라벨 + 여러 옵션 한 줄) */
+function segToggle(key, val, options, then){
+  const v=(val||'').trim();
+  const btns=options.map(([ov,lab])=>`<button type="button" class="seg-tbtn ${v===ov?'on':''}" data-action="segToggle" data-key="${key}" data-val="${esc(ov)}"${then?` data-then="${then}"`:''}>${esc(lab)}</button>`).join('');
+  return `<input type="hidden" id="f_${key}" value="${esc(v)}"><span class="seg-toggle" data-key="${key}">${btns}</span>`;
+}
+/* ===== 구조화 초음파 난소 입력 ===== */
+const OVARY_TYPES = ['난포','황체','낭종','소난포들'];
+let ovaryState = {};   // { ultraOvaryL:{items,type,free}, ultraOvaryR:{...} }
+function parseOvary(val){
+  const items=[]; const leftover=[];
+  String(val||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(part=>{
+    let matched=false;
+    for(const t of OVARY_TYPES){
+      // 소난포들: 크기 없음, 뒤에 비고 가능
+      if(t==='소난포들'){
+        const m0 = part.match(/^소난포들(?:\s+(.+))?$/);
+        if(m0){ items.push({type:t,size:'',note:(m0[1]||'').trim()}); matched=true; break; }
+        continue;
+      }
+      const m = part.match(new RegExp('^'+t+'\\s*(\\d+(?:\\.\\d+)?)\\s*mm(?:\\s+(.+))?$'));
+      if(m){ items.push({type:t,size:m[1],note:(m[2]||'').trim()}); matched=true; break; }
+    }
+    if(!matched) leftover.push(part);
+  });
+  return { items, free: leftover.join(', ') };
+}
+function ovaryCombined(key){
+  const st = ovaryState[key]; if(!st) return '';
+  const parts = st.items.map(it => {
+    let s = it.type;
+    if(it.size) s += ' ' + it.size + 'mm';
+    if(it.note) s += ' ' + it.note;
+    return s;
+  });
+  if(st.free && st.free.trim()) parts.push(st.free.trim());
+  return parts.join(', ');
+}
+function ovaryChipsHtml(key){
+  const st = ovaryState[key]; if(!st) return '';
+  return st.items.map((it,i)=>`<span class="ov-chip">${esc(it.type)}${it.size?' '+esc(it.size)+'mm':''}${it.note?' '+esc(it.note):''}<span class="ov-x" data-action="ovaryDel" data-key="${key}" data-i="${i}">${svgIcon('x',12)}</span></span>`).join('');
+}
+function ovarySync(key){
+  const hid = document.getElementById('f_'+key); if(hid) hid.value = ovaryCombined(key);
+  const box = document.getElementById('ovchips_'+key); if(box) box.innerHTML = ovaryChipsHtml(key);
+}
+function ovaryInput(label, key, val){
+  const parsed = parseOvary(val);
+  ovaryState[key] = { items: parsed.items, type:'난포', free: parsed.free };
+  const segs = OVARY_TYPES.map(t=>`<button type="button" class="ov-seg ${t==='난포'?'on':''}" data-action="ovaryType" data-key="${key}" data-ovtype="${t}">${t}</button>`).join('');
+  return `<div class="field ovary-field">
+    <label>${label}</label>
+    <input type="hidden" id="f_${key}" value="${esc(val||'')}">
+    <div class="ov-row">
+      <span class="ov-seg-group" data-key="${key}">${segs}</span>
+      <span class="ov-num-wrap"><input type="text" inputmode="numeric" class="ov-num" id="ovnum_${key}" data-key="${key}" placeholder="크기"><span class="ov-unit">mm</span></span>
+      <input type="text" class="ov-note" id="ovnote_${key}" data-key="${key}" placeholder="비고(선택)">
+      <button type="button" class="ov-add" data-action="ovaryAdd" data-key="${key}">+ 추가</button>
+    </div>
+    <div class="ov-chips" id="ovchips_${key}">${ovaryChipsHtml(key)}</div>
+    <input type="text" class="ov-free" id="ovfree_${key}" data-key="${key}" value="${esc(parsed.free)}" placeholder="자유 메모 (예: 15mm로 감소, 찌그러진 형태)">
+  </div>`;
+}
 function syncRow(i, type, date){
   const opts = SYNC_OPTIONS.map(o => `<option value="${esc(o)}" ${type===o?'selected':''}>${esc(o)}</option>`).join('');
   return `<div class="sync-row">
@@ -2406,7 +2523,7 @@ function openRecordModal(record, owner, presetAnimalId){
     nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', estrusSign:'', rectalExam:'',
     ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
     carcass:'', ribeye:'', backfat:'', marbling:'',
-    estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusOther:'',
+    estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusMT:'', estrusST:'', estrusOther:'',
     rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
     ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
     uterineDisease:'', uterineResolved:false, ovarianDisease:'',
@@ -2426,7 +2543,7 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="form-grid">${animalIdField}</div>
 
       <div class="fieldset-title">날짜 정보</div>
-      <div class="form-grid">
+      <div class="form-grid date-grid">
         ${dateOnlyField('진료일시','examDate',r.examDate)}
         ${dtField('발정일시','estrusDate',r.estrusDate)}
         ${dtField('수정일시','aiDate',r.aiDate)}
@@ -2443,7 +2560,6 @@ function openRecordModal(record, owner, presetAnimalId){
         <div class="field">
           <label>수정간격</label>
           <input type="text" id="f_aiInterval" value="${esc(r.aiInterval)}">
-          <div class="chips-inline"><button type="button" data-action="calcInterval">발정~수정 간격 계산</button></div>
         </div>
         ${dateOnlyField('다음발정일','nextEstrusDate', r.nextEstrusDate || (r.estrusDate ? addDays(dateOnly(r.estrusDate), 21) : (r.aiDate ? addDays(dateOnly(r.aiDate), 21) : null)))}
         ${dateOnlyField('예상분만일','expectedCalving',r.expectedCalving)}
@@ -2465,33 +2581,18 @@ function openRecordModal(record, owner, presetAnimalId){
       </div>
 
       <div class="fieldset-title">임신감정</div>
-      <div class="form-grid">
-        <div class="field">
+      <div class="form-grid ox-grid">
+        <div class="field ox-compact">
           <label>1차 감정</label>
-          <input type="text" id="f_pregnant" value="${esc(r.pregnant)}">
-          <div class="chips-inline">
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="O" data-then="refreshPregStage">O (임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="X" data-then="refreshPregStage">X (비임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant" data-val="재검필요" data-then="refreshPregStage">재검필요</button>
-          </div>
+          ${segToggle('pregnant', r.pregnant, [['O','O'],['X','X'],['재검필요','재검']], 'refreshPregStage')}
         </div>
-        <div class="field preg-stage2" id="preg-stage2-wrap">
+        <div class="field ox-compact preg-stage2" id="preg-stage2-wrap">
           <label>2차 감정</label>
-          <input type="text" id="f_pregnant2" value="${esc(r.pregnant2||'')}">
-          <div class="chips-inline">
-            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="O">O (임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="X">X (비임신)</button>
-            <button type="button" data-action="fillField" data-target="f_pregnant2" data-val="재검필요">재검필요</button>
-          </div>
+          ${segToggle('pregnant2', r.pregnant2, [['O','O'],['X','X'],['재검필요','재검']])}
         </div>
-        <div class="field preg-stage2" id="preg-stagesex-wrap">
+        <div class="field ox-compact preg-stage2" id="preg-stagesex-wrap">
           <label>성 감정</label>
-          <input type="text" id="f_fetalSex" value="${esc(r.fetalSex)}">
-          <div class="chips-inline">
-            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="수">수컷</button>
-            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="암">암컷</button>
-            <button type="button" data-action="fillField" data-target="f_fetalSex" data-val="불명">불명</button>
-          </div>
+          ${segToggle('fetalSex', r.fetalSex, [['수','수'],['암','암'],['불명','불명']])}
         </div>
       </div>
       <div class="sync-proto-hint" id="preg-x-hint" style="display:none;">1차 감정이 X(비임신)예요. 추가 감정 없이 재수정 대기로 넘어가요.</div>
@@ -2515,10 +2616,14 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="sync-proto-hint">분만일을 입력하면 임신중에서 빠지고 분만완료로 표시돼요. <b>산차 +1 · 최근분만일</b>도 자동 갱신됩니다.</div>
 
       <div class="fieldset-title">발정증상</div>
-      <div class="form-grid">
-        ${oxField('외음부 종창 및 충혈','estrusVulvar',r.estrusVulvar)}
-        ${oxField('점액','estrusMucus',r.estrusMucus)}
-        ${oxField('자궁수축','estrusContraction',r.estrusContraction)}
+      <div class="form-grid ox-grid">
+        ${oxToggle('외음부 종창·충혈','estrusVulvar',r.estrusVulvar)}
+        ${oxToggle('점액','estrusMucus',r.estrusMucus)}
+        ${oxToggle('자궁수축','estrusContraction',r.estrusContraction)}
+        ${oxToggle('MT','estrusMT',r.estrusMT)}
+        ${oxToggle('ST','estrusST',r.estrusST)}
+      </div>
+      <div class="form-grid full" style="margin-top:8px;">
         ${textField('기타','estrusOther',r.estrusOther)}
       </div>
       ${r.estrusSign ? `<div class="legacy-note">이전 기록(발정특징): ${esc(r.estrusSign)}</div>` : ''}
@@ -2532,10 +2637,10 @@ function openRecordModal(record, owner, presetAnimalId){
       ${r.rectalExam ? `<div class="legacy-note">이전 기록(직장검사): ${esc(r.rectalExam)}</div>` : ''}
 
       <div class="fieldset-title">초음파</div>
-      <div class="form-grid">
+      <div class="form-grid full">
         ${textField('자궁','ultraUterus',r.ultraUterus)}
-        ${textField('좌난소','ultraOvaryL',r.ultraOvaryL)}
-        ${textField('우난소','ultraOvaryR',r.ultraOvaryR)}
+        ${ovaryInput('좌난소','ultraOvaryL',r.ultraOvaryL)}
+        ${ovaryInput('우난소','ultraOvaryR',r.ultraOvaryR)}
       </div>
       ${r.ultrasound ? `<div class="legacy-note">이전 기록(초음파): ${esc(r.ultrasound)}</div>` : ''}
 
@@ -2619,6 +2724,8 @@ function actionSaveRecord(){
     estrusVulvar: g('f_estrusVulvar').value.trim(),
     estrusMucus: g('f_estrusMucus').value.trim(),
     estrusContraction: g('f_estrusContraction').value.trim(),
+    estrusMT: (g('f_estrusMT')||{value:''}).value.trim(),
+    estrusST: (g('f_estrusST')||{value:''}).value.trim(),
     estrusOther: g('f_estrusOther').value.trim(),
     rectalUterus: g('f_rectalUterus').value.trim(),
     rectalHorn: modalCtx.legacy.rectalHorn,
@@ -3621,6 +3728,43 @@ const ACTIONS = {
   fillField: ds=>{ const el=document.getElementById(ds.target); if(el) el.value=ds.val; if(ds.then==='refreshPregStage') refreshPregStage(); },
   appendField: ds=>{ const el=document.getElementById(ds.target); if(!el) return; const cur=el.value.trim(); const tok=ds.val; const has=cur.split(/[,\s]+/).filter(Boolean).includes(tok); if(has) return; el.value = cur ? cur+', '+tok : tok; },
   calcInterval: ()=>actionCalcInterval(),
+  ovaryType: (ds, e)=>{
+    const key=ds.key; if(ovaryState[key]) ovaryState[key].type=ds.ovtype;
+    const grp = e && e.target && e.target.closest('.ov-seg-group');
+    if(grp){ grp.querySelectorAll('.ov-seg').forEach(b=>b.classList.toggle('on', b.dataset.ovtype===ds.ovtype)); }
+  },
+  ovaryAdd: (ds)=>{
+    const key=ds.key, st=ovaryState[key]; if(!st) return;
+    const num=document.getElementById('ovnum_'+key);
+    const noteEl=document.getElementById('ovnote_'+key);
+    const v=(num&&num.value||'').trim();
+    const note=(noteEl&&noteEl.value||'').trim();
+    if(st.type==='소난포들'){ st.items.push({type:'소난포들',size:'',note}); }
+    else { if(!v) return; st.items.push({type:st.type,size:v,note}); }
+    if(num) num.value=''; if(noteEl) noteEl.value='';
+    ovarySync(key);
+  },
+  ovaryDel: (ds)=>{
+    const st=ovaryState[ds.key]; if(!st) return;
+    st.items.splice(parseInt(ds.i,10),1); ovarySync(ds.key);
+  },
+  oxToggle: (ds, e)=>{
+    const hid=document.getElementById('f_'+ds.key); if(!hid) return;
+    const cur=(hid.value||'').toUpperCase();
+    const nv = cur===ds.ov ? '' : ds.ov;
+    hid.value=nv;
+    const grp = e && e.target && e.target.closest('.ox-toggle');
+    if(grp){ grp.querySelectorAll('.ox-btn').forEach(b=>{ const on=b.dataset.ov===nv; b.classList.toggle('on',on); b.classList.toggle('x', on && nv==='X'); }); }
+  },
+  segToggle: (ds, e)=>{
+    const hid=document.getElementById('f_'+ds.key); if(!hid) return;
+    const cur=(hid.value||'').trim();
+    const nv = cur===ds.val ? '' : ds.val;
+    hid.value=nv;
+    const grp = e && e.target && e.target.closest('.seg-toggle');
+    if(grp){ grp.querySelectorAll('.seg-tbtn').forEach(b=>b.classList.toggle('on', b.dataset.val===nv && nv!=='')); }
+    if(ds.then==='refreshPregStage') refreshPregStage();
+  },
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
   clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
   closeModal: ()=>closeModal(),
@@ -3671,6 +3815,16 @@ function initEvents(){
     else if(t.id==='globalSearchInput'){
       UI.globalSearch=t.value;
       renderMain();
+    }
+    else if(t.classList && t.classList.contains('ov-free')){
+      const key=t.dataset.key; if(ovaryState[key]){ ovaryState[key].free=t.value; const hid=document.getElementById('f_'+key); if(hid) hid.value=ovaryCombined(key); }
+    }
+  });
+  document.addEventListener('keydown', e=>{
+    const n=e.target;
+    if(n && n.classList && (n.classList.contains('ov-num')||n.classList.contains('ov-note')) && e.key==='Enter'){
+      e.preventDefault();
+      ACTIONS.ovaryAdd({key:n.dataset.key});
     }
   });
   document.addEventListener('change', e=>{
