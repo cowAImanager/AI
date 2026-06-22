@@ -142,12 +142,12 @@ const MOCK = {
     owner: "김준규",
     updatedAt: "2026-06-22",
     animals: [
-      { id:"002 1390 8161 6", status:"임신감정 필요", expectedCalving:null },
-      { id:"002 1932 8629 4", status:"임신중", expectedCalving:"2026-06-29" },
-      { id:"002 1986 7201 1", status:"임신중", expectedCalving:"2027-03-25" },
-      { id:"002 1657 5259 8", status:"감정 대기", expectedCalving:null },
-      { id:"002 1518 1402 2", status:"비임신", expectedCalving:null },
-      { id:"002 2029 9407 0", status:"미수정", expectedCalving:null }
+      { id:"002 1390 8161 6", status:"임신감정 필요", days:38, expectedCalving:null },
+      { id:"002 1932 8629 4", status:"임신중", days:null, expectedCalving:"2026-06-29" },
+      { id:"002 1986 7201 1", status:"임신중", days:null, expectedCalving:"2027-03-25" },
+      { id:"002 1657 5259 8", status:"감정 대기", days:18, expectedCalving:null },
+      { id:"002 1518 1402 2", status:"비임신", days:45, expectedCalving:null },
+      { id:"002 2029 9407 0", status:"미수정", days:null, expectedCalving:null }
     ],
     schedule: [
       { date:"2026-06-20", id:"002 1657 5259 8", note:"GnRH" },
@@ -310,13 +310,17 @@ function renderApp(data){
     <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
     ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
 
-    <div class="v-section">${svgIcon("cow",16)} 소별 임신 현황</div>
+    <div class="v-section">${svgIcon("cow",16)} 번식 현황</div>
     <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
-    <div id="vlist">${animals.map(a=>`
+    <div id="vlist">${animals.slice().sort((a,b)=>{
+        const k=x=>{ const p=(x.id||'').trim().split(/\s+/); return p[2]||x.id; };
+        return k(a).localeCompare(k(b));
+      }).map(a=>`
       <div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
         <span class="v-id">${esc(a.id)}</span>
         ${statusBadge(a.status)}
         ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)} <span class="v-dday">${ddayText(a.expectedCalving)}</span></span>`:''}
+        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
       </div>`).join('')}</div>
 
     <div class="v-foot">

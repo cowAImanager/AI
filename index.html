@@ -3612,19 +3612,18 @@ function recordsOf(owner, animalId){
 }
 function shareAnimalStatus(owner, a){
   const recs = recordsOf(owner, a.animalId);
-  if(isCurrentlyPregnant(recs)) return '임신중';
-  if(a.fattening) return '비육전환';
+  if(isCurrentlyPregnant(recs)) return { status:'임신중', days:null };
+  if(a.fattening) return { status:'비육전환', days:null };
   const aiRecs = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
-  if(!aiRecs.length) return '미수정';
+  if(!aiRecs.length) return { status:'미수정', days:null };
   const aiTs = sortKeyOf(aiRecs[0]);
   const diag = recs.filter(r=>r.pregnant && sortKeyOf(r)>=aiTs).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
   const preg = diag.length ? (diag[0].pregnant||'').trim().toUpperCase() : '';
-  if(preg==='X') return '비임신';
-  if(preg==='O') return '임신중';
-  // 아직 1차 감정 결과 없음 → 경과일로 구분
   const aiD = dateOnly(aiRecs[0].aiDate);
   const days = Math.floor((new Date(todayStr()+'T00:00') - new Date(aiD+'T00:00'))/86400000);
-  return days>=30 ? '임신감정 필요' : '감정 대기';
+  if(preg==='X') return { status:'비임신', days };
+  if(preg==='O') return { status:'임신중', days:null };
+  return { status: days>=30 ? '임신감정 필요' : '감정 대기', days };
 }
 function shareExpCalving(owner, a){
   const recs = recordsOf(owner, a.animalId);
@@ -3635,7 +3634,7 @@ function shareExpCalving(owner, a){
 function buildSharePayload(owner){
   const animals = DATA.animals.filter(a=>a.owner===owner)
     .sort((a,b)=>a.animalId.localeCompare(b.animalId))
-    .map(a=>({ id:a.animalId, status:shareAnimalStatus(owner,a), expectedCalving:shareExpCalving(owner,a) }));
+    .map(a=>{ const s=shareAnimalStatus(owner,a); return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a) }; });
   // 동기화/처치 일정: 그 축주가 수동 입력한 스케줄 (오늘 기준 과거 7일~미래)
   const cutoff = addDays(todayStr(), -7);
   const schedule = DATA.schedule.filter(s=>s.owner===owner && (s.note||'').trim() && dateOnly(s.date) >= cutoff)
