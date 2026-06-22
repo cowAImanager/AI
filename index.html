@@ -240,11 +240,11 @@ main{flex:1;padding:18px 20px 70px;}
   .info-row.cols3,.info-row.cols4{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 .info-row .field label{display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;letter-spacing:.02em;}
-.info-row .field .val{font-size:10.5px;font-weight:600;}
+.info-row .field .val{font-size:13px;font-weight:600;}
 .breeding-grid{align-items:start;}
 .pair-grid{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:24px;justify-content:start;}
 .breeding-grid .field label{min-height:15px;white-space:nowrap;}
-.breeding-grid .val{min-height:26px;line-height:26px;font-size:10.5px;font-weight:600;}
+.breeding-grid .val{min-height:26px;line-height:26px;font-size:13px;font-weight:600;}
 .breeding-grid .val .kv2-note,.breeding-grid .val > div{line-height:1.35;}
 .breeding-grid .inline-edit,.breeding-grid .inline-edit.num,.breeding-grid .inline-edit.sel,.breeding-grid input[type=date].inline-edit{height:26px;box-sizing:border-box;vertical-align:middle;font-size:10.5px;padding:2px 6px;}
 .breeding-grid .kv2-unit{vertical-align:middle;font-size:10.5px;}
@@ -414,10 +414,10 @@ main{flex:1;padding:18px 20px 70px;}
 .date-pill.ai{background:var(--accent-soft);color:var(--ai-text);}
 .date-pill.sync{background:var(--sync-bg);color:var(--sync-text);}
 .record-body{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.5;display:flex;flex-direction:column;gap:7px;}
-.record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;font-size:12px;}
+.record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;font-size:13px;}
 .record-body .kv:last-child{border-bottom:none;padding-bottom:0;}
-.record-body .kv b{color:var(--primary-dark);font-weight:800;font-size:12px;min-width:88px;flex-shrink:0;}
-.record-notes{margin-top:8px;color:var(--ink);font-size:12px;background:var(--bg);padding:8px 11px;border-radius:8px;line-height:1.5;}
+.record-body .kv b{color:var(--primary-dark);font-weight:800;font-size:13px;min-width:92px;flex-shrink:0;}
+.record-notes{margin-top:8px;color:var(--ink);font-size:13px;background:var(--bg);padding:9px 12px;border-radius:8px;line-height:1.5;}
 
 /* ---------- date view ---------- */
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
@@ -1188,7 +1188,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['disease','질환'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄']];
   if(isAdmin()) tabs.unshift(['owner','축사정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
