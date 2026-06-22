@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>내 소 현황</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --primary:#00A69C; --primary-dark:#008275; --accent:#2E70D6;
+  --ink:#23211E; --ink-soft:#6B6862; --line:#E2E5E8; --bg:#F3F5F6; --surface:#FFFFFF; --surface-alt:#F7F9FA;
+  --green-soft:#E3F4F1; --preg:#1B9C8E; --notpreg:#C0392B; --fatten:#9C6B3B; --tag-yellow:#F7C843;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard',sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px;}
+
+/* 헤더 */
+.v-head{display:flex;align-items:center;gap:9px;padding:6px 2px 14px;}
+.v-logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
+.v-title{font-size:16px;font-weight:800;letter-spacing:-.01em;}
+.v-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+.v-updated{margin-left:auto;font-size:10.5px;color:var(--ink-soft);text-align:right;line-height:1.4;}
+
+/* 요약 카드 */
+.v-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:4px 0 16px;}
+.v-stat{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 8px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.v-stat .n{font-size:21px;font-weight:800;color:var(--primary-dark);line-height:1;}
+.v-stat .l{font-size:10.5px;color:var(--ink-soft);margin-top:5px;font-weight:600;}
+
+/* 검색 */
+.v-search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:var(--surface);margin-bottom:12px;}
+.v-search:focus{outline:2px solid var(--tag-yellow);}
+
+/* 소 카드 */
+.v-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.05);}
+.v-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.v-id{font-family:'SF Mono',ui-monospace,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:4px 9px;}
+.v-badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 9px;}
+.v-badge.preg{background:var(--green-soft);color:var(--primary-dark);}
+.v-badge.notpreg{background:#FBE9E7;color:var(--notpreg);}
+.v-badge.calved{background:#EAF2FD;color:var(--accent);}
+.v-badge.fatten{background:#F3E9DD;color:var(--fatten);}
+.v-badge.none{background:var(--surface-alt);color:var(--ink-soft);}
+.v-rows{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.v-row{display:flex;gap:8px;align-items:baseline;font-size:12.5px;border-bottom:1px solid var(--bg);padding-bottom:6px;}
+.v-row:last-child{border-bottom:none;padding-bottom:0;}
+.v-row b{color:var(--primary-dark);font-weight:700;min-width:78px;flex-shrink:0;font-size:11.5px;}
+.v-dday{font-weight:800;color:var(--accent);}
+.v-dday.soon{color:var(--notpreg);}
+
+/* 섹션 제목 */
+.v-section{font-size:14px;font-weight:800;color:var(--primary-dark);margin:22px 0 4px;display:flex;align-items:center;gap:6px;}
+.v-sched-hint{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;}
+
+/* 오늘 할 일 배너 */
+.v-today{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:13px;padding:14px 16px;margin:4px 0 6px;box-shadow:0 3px 12px rgba(0,166,156,.3);}
+.v-today-h{font-size:13px;font-weight:800;margin-bottom:8px;opacity:.95;}
+.v-today-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.22);}
+.v-today-row:first-of-type{border-top:none;}
+.v-today-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;}
+.v-today-note{margin-left:auto;font-size:14px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:7px;}
+
+/* 처치 일정 — 날짜 그룹 */
+.v-sgroup{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.v-sgroup.today{border-color:var(--primary);background:var(--green-soft);}
+.v-sgroup.past{opacity:.5;}
+.v-sgroup-head{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--bg);}
+.v-sched-md{font-size:13.5px;font-weight:800;color:var(--ink);}
+.v-gitem{display:flex;align-items:center;gap:9px;padding:6px 0;}
+.v-gitem+.v-gitem{border-top:1px solid var(--bg);}
+.v-sched-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink);}
+.v-sched-note{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary-dark);background:var(--surface-alt);padding:4px 12px;border-radius:7px;white-space:nowrap;}
+.v-sgroup.today .v-sched-note{background:var(--primary);color:#fff;}
+
+.v-dday{font-size:11.5px;font-weight:800;color:var(--accent);}
+.v-dday.soon{color:var(--notpreg);}
+.v-dday.today{color:var(--primary-dark);}
+.v-past-label{font-size:11px;color:var(--ink-soft);font-weight:700;margin:12px 0 6px;}
+.v-empty-sm{font-size:12.5px;color:var(--ink-soft);padding:14px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:11px;}
+
+/* 소별 임신 현황 행 */
+.v-prow{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:7px;flex-wrap:wrap;}
+.v-calv{font-size:12px;color:var(--ink-soft);margin-left:auto;}
+
+.v-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 0;}
+.v-foot{text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;line-height:1.6;}
+
+/* 잠금(토큰 오류) 화면 */
+.v-lock{max-width:380px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.v-lock h2{font-size:17px;margin:0 0 8px;color:var(--ink);}
+.v-lock p{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:0;}
+.v-lock .lk{font-size:34px;margin-bottom:6px;}
+.v-pick{border:1px solid var(--primary);background:var(--green-soft);color:var(--primary-dark);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;}
+.v-pick:hover{background:var(--primary);color:#fff;}
+
+@media (max-width:420px){
+  .v-summary{gap:6px;}
+  .v-stat .n{font-size:18px;}
+  .v-id{font-size:13px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* =========================================================
+   축주 보기앱 (읽기 전용) — 토큰 기반
+   - 링크: viewer.html?t=토큰   (농장주 이름은 URL에 없음)
+   - Firestore  shared/{토큰}  문서 하나만 읽음 → 다른 농장 접근 불가
+   ========================================================= */
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBtj_LZ5hGZJhuVfX971Kyrb-xkXGS7XGo",
+  authDomain: "aimanager-a36b3.firebaseapp.com",
+  projectId: "aimanager-a36b3",
+  storageBucket: "aimanager-a36b3.firebasestorage.app",
+  messagingSenderId: "24929299448",
+  appId: "1:24929299448:web:8259496a583a451a8d040d"
+};
+
+// Firebase 연결 시도 (실패하면 mock 폴백)
+let DB = null;
+async function initFirebase(){
+  try{
+    if(typeof firebase==='undefined') return false;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    await firebase.auth().signInAnonymously();
+    DB = firebase.firestore();
+    return true;
+  }catch(e){ console.warn('Firebase 연결 실패, mock 사용', e); return false; }
+}
+
+// ---- 테스트용 MOCK (Firebase 없을 때만). 키 = 토큰 ----
+const MOCK = {
+  "a3f9k2": {
+    owner: "김준규",
+    updatedAt: "2026-06-22",
+    animals: [
+      { id:"002 1390 8161 6", status:"비임신", expectedCalving:null },
+      { id:"002 1932 8629 4", status:"임신중", expectedCalving:"2026-06-29" },
+      { id:"002 1986 7201 1", status:"임신중", expectedCalving:"2027-03-25" },
+      { id:"002 1657 5259 8", status:"비임신", expectedCalving:null },
+      { id:"002 1518 1402 2", status:"비육전환", expectedCalving:null },
+      { id:"002 2029 9407 0", status:"미수정", expectedCalving:null }
+    ],
+    schedule: [
+      { date:"2026-06-20", id:"002 1657 5259 8", note:"GnRH" },
+      { date:"2026-06-21", id:"002 1657 5259 8", note:"AI" },
+      { date:"2026-06-22", id:"002 1932 9058 2", note:"PG" },
+      { date:"2026-06-22", id:"002 1657 5259 8", note:"PG" },
+      { date:"2026-06-22", id:"002 1390 8493 6", note:"GnRH" },
+      { date:"2026-06-23", id:"002 1932 9058 2", note:"GnRH" },
+      { date:"2026-06-23", id:"002 1657 5259 8", note:"GnRH" },
+      { date:"2026-06-25", id:"002 1932 9058 2", note:"AI" },
+      { date:"2026-06-28", id:"002 1390 8493 6", note:"CIDR + 0567" }
+    ]
+  },
+  "z7t1m4": {
+    owner: "이종현",
+    updatedAt: "2026-06-22",
+    animals: [ { id:"002 2056 5187 6", status:"임신중", expectedCalving:"2027-03-20" } ],
+    schedule: []
+  }
+};
+
+// ---- URL 파라미터 (토큰만) ----
+function getToken(){
+  const p = new URLSearchParams(location.search);
+  return p.get('t') || p.get('token') || '';
+}
+
+// ---- 데이터 로드: Firestore shared/{토큰} ----
+async function loadByToken(token){
+  if(DB){
+    const snap = await DB.collection('shared').doc(token).get();
+    return snap.exists ? snap.data() : null;
+  }
+  return MOCK[token] || null;   // 폴백
+}
+
+// ---- 날짜 유틸 ----
+function today(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function parseD(s){ if(!s) return null; const d=new Date(s+'T00:00:00'); return isNaN(d)?null:d; }
+function dday(s){
+  const d=parseD(s); if(!d) return null;
+  return Math.round((d - today())/86400000);
+}
+function ddayText(s){
+  const n=dday(s); if(n===null) return '';
+  if(n===0) return 'D-day';
+  if(n>0) return 'D-'+n;
+  return 'D+'+(-n);
+}
+
+function statusBadge(st){
+  const map = {
+    '임신중':['preg','🍼 임신중'],
+    '비임신':['notpreg','비임신'],
+    '분만완료':['calved','분만완료'],
+    '비육전환':['fatten','🥩 비육전환'],
+    '미수정':['none','미수정']
+  };
+  const [cls,label] = map[st] || ['none', st||'-'];
+  return `<span class="v-badge ${cls}">${label}</span>`;
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const WEEK = ['일','월','화','수','목','금','토'];
+function fmtDate(s){
+  const d=parseD(s); if(!d) return esc(s);
+  return `${d.getMonth()+1}/${d.getDate()} (${WEEK[d.getDay()]})`;
+}
+
+function renderLock(msg){
+  document.getElementById('app').innerHTML = `
+    <div class="v-lock">
+      <div class="lk">🔒</div>
+      <h2>접근할 수 없어요</h2>
+      <p>${esc(msg)}<br>담당 수의사에게 받은 링크로 다시 접속해 주세요.</p>
+    </div>`;
+}
+
+/* 날짜별로 그룹핑 */
+function groupByDate(list){
+  const m = {};
+  list.forEach(s=>{ (m[s.date]=m[s.date]||[]).push(s); });
+  return Object.keys(m).sort().map(date=>({date, items:m[date]}));
+}
+
+/* 처치 일정 — 날짜 그룹 한 덩어리 */
+function schedGroup(g){
+  const n = dday(g.date);
+  let cls='', dtxt=ddayText(g.date), dcls='v-dday';
+  if(n===0){ cls='today'; dcls='v-dday today'; dtxt='오늘'; }
+  else if(n>0 && n<=2){ dcls='v-dday soon'; }
+  else if(n<0){ cls='past'; }
+  const rows = g.items.map(s=>`
+    <div class="v-gitem">
+      <span class="v-sched-id">${esc(s.id)}</span>
+      <span class="v-sched-note">${esc(s.note||'')}</span>
+    </div>`).join('');
+  return `
+    <div class="v-sgroup ${cls}">
+      <div class="v-sgroup-head">
+        <span class="v-sched-md">${fmtDate(g.date)}</span>
+        <span class="${dcls}">${dtxt}</span>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function renderApp(data){
+  const animals = data.animals || [];
+  const sched = (data.schedule || []).slice().sort((a,b)=> (a.date<b.date?-1:a.date>b.date?1:0));
+
+  // 일정: 지난 7일 ~ 미래 전부. 오늘 이후가 위로 오도록 그룹
+  const upcoming = sched.filter(s=>{ const n=dday(s.date); return n!==null && n>=0; });
+  const past = sched.filter(s=>{ const n=dday(s.date); return n!==null && n<0; });
+  const upGroups = groupByDate(upcoming);
+  const pastGroups = groupByDate(past).sort((a,b)=> (a.date<b.date?1:-1)).slice(0,3);
+
+  const cntPreg = animals.filter(a=>a.status==='임신중').length;
+  const cntNot  = animals.filter(a=>a.status==='비임신'||a.status==='미수정').length;
+
+  // 오늘 할 일 강조 배너
+  const todayItems = sched.filter(s=>dday(s.date)===0);
+  const todayBanner = todayItems.length ? `
+    <div class="v-today">
+      <div class="v-today-h">📋 오늘 할 일</div>
+      ${todayItems.map(s=>`<div class="v-today-row"><span class="v-today-id">${esc(s.id)}</span><span class="v-today-note">${esc(s.note||'')}</span></div>`).join('')}
+    </div>` : '';
+
+  document.getElementById('app').innerHTML = `
+    <div class="v-head">
+      <div>
+        <div class="v-title">${esc(data.owner)}님 농장</div>
+        <div class="v-sub">번식 현황 · 처치 일정</div>
+      </div>
+      <div class="v-updated">업데이트<br>${esc(data.updatedAt||'-')}</div>
+    </div>
+
+    <div class="v-summary">
+      <div class="v-stat"><div class="n">${animals.length}</div><div class="l">전체 두수</div></div>
+      <div class="v-stat"><div class="n">${cntPreg}</div><div class="l">임신중</div></div>
+      <div class="v-stat"><div class="n">${cntNot}</div><div class="l">수정 대상</div></div>
+    </div>
+
+    ${todayBanner}
+
+    <div class="v-section">📅 처치 일정</div>
+    <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
+    ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
+    ${pastGroups.length ? `<div class="v-past-label">지난 일정</div>${pastGroups.map(schedGroup).join('')}` : ''}
+
+    <div class="v-section">🐮 소별 임신 현황</div>
+    <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
+    <div id="vlist">${animals.map(a=>`
+      <div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
+        <span class="v-id">${esc(a.id)}</span>
+        ${statusBadge(a.status)}
+        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)} <span class="v-dday">${ddayText(a.expectedCalving)}</span></span>`:''}
+      </div>`).join('')}</div>
+
+    <div class="v-foot">
+      이 화면은 담당 수의사가 공유한 정보예요.<br>
+      자세한 내용은 수의사에게 문의해 주세요.
+    </div>`;
+
+  const si = document.getElementById('vsearch');
+  si.addEventListener('input', ()=>{
+    const q = si.value.replace(/\s/g,'');
+    document.querySelectorAll('.v-prow').forEach(c=>{
+      c.style.display = (!q || c.dataset.id.includes(q)) ? '' : 'none';
+    });
+  });
+}
+
+function renderPicker(){
+  const tokens = Object.keys(MOCK);
+  document.getElementById('app').innerHTML = `
+    <div class="v-lock">
+      <div class="lk">🐮</div>
+      <h2>테스트 미리보기</h2>
+      <p>실제로는 수의사가 보낸 링크(<b>?t=토큰</b>)로 바로 들어와요.<br>지금은 테스트용이라 골라보세요.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+        ${tokens.map(t=>`<button class="v-pick" data-token="${esc(t)}">${esc(MOCK[t].owner)}님 농장 보기</button>`).join('')}
+      </div>
+    </div>`;
+  document.querySelectorAll('.v-pick').forEach(b=>{
+    b.addEventListener('click', ()=>openToken(b.dataset.token));
+  });
+}
+
+async function openToken(token){
+  let data;
+  try{ data = await loadByToken(token); }
+  catch(e){ renderLock('데이터를 불러오지 못했어요.'); return; }
+  if(!data){ renderLock('농장 정보를 찾을 수 없어요.'); return; }
+  renderApp(data);
+}
+
+async function init(){
+  await initFirebase();
+  const token = getToken();
+  if(!token){
+    if(!DB){ renderPicker(); }                  // 로컬 테스트(미리보기): 선택 화면
+    else { renderLock('링크에 정보가 빠져 있어요.'); }
+    return;
+  }
+  openToken(token);
+}
+
+init();
+</script>
+</body>
+</html>
