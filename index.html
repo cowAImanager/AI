@@ -818,6 +818,39 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .form-grid{grid-template-columns:1fr 1fr;}
   .sync-proto-hint{font-size:10.5px;}
 }
+
+/* 보관함 (라이브러리) */
+.lib-modal{max-width:560px;width:100%;max-height:86vh;display:flex;flex-direction:column;}
+.lib-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.lib-title-lg{font-size:18px;font-weight:800;color:var(--ink);display:inline-flex;align-items:center;gap:7px;}
+.lib-title-ic{display:inline-flex;color:var(--primary);}
+.lib-back{background:none;border:none;color:var(--primary-dark);font-size:14px;font-weight:700;cursor:pointer;padding:4px 0;}
+.lib-list{display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1;min-height:0;}
+.lib-book{display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface-alt);cursor:pointer;transition:all .12s;}
+.lib-book:hover{border-color:var(--primary);}
+.lib-book-main{flex:1;min-width:0;}
+.lib-book-title{font-size:14.5px;font-weight:700;color:var(--ink);}
+.lib-book-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.lib-book-meta{font-size:12px;color:var(--ink-soft);font-weight:700;flex:0 0 auto;}
+.lib-book-head{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+.lib-book-actions{display:flex;gap:8px;margin-top:8px;}
+.lib-mini{font-size:11.5px;font-weight:700;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink-soft);cursor:pointer;}
+.lib-mini.danger{color:var(--notpregnant-bg);border-color:var(--notpregnant-soft);}
+.lib-chap{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;transition:all .12s;}
+.lib-chap:hover{border-color:var(--primary);background:var(--green-soft);}
+.lib-chap-no{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.lib-chap-title{flex:1;font-size:14px;font-weight:600;color:var(--ink);}
+.lib-chevron{color:var(--ink-soft);font-size:18px;}
+.lib-empty,.lib-empty-inline{color:var(--ink-soft);font-size:13px;text-align:center;padding:30px 10px;line-height:1.6;}
+.lib-loading{text-align:center;color:var(--ink-soft);padding:40px;font-size:14px;}
+.lib-reader-title{font-size:17px;font-weight:800;color:var(--ink);margin:4px 0 10px;}
+.lib-search{width:100%;box-sizing:border-box;padding:9px 12px;font-size:13px;border:1px solid var(--line);border-radius:9px;background:var(--surface-alt);color:var(--ink);margin-bottom:12px;outline:none;}
+.lib-reader-body{flex:1;overflow-y:auto;min-height:0;font-size:15px;line-height:1.85;color:var(--ink);white-space:pre-wrap;word-break:break-word;padding-right:4px;}
+.lib-mark{background:#ffe9a8;color:#7a5600;border-radius:3px;padding:0 1px;}
+.lib-edit-title{width:100%;box-sizing:border-box;padding:10px 12px;font-size:15px;font-weight:700;border:1px solid var(--line);border-radius:9px;background:var(--surface-alt);color:var(--ink);margin-bottom:8px;outline:none;}
+.lib-edit-body{width:100%;box-sizing:border-box;flex:1;min-height:300px;padding:12px;font-size:14px;line-height:1.8;border:1px solid var(--line);border-radius:9px;background:var(--surface-alt);color:var(--ink);resize:vertical;outline:none;font-family:inherit;white-space:pre-wrap;}
+.lib-edit-foot{margin-top:8px;}
+.lib-close-row{margin-top:12px;display:flex;justify-content:flex-end;flex:0 0 auto;}
 </style>
 </head>
 <body>
@@ -983,6 +1016,7 @@ function svgIcon(name, size){
     save:'<path d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h6"/><rect x="8" y="13" width="8" height="6"/>',
     leaf:'<path d="M5 19c0-8 6-13 14-13 0 8-5 13-13 13"/><path d="M6 18c2-4 5-7 9-9"/>',
     share:'<circle cx="6" cy="12" r="2.4"/><circle cx="17" cy="6" r="2.4"/><circle cx="17" cy="18" r="2.4"/><path d="M8.1 10.9l6.8-3.8M8.1 13.1l6.8 3.8"/>',
+    book:'<path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v15H6.5A1.5 1.5 0 0 0 5 20.5z"/><path d="M5 20.5A1.5 1.5 0 0 1 6.5 19H19"/><line x1="9" y1="8" x2="15" y2="8"/>',
     cloud:'<path d="M7.5 18a4 4 0 0 1 .3-8A5 5 0 0 1 17 8.5 3.5 3.5 0 0 1 17.5 18z"/>',
     calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/>',
     clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9.5 4h5v2.5h-5z"/><path d="M9 11h6M9 15h6"/>',
@@ -1183,6 +1217,7 @@ function render(){
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">로그인</span></button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
+          ${isAdmin()?`<button class="btn secondary small" data-action="openLibrary" title="전공책 보관함">${svgIcon('book')}<span class="btn-label">보관함</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
           <button class="btn secondary small" data-action="openGrassInfo">${svgIcon('leaf')}<span class="btn-label">풀정보</span></button>
@@ -3706,7 +3741,217 @@ function openShareManage(){
   `);
 }
 
+/* ============================================================
+   전공책 보관함 (개인 라이브러리)
+   · 진료 데이터와 분리된 Firestore 'library' 컬렉션에 저장
+     - library/index           : 책·챕터 목차(가벼움)
+     - library/chap_{책}_{챕터} : 챕터 본문(필요할 때만 로딩)
+   · 로그인(주인)만 보고/편집. 축주(viewer)는 접근 불가
+============================================================ */
+let _libDB = null;
+async function getLibDB(){
+  if(_libDB) return _libDB;
+  if(typeof firebase==='undefined') throw new Error('Firebase 미로딩');
+  if(!firebase.auth().currentUser){ await firebase.auth().signInAnonymously(); }
+  _libDB = firebase.firestore();
+  return _libDB;
+}
+const LIB = { idx:{books:[]}, view:'books', bookId:null, chapId:null, content:'', query:'', editing:false, loading:false };
+
+async function libLoadIndex(){
+  const db = await getLibDB();
+  const snap = await db.collection('library').doc('index').get();
+  LIB.idx = snap.exists ? (snap.data()||{books:[]}) : {books:[]};
+  if(!Array.isArray(LIB.idx.books)) LIB.idx.books = [];
+  return LIB.idx;
+}
+async function libSaveIndex(){
+  const db = await getLibDB();
+  await db.collection('library').doc('index').set(LIB.idx);
+}
+async function libLoadChapter(bookId, chapId){
+  const db = await getLibDB();
+  const snap = await db.collection('library').doc('chap_'+bookId+'_'+chapId).get();
+  return snap.exists ? (snap.data().content||'') : '';
+}
+async function libSaveChapter(bookId, chapId, content){
+  const db = await getLibDB();
+  await db.collection('library').doc('chap_'+bookId+'_'+chapId).set({ content, updatedAt: Date.now() });
+}
+async function libDeleteChapter(bookId, chapId){
+  const db = await getLibDB();
+  await db.collection('library').doc('chap_'+bookId+'_'+chapId).delete().catch(()=>{});
+}
+function libBook(id){ return LIB.idx.books.find(b=>b.id===id); }
+
+async function openLibrary(){
+  LIB.view='books'; LIB.bookId=null; LIB.chapId=null; LIB.editing=false; LIB.query='';
+  renderLibrary(true);
+  try{ await libLoadIndex(); renderLibrary(); }
+  catch(e){ console.error(e); toast('보관함을 불러오지 못했어요.'); }
+}
+
+function libHighlight(text, q){
+  const safe = esc(text);
+  if(!q) return safe;
+  try{
+    const re = new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+    return safe.replace(re, '<mark class="lib-mark">$1</mark>');
+  }catch(_){ return safe; }
+}
+
+function renderLibrary(loading){
+  let body = '';
+  if(loading){
+    body = `<div class="lib-loading">불러오는 중…</div>`;
+  } else if(LIB.view==='books'){
+    const books = LIB.idx.books;
+    body = `
+      <div class="lib-bar">
+        <div class="lib-title-lg"><span class="lib-title-ic">${svgIcon('book',18)}</span> 보관함</div>
+        <button class="btn small" data-action="libAddBook">+ 책 추가</button>
+      </div>
+      ${books.length ? `<div class="lib-list">${books.map(b=>`
+        <div class="lib-book" data-action="libOpenBook" data-book="${esc(b.id)}">
+          <div class="lib-book-main">
+            <div class="lib-book-title">${esc(b.title)}</div>
+            ${b.author?`<div class="lib-book-sub">${esc(b.author)}</div>`:''}
+          </div>
+          <div class="lib-book-meta">${(b.chapters||[]).length}장</div>
+        </div>`).join('')}</div>`
+        : `<div class="lib-empty">아직 책이 없어요.<br>“+ 책 추가”로 시작하세요.</div>`}
+    `;
+  } else if(LIB.view==='chapters'){
+    const b = libBook(LIB.bookId); const chaps = (b&&b.chapters)||[];
+    body = `
+      <div class="lib-bar">
+        <button class="lib-back" data-action="libBackBooks">‹ 보관함</button>
+        <button class="btn small" data-action="libAddChapter">+ 장 추가</button>
+      </div>
+      <div class="lib-book-head">
+        <div class="lib-title-lg">${esc(b?b.title:'')}</div>
+        ${b&&b.author?`<div class="lib-book-sub">${esc(b.author)}</div>`:''}
+        <div class="lib-book-actions">
+          <button class="lib-mini" data-action="libRenameBook">이름 수정</button>
+          <button class="lib-mini danger" data-action="libDeleteBook">책 삭제</button>
+        </div>
+      </div>
+      ${chaps.length ? `<div class="lib-list">${chaps.map((c,i)=>`
+        <div class="lib-chap" data-action="libOpenChapter" data-chap="${esc(c.id)}">
+          <span class="lib-chap-no">${i+1}</span>
+          <span class="lib-chap-title">${esc(c.title)}</span>
+          <span class="lib-chevron">›</span>
+        </div>`).join('')}</div>`
+        : `<div class="lib-empty">아직 장이 없어요.<br>“+ 장 추가”로 번역을 넣어보세요.</div>`}
+    `;
+  } else if(LIB.view==='reader'){
+    const b = libBook(LIB.bookId);
+    const c = b && (b.chapters||[]).find(x=>x.id===LIB.chapId);
+    if(LIB.editing){
+      body = `
+        <div class="lib-bar">
+          <button class="lib-back" data-action="libBackChapters">‹ ${esc(b?b.title:'')}</button>
+          <button class="btn small" data-action="libSaveChapter">저장</button>
+        </div>
+        <input class="lib-edit-title" id="lib-ctitle" value="${esc(c?c.title:'')}" placeholder="장 제목">
+        <textarea class="lib-edit-body" id="lib-cbody" placeholder="번역 내용을 붙여넣으세요">${esc(LIB.content)}</textarea>
+        <div class="lib-edit-foot">
+          <button class="lib-mini danger" data-action="libDeleteChapter">이 장 삭제</button>
+        </div>
+      `;
+    } else {
+      body = `
+        <div class="lib-bar">
+          <button class="lib-back" data-action="libBackChapters">‹ ${esc(b?b.title:'')}</button>
+          <button class="btn secondary small" data-action="libEditChapter">편집</button>
+        </div>
+        <div class="lib-reader-title">${esc(c?c.title:'')}</div>
+        <input class="lib-search" id="lib-search" placeholder="이 장에서 찾기" value="${esc(LIB.query)}">
+        <div class="lib-reader-body" id="lib-reader">${LIB.content ? libHighlight(LIB.content, LIB.query) : '<span class="lib-empty-inline">내용이 비어 있어요. ‘편집’으로 번역을 넣으세요.</span>'}</div>
+      `;
+    }
+  }
+
+  openModal(`<div class="modal lib-modal">
+    ${body}
+    <div class="lib-close-row"><button class="btn secondary" data-action="closeModal">닫기</button></div>
+  </div>`);
+
+  if(LIB.view==='reader' && !LIB.editing){
+    const si = document.getElementById('lib-search');
+    if(si) si.addEventListener('input', ()=>{
+      LIB.query = si.value;
+      const rd = document.getElementById('lib-reader');
+      if(rd) rd.innerHTML = LIB.content ? libHighlight(LIB.content, LIB.query) : '';
+    });
+  }
+}
+
 const ACTIONS = {
+  openLibrary: ()=>{ if(!isAdmin()) return noAdminToast(); openLibrary(); },
+  libAddBook: async ()=>{
+    const title = prompt('책 제목을 입력하세요'); if(!title) return;
+    const author = prompt('저자 (없으면 비워두세요)') || '';
+    LIB.idx.books.push({ id:'b'+Date.now(), title:title.trim(), author:author.trim(), chapters:[] });
+    try{ await libSaveIndex(); renderLibrary(); toast('책을 추가했어요.'); }
+    catch(e){ console.error(e); toast('저장 실패 — 보안 규칙(library)을 확인해주세요.'); }
+  },
+  libOpenBook: (ds)=>{ LIB.bookId=ds.book; LIB.view='chapters'; renderLibrary(); },
+  libBackBooks: ()=>{ LIB.view='books'; renderLibrary(); },
+  libRenameBook: async ()=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    const t = prompt('책 제목', b.title); if(t===null) return;
+    const a = prompt('저자', b.author||''); 
+    b.title=t.trim(); if(a!==null) b.author=a.trim();
+    try{ await libSaveIndex(); renderLibrary(); toast('수정했어요.'); }catch(e){ toast('저장 실패'); }
+  },
+  libDeleteBook: async ()=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    if(!confirm(`"${b.title}" 책과 모든 장을 삭제할까요?`)) return;
+    for(const c of (b.chapters||[])){ await libDeleteChapter(b.id, c.id); }
+    LIB.idx.books = LIB.idx.books.filter(x=>x.id!==b.id);
+    try{ await libSaveIndex(); LIB.view='books'; renderLibrary(); toast('삭제했어요.'); }catch(e){ toast('저장 실패'); }
+  },
+  libAddChapter: async ()=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    const title = prompt('장 제목 (예: 1장 번식생리)'); if(!title) return;
+    const id = 'c'+Date.now();
+    b.chapters = b.chapters||[]; b.chapters.push({ id, title:title.trim() });
+    try{
+      await libSaveChapter(b.id, id, '');
+      await libSaveIndex();
+      LIB.chapId=id; LIB.content=''; LIB.view='reader'; LIB.editing=true; LIB.query='';
+      renderLibrary(); toast('장을 추가했어요. 번역을 붙여넣으세요.');
+    }catch(e){ console.error(e); toast('저장 실패'); }
+  },
+  libOpenChapter: async (ds)=>{
+    LIB.chapId=ds.chap; LIB.view='reader'; LIB.editing=false; LIB.query=''; LIB.content='';
+    renderLibrary(true);
+    try{ LIB.content = await libLoadChapter(LIB.bookId, LIB.chapId); renderLibrary(); }
+    catch(e){ console.error(e); toast('내용을 불러오지 못했어요.'); }
+  },
+  libBackChapters: ()=>{ LIB.view='chapters'; LIB.editing=false; renderLibrary(); },
+  libEditChapter: ()=>{ LIB.editing=true; renderLibrary(); },
+  libSaveChapter: async ()=>{
+    const b = libBook(LIB.bookId); const c = b&&(b.chapters||[]).find(x=>x.id===LIB.chapId); if(!c) return;
+    const ti = document.getElementById('lib-ctitle');
+    const bo = document.getElementById('lib-cbody');
+    if(ti) c.title = ti.value.trim() || c.title;
+    LIB.content = bo ? bo.value : LIB.content;
+    try{
+      await libSaveChapter(b.id, c.id, LIB.content);
+      await libSaveIndex();
+      LIB.editing=false; renderLibrary(); toast('저장했어요.');
+    }catch(e){ console.error(e); toast('저장 실패'); }
+  },
+  libDeleteChapter: async ()=>{
+    const b = libBook(LIB.bookId); const c = b&&(b.chapters||[]).find(x=>x.id===LIB.chapId); if(!c) return;
+    if(!confirm(`"${c.title}" 장을 삭제할까요?`)) return;
+    await libDeleteChapter(b.id, c.id);
+    b.chapters = b.chapters.filter(x=>x.id!==c.id);
+    try{ await libSaveIndex(); LIB.view='chapters'; LIB.editing=false; renderLibrary(); toast('삭제했어요.'); }catch(e){ toast('저장 실패'); }
+  },
+
   openShareManage: ()=>{ if(!isAdmin()) return noAdminToast(); openShareManage(); },
   shareRefresh: async (ds)=>{
     const st = document.getElementById('sharestatus_'+ds.owner);
