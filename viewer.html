@@ -31,6 +31,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-stat .l{font-size:10.5px;color:var(--ink-soft);margin-top:5px;font-weight:600;}
 
 /* 검색 */
+.v-sortbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 9px;}
+.v-sort{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:all .12s;}
+.v-sort:hover{border-color:var(--primary);color:var(--primary-dark);}
+.v-sort.on{background:var(--primary);border-color:var(--primary);color:#fff;}
 .v-search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:var(--surface);margin-bottom:12px;}
 .v-search:focus{outline:2px solid var(--tag-yellow);}
 
@@ -311,30 +315,61 @@ function renderApp(data){
     ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
 
     <div class="v-section">${svgIcon("cow",16)} 번식 현황</div>
+    <div class="v-sortbar">
+      <button class="v-sort on" data-sort="id">개체번호</button>
+      <button class="v-sort" data-sort="status">상태별</button>
+      <button class="v-sort" data-sort="days">수정 경과일</button>
+      <button class="v-sort" data-sort="calv">분만예정일</button>
+    </div>
     <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
-    <div id="vlist">${animals.slice().sort((a,b)=>{
-        const k=x=>{ const p=(x.id||'').trim().split(/\s+/); return p[2]||x.id; };
-        return k(a).localeCompare(k(b));
-      }).map(a=>`
-      <div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
-        <span class="v-id">${esc(a.id)}</span>
-        ${statusBadge(a.status)}
-        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)} <span class="v-dday">${ddayText(a.expectedCalving)}</span></span>`:''}
-        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
-      </div>`).join('')}</div>
+    <div id="vlist"></div>
 
     <div class="v-foot">
       이 화면은 담당 수의사가 공유한 정보예요.<br>
       자세한 내용은 수의사에게 문의해 주세요.
     </div>`;
 
-  const si = document.getElementById('vsearch');
-  si.addEventListener('input', ()=>{
-    const q = si.value.replace(/\s/g,'');
-    document.querySelectorAll('.v-prow').forEach(c=>{
-      c.style.display = (!q || c.dataset.id.includes(q)) ? '' : 'none';
+  // ---- 번식 현황 정렬/검색 ----
+  const third = x => { const p=(x.id||'').trim().split(/\s+/); return p[2]||x.id; };
+  const STATUS_ORDER = {'임신감정 필요':0,'감정 대기':1,'비임신':2,'미수정':3,'임신중':4,'분만완료':5,'비육전환':6};
+  function sortAnimals(key){
+    const arr = animals.slice();
+    if(key==='status'){
+      arr.sort((a,b)=>{ const d=(STATUS_ORDER[a.status]??9)-(STATUS_ORDER[b.status]??9); return d!==0?d:third(a).localeCompare(third(b)); });
+    } else if(key==='days'){
+      arr.sort((a,b)=>{ const da=a.days==null?-1:a.days, db=b.days==null?-1:b.days; return db-da; });   // 오래된(큰) 순, 없으면 뒤로
+    } else if(key==='calv'){
+      arr.sort((a,b)=>{ const ca=a.expectedCalving||'9999', cb=b.expectedCalving||'9999'; return ca<cb?-1:ca>cb?1:0; });
+    } else {
+      arr.sort((a,b)=> third(a).localeCompare(third(b)));   // 개체번호(3번째)
+    }
+    return arr;
+  }
+  function rowHtml(a){
+    return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
+        <span class="v-id">${esc(a.id)}</span>
+        ${statusBadge(a.status)}
+        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)} <span class="v-dday">${ddayText(a.expectedCalving)}</span></span>`:''}
+        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
+      </div>`;
+  }
+  let curSort = 'id', curQuery = '';
+  function renderVlist(){
+    const q = curQuery.replace(/\s/g,'');
+    const list = sortAnimals(curSort).filter(a => !q || a.id.replace(/\s/g,'').includes(q));
+    document.getElementById('vlist').innerHTML = list.length ? list.map(rowHtml).join('') : '<div class="v-empty-sm">해당하는 소가 없어요.</div>';
+  }
+  renderVlist();
+
+  document.querySelectorAll('.v-sort').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      curSort = b.dataset.sort;
+      document.querySelectorAll('.v-sort').forEach(x=>x.classList.toggle('on', x===b));
+      renderVlist();
     });
   });
+  const si = document.getElementById('vsearch');
+  si.addEventListener('input', ()=>{ curQuery = si.value; renderVlist(); });
 }
 
 function renderPicker(){
