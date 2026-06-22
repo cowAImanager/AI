@@ -3614,8 +3614,17 @@ function shareAnimalStatus(owner, a){
   const recs = recordsOf(owner, a.animalId);
   if(isCurrentlyPregnant(recs)) return '임신중';
   if(a.fattening) return '비육전환';
-  const hasAi = recs.some(r=>r.aiDate);
-  return hasAi ? '비임신' : '미수정';
+  const aiRecs = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+  if(!aiRecs.length) return '미수정';
+  const aiTs = sortKeyOf(aiRecs[0]);
+  const diag = recs.filter(r=>r.pregnant && sortKeyOf(r)>=aiTs).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+  const preg = diag.length ? (diag[0].pregnant||'').trim().toUpperCase() : '';
+  if(preg==='X') return '비임신';
+  if(preg==='O') return '임신중';
+  // 아직 1차 감정 결과 없음 → 경과일로 구분
+  const aiD = dateOnly(aiRecs[0].aiDate);
+  const days = Math.floor((new Date(todayStr()+'T00:00') - new Date(aiD+'T00:00'))/86400000);
+  return days>=30 ? '임신감정 필요' : '감정 대기';
 }
 function shareExpCalving(owner, a){
   const recs = recordsOf(owner, a.animalId);

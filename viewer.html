@@ -41,6 +41,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 9px;}
 .v-badge.preg{background:var(--green-soft);color:var(--primary-dark);}
 .v-badge.notpreg{background:#FBE9E7;color:var(--notpreg);}
+.v-badge.check{background:#FFF3E0;color:#C8791A;}
+.v-badge.wait{background:#EAF2FD;color:var(--accent);}
 .v-badge.calved{background:#EAF2FD;color:var(--accent);}
 .v-badge.fatten{background:#F3E9DD;color:var(--fatten);}
 .v-badge.none{background:var(--surface-alt);color:var(--ink-soft);}
@@ -92,7 +94,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-lock{max-width:380px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);}
 .v-lock h2{font-size:17px;margin:0 0 8px;color:var(--ink);}
 .v-lock p{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:0;}
-.v-lock .lk{font-size:34px;margin-bottom:6px;}
+.v-lock .lk{margin-bottom:8px;color:var(--primary);display:flex;justify-content:center;}
 .v-pick{border:1px solid var(--primary);background:var(--green-soft);color:var(--primary-dark);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;}
 .v-pick:hover{background:var(--primary);color:#fff;}
 
@@ -140,11 +142,11 @@ const MOCK = {
     owner: "김준규",
     updatedAt: "2026-06-22",
     animals: [
-      { id:"002 1390 8161 6", status:"비임신", expectedCalving:null },
+      { id:"002 1390 8161 6", status:"임신감정 필요", expectedCalving:null },
       { id:"002 1932 8629 4", status:"임신중", expectedCalving:"2026-06-29" },
       { id:"002 1986 7201 1", status:"임신중", expectedCalving:"2027-03-25" },
-      { id:"002 1657 5259 8", status:"비임신", expectedCalving:null },
-      { id:"002 1518 1402 2", status:"비육전환", expectedCalving:null },
+      { id:"002 1657 5259 8", status:"감정 대기", expectedCalving:null },
+      { id:"002 1518 1402 2", status:"비임신", expectedCalving:null },
       { id:"002 2029 9407 0", status:"미수정", expectedCalving:null }
     ],
     schedule: [
@@ -198,10 +200,12 @@ function ddayText(s){
 
 function statusBadge(st){
   const map = {
-    '임신중':['preg','🍼 임신중'],
+    '임신중':['preg','임신중'],
     '비임신':['notpreg','비임신'],
+    '임신감정 필요':['check','임신감정 필요'],
+    '감정 대기':['wait','감정 대기'],
     '분만완료':['calved','분만완료'],
-    '비육전환':['fatten','🥩 비육전환'],
+    '비육전환':['fatten','비육전환'],
     '미수정':['none','미수정']
   };
   const [cls,label] = map[st] || ['none', st||'-'];
@@ -209,6 +213,18 @@ function statusBadge(st){
 }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* SVG 아이콘 (선 스타일, currentColor) */
+const ICON_PATHS = {
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4h6"/><path d="M9 12l2 2 3.5-3.5"/>',
+  calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/>',
+  cow: '<ellipse cx="12" cy="13.5" rx="6" ry="5"/><path d="M6.2 9.5C4 7.5 3 8.5 3.6 11M17.8 9.5C20 7.5 21 8.5 20.4 11"/><circle cx="10" cy="14" r="0.9"/><circle cx="14" cy="14" r="0.9"/>'
+};
+function svgIcon(name, size){
+  size = size || 16;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;flex-shrink:0;">${ICON_PATHS[name]||''}</svg>`;
+}
 
 const WEEK = ['일','월','화','수','목','금','토'];
 function fmtDate(s){
@@ -219,7 +235,7 @@ function fmtDate(s){
 function renderLock(msg){
   document.getElementById('app').innerHTML = `
     <div class="v-lock">
-      <div class="lk">🔒</div>
+      <div class="lk">${svgIcon("lock",34)}</div>
       <h2>접근할 수 없어요</h2>
       <p>${esc(msg)}<br>담당 수의사에게 받은 링크로 다시 접속해 주세요.</p>
     </div>`;
@@ -260,18 +276,16 @@ function renderApp(data){
 
   // 일정: 지난 7일 ~ 미래 전부. 오늘 이후가 위로 오도록 그룹
   const upcoming = sched.filter(s=>{ const n=dday(s.date); return n!==null && n>=0; });
-  const past = sched.filter(s=>{ const n=dday(s.date); return n!==null && n<0; });
   const upGroups = groupByDate(upcoming);
-  const pastGroups = groupByDate(past).sort((a,b)=> (a.date<b.date?1:-1)).slice(0,3);
 
   const cntPreg = animals.filter(a=>a.status==='임신중').length;
-  const cntNot  = animals.filter(a=>a.status==='비임신'||a.status==='미수정').length;
+  const cntCheck = animals.filter(a=>a.status==='임신감정 필요'||a.status==='감정 대기').length;
 
   // 오늘 할 일 강조 배너
   const todayItems = sched.filter(s=>dday(s.date)===0);
   const todayBanner = todayItems.length ? `
     <div class="v-today">
-      <div class="v-today-h">📋 오늘 할 일</div>
+      <div class="v-today-h">${svgIcon("clipboard",16)} 오늘 할 일</div>
       ${todayItems.map(s=>`<div class="v-today-row"><span class="v-today-id">${esc(s.id)}</span><span class="v-today-note">${esc(s.note||'')}</span></div>`).join('')}
     </div>` : '';
 
@@ -287,17 +301,16 @@ function renderApp(data){
     <div class="v-summary">
       <div class="v-stat"><div class="n">${animals.length}</div><div class="l">전체 두수</div></div>
       <div class="v-stat"><div class="n">${cntPreg}</div><div class="l">임신중</div></div>
-      <div class="v-stat"><div class="n">${cntNot}</div><div class="l">수정 대상</div></div>
+      <div class="v-stat"><div class="n">${cntCheck}</div><div class="l">감정 대상</div></div>
     </div>
 
     ${todayBanner}
 
-    <div class="v-section">📅 처치 일정</div>
+    <div class="v-section">${svgIcon("calendar",16)} 처치 일정</div>
     <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
     ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
-    ${pastGroups.length ? `<div class="v-past-label">지난 일정</div>${pastGroups.map(schedGroup).join('')}` : ''}
 
-    <div class="v-section">🐮 소별 임신 현황</div>
+    <div class="v-section">${svgIcon("cow",16)} 소별 임신 현황</div>
     <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
     <div id="vlist">${animals.map(a=>`
       <div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
@@ -324,7 +337,7 @@ function renderPicker(){
   const tokens = Object.keys(MOCK);
   document.getElementById('app').innerHTML = `
     <div class="v-lock">
-      <div class="lk">🐮</div>
+      <div class="lk">${svgIcon("cow",34)}</div>
       <h2>테스트 미리보기</h2>
       <p>실제로는 수의사가 보낸 링크(<b>?t=토큰</b>)로 바로 들어와요.<br>지금은 테스트용이라 골라보세요.</p>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
