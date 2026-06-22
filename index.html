@@ -841,6 +841,13 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .lib-chap-no{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
 .lib-chap-title{flex:1;font-size:14px;font-weight:600;color:var(--ink);}
 .lib-chevron{color:var(--ink-soft);font-size:18px;}
+.lib-chap.reorder{cursor:default;}
+.lib-reorder-hint{font-size:11.5px;color:var(--ink-soft);margin:2px 0 8px;}
+.lib-reorder-btns{display:flex;gap:4px;margin-left:auto;flex:0 0 auto;}
+.lib-move{width:30px;height:30px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.lib-move:hover:not(:disabled){border-color:var(--primary);color:var(--primary-dark);}
+.lib-move:disabled{opacity:.3;cursor:default;}
+
 .lib-empty,.lib-empty-inline{color:var(--ink-soft);font-size:13px;text-align:center;padding:30px 10px;line-height:1.6;}
 .lib-loading{text-align:center;color:var(--ink-soft);padding:40px;font-size:14px;}
 .lib-reader-title{font-size:17px;font-weight:800;color:var(--ink);margin:4px 0 10px;}
@@ -3756,7 +3763,7 @@ async function getLibDB(){
   _libDB = firebase.firestore();
   return _libDB;
 }
-const LIB = { idx:{books:[]}, view:'books', bookId:null, chapId:null, content:'', query:'', editing:false, loading:false };
+const LIB = { idx:{books:[]}, view:'books', bookId:null, chapId:null, content:'', query:'', editing:false, loading:false, reorder:false };
 
 async function libLoadIndex(){
   const db = await getLibDB();
@@ -3826,7 +3833,11 @@ function renderLibrary(loading){
     body = `
       <div class="lib-bar">
         <button class="lib-back" data-action="libBackBooks">‹ 보관함</button>
-        <button class="btn small" data-action="libAddChapter">+ 장 추가</button>
+        <div style="display:flex;gap:6px;">
+          ${LIB.reorder?`<button class="btn small" data-action="libSortByNumber" title="제목 앞 숫자(22장 등) 기준 정렬">번호순 정렬</button>`:''}
+          <button class="btn secondary small" data-action="libToggleReorder">${LIB.reorder?'완료':'순서 변경'}</button>
+          ${LIB.reorder?'':`<button class="btn small" data-action="libAddChapter">+ 장 추가</button>`}
+        </div>
       </div>
       <div class="lib-book-head">
         <div class="lib-title-lg">${esc(b?b.title:'')}</div>
@@ -3836,12 +3847,22 @@ function renderLibrary(loading){
           <button class="lib-mini danger" data-action="libDeleteBook">책 삭제</button>
         </div>
       </div>
-      ${chaps.length ? `<div class="lib-list">${chaps.map((c,i)=>`
-        <div class="lib-chap" data-action="libOpenChapter" data-chap="${esc(c.id)}">
-          <span class="lib-chap-no">${i+1}</span>
-          <span class="lib-chap-title">${esc(c.title)}</span>
-          <span class="lib-chevron">›</span>
-        </div>`).join('')}</div>`
+      ${LIB.reorder?'<div class="lib-reorder-hint">↑↓ 로 순서를 바꾸거나, “번호순 정렬”을 누르세요.</div>':''}
+      ${chaps.length ? `<div class="lib-list">${chaps.map((c,i)=>
+        LIB.reorder
+        ? `<div class="lib-chap reorder">
+            <span class="lib-chap-no">${i+1}</span>
+            <span class="lib-chap-title">${esc(c.title)}</span>
+            <span class="lib-reorder-btns">
+              <button class="lib-move" data-action="libMoveUp" data-chap="${esc(c.id)}" ${i===0?'disabled':''}>↑</button>
+              <button class="lib-move" data-action="libMoveDown" data-chap="${esc(c.id)}" ${i===chaps.length-1?'disabled':''}>↓</button>
+            </span>
+          </div>`
+        : `<div class="lib-chap" data-action="libOpenChapter" data-chap="${esc(c.id)}">
+            <span class="lib-chap-no">${i+1}</span>
+            <span class="lib-chap-title">${esc(c.title)}</span>
+            <span class="lib-chevron">›</span>
+          </div>`).join('')}</div>`
         : `<div class="lib-empty">아직 장이 없어요.<br>“+ 장 추가”로 번역을 넣어보세요.</div>`}
     `;
   } else if(LIB.view==='reader'){
@@ -3911,6 +3932,30 @@ const ACTIONS = {
     for(const c of (b.chapters||[])){ await libDeleteChapter(b.id, c.id); }
     LIB.idx.books = LIB.idx.books.filter(x=>x.id!==b.id);
     try{ await libSaveIndex(); LIB.view='books'; renderLibrary(); toast('삭제했어요.'); }catch(e){ toast('저장 실패'); }
+  },
+  libToggleReorder: ()=>{ LIB.reorder = !LIB.reorder; renderLibrary(); },
+  libMoveUp: async (ds)=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    const i = b.chapters.findIndex(c=>c.id===ds.chap);
+    if(i<=0) return;
+    [b.chapters[i-1], b.chapters[i]] = [b.chapters[i], b.chapters[i-1]];
+    renderLibrary();
+    try{ await libSaveIndex(); }catch(e){ toast('저장 실패'); }
+  },
+  libMoveDown: async (ds)=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    const i = b.chapters.findIndex(c=>c.id===ds.chap);
+    if(i<0 || i>=b.chapters.length-1) return;
+    [b.chapters[i+1], b.chapters[i]] = [b.chapters[i], b.chapters[i+1]];
+    renderLibrary();
+    try{ await libSaveIndex(); }catch(e){ toast('저장 실패'); }
+  },
+  libSortByNumber: async ()=>{
+    const b = libBook(LIB.bookId); if(!b) return;
+    const numOf = t => { const m = String(t).match(/\d+/); return m ? parseInt(m[0],10) : 999999; };
+    b.chapters.sort((x,y)=> numOf(x.title) - numOf(y.title));
+    renderLibrary();
+    try{ await libSaveIndex(); toast('번호순으로 정렬했어요.'); }catch(e){ toast('저장 실패'); }
   },
   libAddChapter: async ()=>{
     const b = libBook(LIB.bookId); if(!b) return;
