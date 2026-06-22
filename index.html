@@ -147,8 +147,8 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .gs-clear{flex:0 0 auto;border:none;background:var(--ink-soft);color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;opacity:.65;}
 .gs-clear svg{width:11px;height:11px;}
 .gs-clear:hover{opacity:1;}
-.resolved-check{display:flex;align-items:center;gap:7px;margin:7px 2px 2px;font-size:13px;color:var(--ink-soft);font-weight:600;cursor:pointer;}
-.resolved-check input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;}
+.resolved-check{display:flex;align-items:center;gap:6px;margin:6px 2px 2px;font-size:11px;color:var(--ink-soft);font-weight:700;cursor:pointer;}
+.resolved-check input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer;}
 .sr-list{display:flex;flex-direction:column;gap:8px;}
 .sr-row{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--surface);display:flex;flex-direction:column;gap:7px;}
 .sr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -297,14 +297,11 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-proto-btn.clear:hover{background:var(--line);color:var(--ink);}
 .sync-proto-hint{font-size:11.5px;color:var(--ink-soft);margin:2px 0 8px;}
 .sync-list{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
-.sync-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.sync-row select{min-width:120px;}
-.sync-row input[type=date]{min-width:104px;}
-.sync-row input[type=time]{min-width:80px;}
+.sync-row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;}
 .sync-num{width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.sync-row select{flex:1.4;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
-.sync-row input[type=date]{flex:1;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
-.sync-row input[type=time]{flex:.8;padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11.5px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row select{flex:1 1 0;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row input[type=date]{flex:0 0 100px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row input[type=time]{flex:0 0 74px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
 .sync-row select:focus,.sync-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .kv-row .kv-name{flex:1.3;}
 .kv-row .kv-amount{flex:1;}
@@ -611,7 +608,13 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .date-grid .field label{font-size:10px;margin-bottom:2px;}
 .date-grid .field input{height:30px;padding:3px 7px;font-size:11.5px;}
 .date-grid .field-pair input[type=time]{max-width:88px;}
-.date-grid .field-pair input{min-width:0;flex:1 1 60px;}
+.date-grid .field-pair{flex-wrap:nowrap;}
+.date-grid .field-pair input{min-width:0;flex:1 1 auto;}
+.date-grid .field-pair input[type=time]{flex:0 0 92px;}
+.date-grid .dt-field{grid-column:1 / -1;}
+.form-grid.rc-grid{grid-template-columns:1fr 1fr 1fr;gap:8px 10px;}
+.rc-grid .field label{font-size:10px;margin-bottom:2px;}
+.rc-grid .field input{height:30px;padding:3px 8px;font-size:11.5px;}
 .date-grid .dbl-toggle{font-size:10.5px;padding:5px 8px;}
 .modal input[type=date],.modal input[type=time],.breeding-grid input[type=date]{-webkit-appearance:none;appearance:none;text-align:left;}
 .form-grid.full{grid-template-columns:1fr;}
@@ -796,7 +799,6 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 @media (max-width:540px){
   .modal{padding:18px;border-radius:14px;}
   .form-grid{grid-template-columns:1fr 1fr;}
-  .form-grid.date-grid{grid-template-columns:1fr;}
   .sync-proto-hint{font-size:10.5px;}
 }
 </style>
@@ -2318,7 +2320,7 @@ function openConfirm(message, fn){
 
 /* ---------- 폼 필드 헬퍼 ---------- */
 function dtField(label, key, val){
-  return `<div class="field">
+  return `<div class="field dt-field">
     <label>${label}</label>
     <div class="field-pair">
       <input type="date" id="f_${key}_date" value="${dateOnly(val)}">
@@ -2624,15 +2626,13 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="form-grid full" style="margin-top:8px;">
         ${textField('기타','estrusOther',r.estrusOther)}
       </div>
-      ${r.estrusSign ? `<div class="legacy-note">이전 기록(발정특징): ${esc(r.estrusSign)}</div>` : ''}
 
       <div class="fieldset-title">직장검사</div>
-      <div class="form-grid">
+      <div class="form-grid rc-grid">
         ${textField('자궁','rectalUterus',r.rectalUterus)}
         ${textField('좌난소','rectalOvaryL',r.rectalOvaryL)}
         ${textField('우난소','rectalOvaryR',r.rectalOvaryR)}
       </div>
-      ${r.rectalExam ? `<div class="legacy-note">이전 기록(직장검사): ${esc(r.rectalExam)}</div>` : ''}
 
       <div class="fieldset-title">초음파</div>
       <div class="form-grid full">
@@ -2640,7 +2640,6 @@ function openRecordModal(record, owner, presetAnimalId){
         ${ovaryInput('좌난소','ultraOvaryL',r.ultraOvaryL)}
         ${ovaryInput('우난소','ultraOvaryR',r.ultraOvaryR)}
       </div>
-      ${r.ultrasound ? `<div class="legacy-note">이전 기록(초음파): ${esc(r.ultrasound)}</div>` : ''}
 
       <div class="fieldset-title">질환</div>
       <div class="form-grid full">${textField('자궁질환','uterineDisease',r.uterineDisease,'예: 자궁내막염, 자궁축농증 등 직접 입력')}</div>
