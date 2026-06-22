@@ -982,6 +982,7 @@ function svgIcon(name, size){
     table:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M10 4v16"/>',
     save:'<path d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h6"/><rect x="8" y="13" width="8" height="6"/>',
     leaf:'<path d="M5 19c0-8 6-13 14-13 0 8-5 13-13 13"/><path d="M6 18c2-4 5-7 9-9"/>',
+    share:'<circle cx="6" cy="12" r="2.4"/><circle cx="17" cy="6" r="2.4"/><circle cx="17" cy="18" r="2.4"/><path d="M8.1 10.9l6.8-3.8M8.1 13.1l6.8 3.8"/>',
     cloud:'<path d="M7.5 18a4 4 0 0 1 .3-8A5 5 0 0 1 17 8.5 3.5 3.5 0 0 1 17.5 18z"/>',
     calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/>',
     clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9.5 4h5v2.5h-5z"/><path d="M9 11h6M9 15h6"/>',
@@ -1182,7 +1183,7 @@ function render(){
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">로그인</span></button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
-          ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('leaf')}<span class="btn-label">공유</span></button>`:''}
+          ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
           <button class="btn secondary small" data-action="openGrassInfo">${svgIcon('leaf')}<span class="btn-label">풀정보</span></button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
