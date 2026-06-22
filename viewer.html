@@ -31,6 +31,11 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-stat .l{font-size:10.5px;color:var(--ink-soft);margin-top:5px;font-weight:600;}
 
 /* 검색 */
+.v-tabs{display:flex;gap:6px;margin:6px 0 12px;background:var(--surface-alt);padding:4px;border-radius:12px;}
+.v-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:800;padding:10px 8px;border:none;border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .12s;}
+.v-tab.on{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.v-panel{animation:vfade .15s ease;}
+@keyframes vfade{from{opacity:.4;}to{opacity:1;}}
 .v-sortbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 9px;}
 .v-sort{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:all .12s;}
 .v-sort:hover{border-color:var(--primary);color:var(--primary-dark);}
@@ -88,7 +93,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-empty-sm{font-size:12.5px;color:var(--ink-soft);padding:14px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:11px;}
 
 /* 소별 임신 현황 행 */
-.v-prow{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:7px;flex-wrap:wrap;}
+.v-prow{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:5px;flex-wrap:wrap;}
 .v-calv{font-size:12px;color:var(--ink-soft);margin-left:auto;}
 
 .v-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 0;}
@@ -310,24 +315,41 @@ function renderApp(data){
 
     ${todayBanner}
 
-    <div class="v-section">${svgIcon("calendar",16)} 처치 일정</div>
-    <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
-    ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
-
-    <div class="v-section">${svgIcon("cow",16)} 번식 현황</div>
-    <div class="v-sortbar">
-      <button class="v-sort on" data-sort="id">개체번호</button>
-      <button class="v-sort" data-sort="status">상태별</button>
-      <button class="v-sort" data-sort="days">수정 경과일</button>
-      <button class="v-sort" data-sort="calv">분만예정일</button>
+    <div class="v-tabs">
+      <button class="v-tab on" data-tab="sched">${svgIcon("calendar",15)} 처치 일정</button>
+      <button class="v-tab" data-tab="status">${svgIcon("cow",15)} 번식 현황</button>
     </div>
-    <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
-    <div id="vlist"></div>
+
+    <div id="panel-sched" class="v-panel">
+      <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
+      ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
+    </div>
+
+    <div id="panel-status" class="v-panel" style="display:none;">
+      <div class="v-sortbar">
+        <button class="v-sort on" data-sort="id">개체번호</button>
+        <button class="v-sort" data-sort="status">상태별</button>
+        <button class="v-sort" data-sort="days">수정 경과일</button>
+        <button class="v-sort" data-sort="calv">분만예정일</button>
+      </div>
+      <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
+      <div id="vlist"></div>
+    </div>
 
     <div class="v-foot">
       이 화면은 담당 수의사가 공유한 정보예요.<br>
       자세한 내용은 수의사에게 문의해 주세요.
     </div>`;
+
+  // ---- 탭 전환 ----
+  document.querySelectorAll('.v-tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.v-tab').forEach(x=>x.classList.toggle('on', x===t));
+      const tab = t.dataset.tab;
+      document.getElementById('panel-sched').style.display  = tab==='sched'  ? '' : 'none';
+      document.getElementById('panel-status').style.display = tab==='status' ? '' : 'none';
+    });
+  });
 
   // ---- 번식 현황 정렬/검색 ----
   const third = x => { const p=(x.id||'').trim().split(/\s+/); return p[2]||x.id; };
