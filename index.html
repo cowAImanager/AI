@@ -149,6 +149,13 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .gs-clear:hover{opacity:1;}
 .resolved-check{display:flex;align-items:center;gap:6px;margin:6px 2px 2px;font-size:11px;color:var(--ink-soft);font-weight:700;cursor:pointer;}
 .resolved-check input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer;}
+.share-card{border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:var(--surface-alt);}
+.share-row{font-size:13px;margin-bottom:7px;color:var(--ink);}
+.share-link{width:100%;font-family:ui-monospace,monospace;font-size:11.5px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink-soft);box-sizing:border-box;}
+.share-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.share-status{font-size:11px;margin-top:7px;color:var(--ink-soft);min-height:14px;}
+.share-status.ok{color:var(--primary-dark);font-weight:700;}
+.share-status.err{color:var(--notpregnant-bg);font-weight:700;}
 .sr-list{display:flex;flex-direction:column;gap:8px;}
 .sr-row{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--surface);display:flex;flex-direction:column;gap:7px;}
 .sr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -1153,6 +1160,7 @@ function render(){
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">관리자</span></button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
+          ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('leaf')}<span class="btn-label">공유</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
           <button class="btn secondary small" data-action="openGrassInfo">${svgIcon('leaf')}<span class="btn-label">풀정보</span></button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
@@ -3566,7 +3574,139 @@ function refreshPregStage(){
     const fs=document.getElementById('f_fetalSex'); if(fs) fs.value='';
   }
 }
+/* ============================================================
+   축주 공유 (viewer.html 으로 보낼 선별 데이터 publish)
+   - Firestore  shared/{토큰}  에 저장. 토큰만으로 접근, 이름 URL에 없음
+   - 민감정보(소견·메모·KPN·호르몬 등) 제외, 소상태+동기화일정만
+============================================================ */
+const SHARE_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBtj_LZ5hGZJhuVfX971Kyrb-xkXGS7XGo",
+  authDomain: "aimanager-a36b3.firebaseapp.com",
+  projectId: "aimanager-a36b3",
+  storageBucket: "aimanager-a36b3.firebasestorage.app",
+  messagingSenderId: "24929299448",
+  appId: "1:24929299448:web:8259496a583a451a8d040d"
+};
+let _shareDB = null;
+async function getShareDB(){
+  if(_shareDB) return _shareDB;
+  if(typeof firebase==='undefined') throw new Error('Firebase 미로딩');
+  if(!firebase.apps || !firebase.apps.length) firebase.initializeApp(SHARE_FIREBASE_CONFIG);
+  await firebase.auth().signInAnonymously();
+  _shareDB = firebase.firestore();
+  return _shareDB;
+}
+function genToken(){
+  const c='abcdefghijkmnpqrstuvwxyz23456789'; let s='';
+  for(let i=0;i<7;i++) s+=c[Math.floor(Math.random()*c.length)];
+  return s;
+}
+function ownerShareToken(owner, regenerate){
+  DATA.shareTokens = DATA.shareTokens || {};
+  if(regenerate || !DATA.shareTokens[owner]){ DATA.shareTokens[owner] = genToken(); saveState(); }
+  return DATA.shareTokens[owner];
+}
+function recordsOf(owner, animalId){
+  return DATA.records.filter(r=>r.owner===owner && r.animalId===animalId)
+    .sort((a,b)=> recordSortKey(b) - recordSortKey(a));
+}
+function shareAnimalStatus(owner, a){
+  const recs = recordsOf(owner, a.animalId);
+  if(isCurrentlyPregnant(recs)) return '임신중';
+  if(a.fattening) return '비육전환';
+  const hasAi = recs.some(r=>r.aiDate);
+  return hasAi ? '비임신' : '미수정';
+}
+function shareExpCalving(owner, a){
+  const recs = recordsOf(owner, a.animalId);
+  if(!isCurrentlyPregnant(recs)) return null;
+  const withCalv = recs.filter(r=>(r.expectedCalving||'').trim());
+  return withCalv.length ? dateOnly(withCalv[0].expectedCalving) : null;
+}
+function buildSharePayload(owner){
+  const animals = DATA.animals.filter(a=>a.owner===owner)
+    .sort((a,b)=>a.animalId.localeCompare(b.animalId))
+    .map(a=>({ id:a.animalId, status:shareAnimalStatus(owner,a), expectedCalving:shareExpCalving(owner,a) }));
+  // 동기화/처치 일정: 그 축주가 수동 입력한 스케줄 (오늘 기준 과거 7일~미래)
+  const cutoff = addDays(todayStr(), -7);
+  const schedule = DATA.schedule.filter(s=>s.owner===owner && (s.note||'').trim() && dateOnly(s.date) >= cutoff)
+    .map(s=>({ date: dateOnly(s.date), id: s.animalId, note: (s.note||'').trim() }))
+    .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
+  return { owner, updatedAt: todayStr(), animals, schedule };
+}
+function shareViewerLink(owner){
+  const token = ownerShareToken(owner);
+  const base = location.origin + location.pathname.replace(/[^/]*$/, 'viewer.html');
+  return base + '?t=' + token;
+}
+async function publishShare(owner){
+  const token = ownerShareToken(owner);
+  const payload = buildSharePayload(owner);
+  const db = await getShareDB();
+  await db.collection('shared').doc(token).set(payload);
+  return payload;
+}
+function openShareManage(){
+  const owners = DATA.owners.slice();
+  openModal(`
+    <div class="modal" style="max-width:480px;">
+      <h2>축주 공유 링크</h2>
+      <div class="modal-sub" style="margin-bottom:14px;">
+        축주에게 보낼 <b>읽기 전용</b> 링크예요. 소 상태와 동기화(처치) 일정만 보이고,
+        진료 소견·메모 등은 포함되지 않아요. <b>공유 갱신</b>을 눌러야 최신 상태가 반영됩니다.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${owners.map(o=>{
+          const link = shareViewerLink(o);
+          return `<div class="share-card">
+            <div class="share-row"><b>${esc(o)}님</b></div>
+            <input class="share-link" id="sharelink_${esc(o)}" value="${esc(link)}" readonly>
+            <div class="share-btns">
+              <button class="btn small" data-action="shareRefresh" data-owner="${esc(o)}">${svgIcon('refresh',14)} 공유 갱신</button>
+              <button class="btn secondary small" data-action="shareCopy" data-owner="${esc(o)}">${svgIcon('clipboard',14)} 링크 복사</button>
+              <button class="btn secondary small" data-action="shareRegen" data-owner="${esc(o)}" title="기존 링크 무효화 후 새 링크 발급">토큰 재발급</button>
+            </div>
+            <div class="share-status" id="sharestatus_${esc(o)}"></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn secondary" data-action="closeModal">닫기</button>
+      </div>
+    </div>
+  `);
+}
+
 const ACTIONS = {
+  openShareManage: ()=>{ if(!isAdmin()) return noAdminToast(); openShareManage(); },
+  shareRefresh: async (ds)=>{
+    const st = document.getElementById('sharestatus_'+ds.owner);
+    if(st){ st.textContent='갱신 중…'; st.className='share-status'; }
+    try{
+      const p = await publishShare(ds.owner);
+      if(st){ st.textContent=`✓ 갱신 완료 — 소 ${p.animals.length}두 · 일정 ${p.schedule.length}건 (${p.updatedAt})`; st.className='share-status ok'; }
+      toast('공유 데이터를 갱신했어요.');
+    }catch(e){
+      console.error(e);
+      if(st){ st.textContent='✗ 갱신 실패 — 인터넷/Firebase 연결을 확인해주세요.'; st.className='share-status err'; }
+      toast('공유 갱신에 실패했어요.');
+    }
+  },
+  shareCopy: (ds)=>{
+    const el = document.getElementById('sharelink_'+ds.owner);
+    if(!el) return;
+    el.select(); el.setSelectionRange(0,9999);
+    try{ navigator.clipboard.writeText(el.value); }catch(e){ document.execCommand('copy'); }
+    toast('링크를 복사했어요.');
+  },
+  shareRegen: (ds)=>{
+    ownerShareToken(ds.owner, true);
+    const el = document.getElementById('sharelink_'+ds.owner);
+    if(el) el.value = shareViewerLink(ds.owner);
+    const st = document.getElementById('sharestatus_'+ds.owner);
+    if(st){ st.textContent='새 링크 발급됨 — 공유 갱신을 눌러 데이터를 올리세요.'; st.className='share-status'; }
+    toast('새 토큰을 발급했어요. 공유 갱신을 눌러주세요.');
+  },
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
   addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
   openOwnerManage: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerManage(); },
