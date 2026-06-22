@@ -349,7 +349,7 @@ function renderApp(data){
     return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
         <span class="v-id">${esc(a.id)}</span>
         ${statusBadge(a.status)}
-        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)} <span class="v-dday">${ddayText(a.expectedCalving)}</span></span>`:''}
+        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)}</span>`:''}
         ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
       </div>`;
   }
