@@ -111,7 +111,7 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .theme-toggle:hover{background:var(--surface);}
 
 .owner-tabs{display:flex;gap:6px;margin-top:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
-.owner-tab{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:10px 10px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
+.owner-tab{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px 9px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:12.5px;cursor:pointer;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;transition:background .15s,color .15s;letter-spacing:-.01em;}
 .owner-tabs .tab-break{display:none;}
 .owner-tab.active{background:var(--surface);color:var(--primary-dark);font-weight:800;box-shadow:0 -2px 8px rgba(0,0,0,.06);}
 .owner-tab.addnew{background:transparent;border:1px dashed var(--line);color:var(--ink-soft);font-weight:600;}
@@ -644,16 +644,16 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .seg-tbtn+.seg-tbtn{border-left:1px solid var(--line);}
 .seg-tbtn.on{background:var(--primary);color:#fff;}
 .seg-tbtn.on[data-val="X"]{background:var(--notpregnant-bg);}
-.ov-seg-group{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);}
-.ov-seg{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;}
+.ov-seg-group{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);height:32px;box-sizing:border-box;}
+.ov-seg{border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-size:11px;font-weight:700;height:32px;padding:0 11px;cursor:pointer;display:inline-flex;align-items:center;}
 .ov-seg+.ov-seg{border-left:1px solid var(--line);}
 .ov-seg.on{background:var(--primary);color:#fff;}
 .ov-num-wrap{position:relative;display:inline-flex;align-items:center;}
-.ov-num-wrap input{width:72px;padding:7px 26px 7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
+.ov-num-wrap input{width:74px;height:32px;padding:0 28px 0 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
 .ov-num-wrap input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .ov-num-wrap .ov-unit{position:absolute;right:9px;font-size:12px;color:var(--ink-soft);font-weight:700;pointer-events:none;}
-.ov-add{border:1px solid var(--line);background:var(--surface-alt);border-radius:7px;padding:6px 10px;font-family:inherit;font-size:11px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
-.ov-note{flex:1 1 120px;min-width:100px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
+.ov-add{border:1px solid var(--line);background:var(--surface-alt);border-radius:7px;height:32px;padding:0 12px;font-family:inherit;font-size:11px;font-weight:700;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;}
+.ov-note{flex:1 1 120px;min-width:100px;height:32px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);box-sizing:border-box;}
 .ov-note:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .ov-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
 .ov-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--primary-dark);border:1px solid var(--primary);border-radius:7px;padding:3px 8px;font-size:11.5px;font-weight:700;}
@@ -1169,8 +1169,8 @@ function render(){
 
 function renderOwnerTabs(){
   DATA.owners.forEach(ensureOwnerMeta);
-  let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">${svgIcon('calendar')}<span>분만예정일</span></div>`;
-  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">${svgIcon('clipboard')}<span>전체스케줄</span></div>`;
+  let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">${svgIcon('calendar',14)}<span>분만예정일</span></div>`;
+  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">${svgIcon('clipboard',14)}<span>전체스케줄</span></div>`;
   html += `<div class="tab-break" aria-hidden="true"></div>`;
   // 현재 보고 있는 축주가 보관됨이면 임시로 보여줌
   if(ownerArch(UI.owner)){
