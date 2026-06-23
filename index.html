@@ -859,6 +859,31 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .lib-edit-body{width:100%;box-sizing:border-box;flex:1;min-height:300px;padding:12px;font-size:14px;line-height:1.8;border:1px solid var(--line);border-radius:9px;background:var(--surface-alt);color:var(--ink);resize:vertical;outline:none;font-family:inherit;white-space:pre-wrap;}
 .lib-edit-foot{margin-top:8px;}
 .lib-close-row{margin-top:12px;display:flex;justify-content:flex-end;flex:0 0 auto;}
+
+/* 공태관리 */
+.open-wrap{padding:4px 2px;}
+.open-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.open-head h2{font-size:18px;font-weight:800;color:var(--ink);margin:0;}
+.open-count{font-size:13px;font-weight:700;color:#fff;background:var(--primary);border-radius:20px;padding:2px 11px;}
+.open-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;}
+.open-list{display:flex;flex-direction:column;gap:8px;}
+.open-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:all .12s;}
+.open-row:hover{border-color:var(--primary);background:var(--green-soft);}
+.open-row.noinfo{background:var(--surface-alt);}
+.open-id{flex:0 0 auto;min-width:46px;font-size:15px;font-weight:800;color:var(--primary-dark);font-variant-numeric:tabular-nums;}
+.open-main{flex:1;min-width:0;}
+.open-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.open-due{font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.open-due b{color:var(--ink);font-weight:800;font-size:14px;}
+.open-due.muted{color:var(--ink-soft);font-style:normal;}
+.open-dd{display:inline-block;font-size:11.5px;font-weight:800;color:var(--estrus-text);background:var(--estrus-soft);border-radius:6px;padding:1px 8px;}
+.open-dd.today{color:#fff;background:var(--notpregnant-bg);}
+.open-basis{font-size:10.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:5px;padding:0 5px;}
+.open-chev{flex:0 0 auto;color:var(--ink-soft);font-size:20px;}
+.open-st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 7px;margin-left:4px;vertical-align:middle;}
+.open-st.rebreed{color:var(--notpregnant-bg);background:var(--notpregnant-soft,#FBE9E7);}
+.open-st.unbred{color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);}
+
 </style>
 </head>
 <body>
@@ -1262,7 +1287,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄']];
   if(isAdmin()) tabs.unshift(['owner','축사정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
@@ -1366,6 +1391,7 @@ function renderMain(){
   else if(UI.view==='date') main.innerHTML = renderDateView();
   else if(UI.view==='owner') main.innerHTML = renderOwnerInfoView();
   else if(UI.view==='pregcheck') main.innerHTML = renderPregCheckView();
+  else if(UI.view==='open') main.innerHTML = renderOpenView();
   else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
@@ -2229,6 +2255,101 @@ function renderPregCheckView(){
 /* ============================================================
    질환 보기
 ============================================================ */
+/* ===== 공태관리: 미수정 개체의 다음 발정예정일 모음 ===== */
+function nextEstrusForAnimal(a, recs){
+  // 1순위: 수기로 적어둔 '다음발정일'
+  const cycleLen = parseInt(a.cycleLength,10) || 21;
+  const today = todayStr();
+  const project = (d) => { // 오늘 지난 예정일은 주기 더해 미래로
+    let x = dateOnly(d); let guard=0;
+    while(x < today && guard++ < 60){ x = addDays(x, cycleLen); }
+    return x;
+  };
+  const manual = manualNextEstrus(recs);
+  if(manual) return { date: project(manual), basis:'수기', cycleLen };
+  // 2순위: 발정주기 추정으로 다음 발정일 계산
+  const est = estimateCycleToday(a, recs);
+  if(est && typeof est.day==='number' && est.baseDate){
+    const daysToEstrus = (est.cycleLen - est.day) % est.cycleLen;
+    return { date: addDays(today, daysToEstrus), basis:'추정', cycleLen: est.cycleLen };
+  }
+  return null; // 정보없음
+}
+function renderOpenView(){
+  const owner = UI.owner;
+  const animals = DATA.animals.filter(a=>a.owner===owner);
+  const today = todayStr();
+  const withDate = [];
+  const noInfo = [];
+  animals.forEach(a => {
+    const recs = recordsOf(owner, a.animalId).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+    const st = shareAnimalStatus(owner, a).status;
+    // 공태(빈 자궁) 대상: 미수정 + 비임신(재수정 대기). 임신중/비육전환/감정대기 제외
+    if(st!=='미수정' && st!=='비임신') return;
+    if(a.fattening) return;
+    if(awaitingPregOutcome(recs)) return;
+    const nx = nextEstrusForAnimal(a, recs);
+    if(nx){
+      const dd = daysBetween(today, nx.date);
+      withDate.push({ a, date:nx.date, dd, basis:nx.basis, st });
+    } else {
+      noInfo.push({ a, st });
+    }
+  });
+  withDate.sort((x,y)=> x.date.localeCompare(y.date));
+  noInfo.sort((x,y)=> animalNumKey(x.a.animalId)-animalNumKey(y.a.animalId));
+
+  const total = withDate.length + noInfo.length;
+  if(total===0){
+    return `<div class="open-wrap"><div class="open-head"><h2>공태관리</h2></div>
+      <div class="empty-msg">미수정 상태인 개체가 없어요.</div></div>`;
+  }
+
+  const ddLabel = dd => dd<=0 ? `<span class="open-dd today">오늘! D-0</span>`
+    : `<span class="open-dd">D-${dd}</span>`;
+
+  const stBadge = st => st==='비임신'
+    ? `<span class="open-st rebreed">재수정 대기</span>`
+    : `<span class="open-st unbred">미수정</span>`;
+
+  const rowsHtml = withDate.map(({a,date,dd,basis,st}) => `
+    <div class="open-row" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+      <div class="open-id">${esc(a.animalId)}</div>
+      <div class="open-main">
+        <div class="open-name">${esc(owner)} ${esc(animalShortName(a))} ${stBadge(st)}</div>
+        <div class="open-due">다음 발정예정 <b>${fmtShort(date)}</b> ${ddLabel(dd)}
+          <span class="open-basis">${basis==='수기'?'입력':'추정'}</span>
+        </div>
+      </div>
+      <div class="open-chev">›</div>
+    </div>`).join('');
+
+  const noInfoHtml = noInfo.map(({a,st}) => `
+    <div class="open-row noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+      <div class="open-id">${esc(a.animalId)}</div>
+      <div class="open-main">
+        <div class="open-name">${esc(owner)} ${esc(animalShortName(a))} ${stBadge(st)}</div>
+        <div class="open-due muted">정보없음</div>
+      </div>
+      <div class="open-chev">›</div>
+    </div>`).join('');
+
+  return `<div class="open-wrap">
+    <div class="open-head"><h2>공태관리</h2><span class="open-count">${total}마리</span></div>
+    <div class="open-sub">미수정 개체의 다음 발정예정일이에요. 줄을 누르면 개체 상세로 이동해요.</div>
+    <div class="open-list">${rowsHtml}${noInfoHtml}</div>
+  </div>`;
+}
+/* 개체번호에서 정렬용 숫자 키 (마지막 숫자그룹) */
+function animalNumKey(id){
+  const m = String(id||'').match(/(\d+)(?!.*\d)/);
+  return m ? parseInt(m[1],10) : 999999;
+}
+/* 개체 짧은 이름 (번호 뒤 라벨이 있으면 사용, 없으면 번호) */
+function animalShortName(a){
+  return a.name || a.animalId || '';
+}
+
 function renderDiseaseView(){
   const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
   const recs = DATA.records
@@ -4098,6 +4219,7 @@ const ACTIONS = {
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
+  gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
   backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
   addAnimal: ()=>openAnimalModal(null),
   editAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
