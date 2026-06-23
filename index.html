@@ -905,6 +905,24 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .vet-subtab:hover{color:var(--primary);}
 .home-link{display:inline-flex;align-items:center;border-radius:8px;transition:opacity .15s;}
 .home-link:hover{opacity:.7;}
+/* 번식학 콘텐츠 */
+.rb-block{padding:2px 0 8px;}
+.rb-sub{font-size:14px;font-weight:800;color:var(--primary-dark);margin:18px 0 9px;padding:8px 12px;background:var(--accent-soft);border-radius:9px;border-left:4px solid var(--primary);}
+.rb-h{font-size:13px;font-weight:700;color:var(--ink);margin:13px 0 5px;}
+.rb-p{font-size:13px;line-height:1.75;color:var(--ink-soft);margin:7px 0;}
+.rb-list{margin:5px 0 11px;padding-left:19px;}
+.rb-list li{font-size:13px;line-height:1.8;color:var(--ink);margin-bottom:8px;}
+.rb-label{display:inline-block;background:var(--primary);color:#fff;font-size:11px;padding:1px 8px;border-radius:6px;margin-right:5px;font-weight:700;}
+/* 번식학 학습 콜아웃 */
+.rb-intro{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:4px 0 14px;padding:10px 12px;background:var(--surface-alt);border-radius:9px;}
+.rb-key{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 13px;margin:11px 0;}
+.rb-key-t{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:6px;}
+.rb-key ul{margin:0;padding-left:18px;}
+.rb-key li{font-size:12.5px;line-height:1.7;color:var(--ink);margin-bottom:4px;font-weight:600;}
+.rb-caution{background:var(--notpregnant-row-bg,#FBEDEC);border-left:4px solid var(--notpregnant-bg,#C0392B);border-radius:8px;padding:9px 12px;margin:11px 0;font-size:12.5px;line-height:1.65;color:var(--ink);}
+.rb-caution b{color:var(--notpregnant-bg,#C0392B);}
+.rb-clinical{background:var(--active-item-bg,#E3F4F1);border-left:4px solid var(--primary);border-radius:8px;padding:9px 12px;margin:11px 0;font-size:12.5px;line-height:1.65;color:var(--ink);}
+.rb-clinical b{color:var(--primary-dark);}
 </style>
 </head>
 <body>
@@ -3181,7 +3199,7 @@ function fmtCalcDate(d){
 }
 function grassContentHtml(){
   return `
-      <div class="modal-sub" style="margin-bottom:10px;">🌿 조사료(풀·짚) — 종류별 영양성분·특성 요약</div>
+      <div class="modal-sub" style="margin-bottom:10px;">${svgIcon('leaf',15)} 조사료(풀·짚) — 종류별 영양성분·특성 요약</div>
 
       <div class="grass-legend">
         <span class="grass-tag" style="background:#FFF3CD;color:#7A5A00;"><b>TDN</b> — 소화 가능한 에너지 비율. 높을수록 같은 양으로 더 많은 에너지 공급</span>
@@ -3298,10 +3316,10 @@ function grassContentHtml(){
           <div class="grass-sim">🔁 유사: 티모시, IRG 건초</div>
         </div>
         <div class="grass-card import" style="border-left-color:#B05A30;">
-          <div class="grass-name">톨페스큐<span class="grass-badge warn">⚠️ 번식우 주의</span></div>
+          <div class="grass-name">톨페스큐<span class="grass-badge warn">${svgIcon('noEntry',12)} 번식우 주의</span></div>
           <div class="grass-meta"><span class="grass-color-dot" style="background:#608050;"></span>짙은 녹색, 잎이 거칠고 뻣뻣함</div>
           <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~520원/kg (수입)</span></div>
-          <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">⚠️ 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
+          <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">${svgIcon('noEntry',13)} 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
           <div class="grass-sim">🔁 유사: 오차드그라스 (영양 수준), 볏짚 (기호성 낮음 공통점)</div>
         </div>
       </div>
@@ -3340,7 +3358,7 @@ function grassContentHtml(){
       <!-- 시세 -->
       <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">💰 가격 안내</span><span class="gst-sub">2026년 상반기 기준 · kg당 (시세 급등)</span></span></div>
       <div class="grass-rec" style="margin-bottom:10px;border-left:4px solid var(--accent);">
-        <div class="grass-rec-title" style="color:var(--ai-text);">⚠️ 2026년 시세 안내</div>
+        <div class="grass-rec-title" style="color:var(--ai-text);">${svgIcon('noEntry',14)} 2026년 시세 안내</div>
         <ul>
           <li>유가·환율·작황 영향으로 <b>2026년 들어 값이 크게 올랐어요.</b></li>
           <li>볏짚 산지 가격이 2025년 평균 약 160원 → <b>2026년 2월 약 250원</b>대로 급등(전남·북 기준). 운송비 포함 시 경기·강원은 더 높음.</li>
@@ -3383,14 +3401,273 @@ function grassContentHtml(){
 }
 function reproContentHtml(){
   return `
-      <div class="modal-sub" style="margin-bottom:10px;">🧬 번식학 — 발정·수정·임신·분만 참고자료</div>
-      <p style="color:var(--ink-soft);font-size:13.5px;line-height:1.8;padding:14px 2px;">번식학 탭이에요. 발정주기·인공수정 적기·임신감정 시기·분만 징후 같은 참고 내용을 여기에 넣을 수 있어요. 어떤 내용을 넣을지 알려주면 채워드릴게요.</p>
+<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('dna',16)} 번식학 — 소 번식 생리·진료 통합 정리</div>
+<p class="rb-intro">번식 생리(호르몬·발정주기)부터 발정 관찰·직장 검사·인공수정·임신 감정·번식 장애·분만 후 회복·실전 번식 관리까지, 학습 순서대로 정리했습니다. 핵심 수치와 임상 판단 기준은 별도 박스로 강조했습니다.</p>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('dna',15)} 1. 번식 호르몬의 기초</span><span class="gst-sub">정의·분류와 7대 호르몬, 시상하부–뇌하수체–성선 축</span></span></div>
+<div class="rb-block"><div class="rb-sub">호르몬과 내분비 축</div>
+<p class="rb-p">호르몬은 특정 내분비선에서 분비되어 혈류를 타고 표적 기관에 도달, 극미량으로 세포 기능을 조절하는 화학 물질이다. 화학적 성상에 따라 스테로이드(E2·P4·테스토스테론), 아미노산 유도체(갑상선호르몬·멜라토닌), 펩타이드·단백질(GnRH·LH·FSH·옥시토신), 지방산(PGF2α)으로 나뉜다.</p>
+<p class="rb-p">번식 기능의 중심은 시상하부–뇌하수체–성선 축이다. 시상하부의 GnRH가 뇌하수체 전엽을 자극해 FSH·LH를 분비시키고, 이들이 난소(또는 정소)에 작용해 성스테로이드를 만든다. 다시 그 스테로이드가 시상하부로 되먹임(피드백)되어 전체 흐름이 조절된다.</p>
+<div class="rb-key"><div class="rb-key-t">축의 한 줄 요약</div><ul><li>시상하부(GnRH) → 뇌하수체 전엽(FSH·LH) → 난소(E2·P4) → 되먹임으로 GnRH 조절</li></ul></div>
+<div class="rb-sub">번식에 관여하는 7대 호르몬</div>
+<ul class="rb-list"><li><b class="rb-label">GnRH</b> 시상하부에서 분비. FSH·LH의 합성·분비를 제어하는 최상위 지령. 펄스(pulse)상·서지(surge)상 두 방출 양식이 있다.</li><li><b class="rb-label">FSH</b> 뇌하수체 전엽. 소난포(작은 난포)의 발육을 촉진. 단독으로는 난포를 완전히 성숙시키지 못해 LH와 협동이 필요.</li><li><b class="rb-label">LH</b> 뇌하수체 전엽. 우성 난포의 발육·성숙, 배란 유도, 황체 형성·유지. 펄스상은 난포·황체 발육, 서지상은 배란을 일으킨다.</li><li><b class="rb-label">인히빈(Inhibin)</b> 우성 난포의 과립막세포에서 분비. FSH 방출을 억제하여 우성 난포 선발에 관여.</li><li><b class="rb-label">에스트라디올(E2)</b> 난포(우성 난포)에서 분비되는 발정 호르몬. 발정 행동·자궁 수축·자궁경관 이완·외음부 종창을 일으킴. 시상하부에 양성 피드백 → LH 서지 → 배란.</li><li><b class="rb-label">프로게스테론(P4)</b> 황체에서 분비되는 임신 유지 호르몬. 자궁 수축 억제, 발정 억제. 시상하부에 음성 피드백 → LH 분비 저하로 난포 성숙·배란 억제.</li><li><b class="rb-label">PGF2α</b> 자궁내막에서 분비. 황체 퇴행 인자. 자궁에서 생성되어 난소동맥으로 직접 이행, 고농도로 황체에 작용해 퇴행을 유도.</li></ul>
+<div class="rb-clinical"><b>임상 한 줄</b> E2가 오르면 발정·배란, P4가 높으면 발정 억제·임신 유지, PGF2α가 나오면 황체가 죽고 발정이 다시 온다.</div>
+<div class="rb-sub">심화: 키스펩틴과 KNDy 뉴런</div>
+<p class="rb-p">키스펩틴은 시상하부–뇌하수체–성선 축의 최상위에 위치하며 GnRH 분비를 조절하는 펩타이드다. 궁상핵의 키스펩틴 뉴런은 뉴로키닌 B(NKB)·다이노르핀(Dyn)도 함께 분비해 KNDy 뉴런이라 불리며, GnRH 펄스 발생의 본체로 여겨진다.</p>
+<p class="rb-p">저영양(에너지 부족) 신호는 다이노르핀 뉴런을 활성화해 키스펩틴 뉴런을 억제 → GnRH/LH 펄스 저하 → 번식 기능 저하로 이어진다. 영양 상태가 번식에 직접 영향을 주는 분자 기전이다.</p>
+<div class="rb-sub">번식에 쓰이는 호르몬 제제 5종 (요약, 자세히는 9장)</div>
+<ul class="rb-list"><li><b class="rb-label">GnRH 제제</b> 우성 난포(11mm 이상)를 배란시키는 용도. 난포가 없으면 효과 없음. 투여 후 26~30시간에 배란.</li><li><b class="rb-label">hCG</b> LH 작용. 배란 유도·황체 기능 향상(수정 5일 후 투여로 부황체 형성, P4 상승).</li><li><b class="rb-label">PGF2α 제제</b> 황체 퇴행 유도 → 발정 유도. 자궁축농증·내막염 치료에도 사용. 단, 발정주기 6일 이전엔 잘 안 듣는다.</li><li><b class="rb-label">E2 제제</b> 발정 유도·자궁경관 확장. 주로 P4 제제와 병용해 동기화에 사용.</li><li><b class="rb-label">P4 제제(질 내 유치형, CIDR 등)</b> 혈중 P4를 높여 발정·배란을 억제·조정. 동기화 프로그램의 핵심 부품.</li></ul></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('refresh',15)} 2. 발정주기와 난소 동태</span><span class="gst-sub">21일 주기·난포파·황체, Day별 난소 변화와 호르몬</span></span></div>
+<div class="rb-block"><div class="rb-sub">발정주기 개요</div>
+<div class="rb-key"><div class="rb-key-t">꼭 외울 숫자</div><ul><li>발정주기 평균 21일 (실제 18~24일 범위)</li><li>현대 고능력 착유우는 평균보다 약 1일 길어졌을 가능성</li><li>발정일 = Day 0, 배란 = Day 1 (발정 약 24시간 후)</li><li>난포파(follicular wave)는 한 주기에 2~3회</li><li>황체 퇴행 시작 = Day 15~17 (PGF2α 작용)</li></ul></div>
+<p class="rb-p">모든 소가 정확히 21일은 아니다. 미경산우는 조금 짧게(19~20일), 고산차 경산우는 조금 길게(22~23일) 회귀하는 경향이 있다. 같은 소도 매번 1~2일 달라진다. 그래서 발정 관찰은 18일째 전후부터 24일째까지 폭넓게 한다.</p>
+<div class="rb-sub">난포파란?</div>
+<p class="rb-p">다수의 소난포(3~4mm)가 발육을 시작해 그중 하나가 우성 난포로 선발·성장하는 과정을 난포파라 한다. 우성 난포는 보통 10mm를 넘긴 난포로 본다. 좌우 난소는 한 기관처럼 작동해, 우성 난포는 대개 좌우 중 한쪽에 하나만 출현한다.</p>
+<div class="rb-sub">Day별 난소 구조물 변화 (2난포파·21일 모델)</div>
+<ul class="rb-list"><li><b class="rb-label">Day 0 (발정)</b> 배란 난포 약 18(15~20)mm + 퇴행 황체 약 15mm. 난포는 파동감(물풍선 누르는 감촉), 배란이 가까우면 더 물렁해진다.</li><li><b class="rb-label">Day 1</b> 배란 직후. 자리에 황체 시작(3~5mm, 촉지 불가). 제1난포파 발현 시작.</li><li><b class="rb-label">Day 3~6</b> 황체 15→25mm로 발육. 제1난포파 우성 난포 8→14mm로 선발·성장. 황체는 닭가슴살 같은 적당한 탄력.</li><li><b class="rb-label">Day 8~10</b> 황체 28~30mm로 발육 멈춤(유지기). 제1난포파 우성 난포 16~18mm, 긴장감 약해짐.</li><li><b class="rb-label">Day 11경</b> 제1난포파 우성 난포 폐쇄 → 제2난포파 발현. 폐쇄된 난포는 바로 작아지지 않고 한동안 크기 유지.</li><li><b class="rb-label">Day 15~17</b> 자궁에서 PGF2α 방출 → 황체 퇴행 스위치 ON.</li><li><b class="rb-label">Day 18~19</b> 자궁 수축·약한 발정 징후 시작. 황체 급격히 작아져 20mm 미만의 딱딱·울퉁불퉁한 퇴행 황체로.</li><li><b class="rb-label">Day 20 → Day 0</b> 제2난포파 우성 난포가 18mm 전후 성숙 난포로. 발정 징후 강해지고 다시 Day 0.</li></ul>
+<div class="rb-clinical"><b>중요 시기</b> Day 14~18에는 제1·제2난포파 우성 난포가 둘 다 10mm 이상이라, 직장 검사 시 큰 황체 + 난포 2개가 만져질 수 있다.</div>
+<div class="rb-sub">호르몬 동태로 보는 발정·배란</div>
+<p class="rb-p">황체기에는 혈중 P4가 높아 LH 펄스 빈도가 낮다(8시간당 1~2회). Day 15~17 황체 퇴행으로 P4가 급락하면 LH 펄스가 고빈도(시간당 1~2회 이상)가 되어 우성 난포가 성숙하고 E2를 충분히 방출한다. 높은 E2를 시상하부가 감지 → LH 서지 → 약 24시간 뒤 배란.</p>
+<div class="rb-key"><div class="rb-key-t">배란 전후 타이밍</div><ul><li>혈중 E2 피크 → 3~9시간 뒤 LH 서지 피크 → 약 24시간 뒤 배란</li><li>LH 서지 후 E2는 빠르게 저하 → 배란 직전엔 외음부 종창·자궁 수축이 오히려 약해질 수 있음</li></ul></div>
+<div class="rb-caution"><b>헷갈리기 쉬운 점</b> 수정 후 7~10일경(제1난포파 우성 난포가 큰 시기)에는 큰 황체가 있는데도 E2 영향으로 &quot;발정 같은&quot; 징후를 보이는 소가 있다. 황체가 살아있으면 발정이 아니므로 수정하면 안 된다.</div>
+<div class="rb-sub">난포파 동태 심화 — deviation과 우성 난포 선택</div>
+<p class="rb-p">난포파의 시작에는 FSH 농도 상승이 선행한다. 성장하는 난포들이 E2와 인히빈을 분비하면 음성 피드백으로 FSH가 다시 떨어진다.</p>
+<div class="rb-key"><div class="rb-key-t">deviation(편차)</div><ul><li>가장 큰 난포가 직경 8mm에 도달 → 다른 난포보다 빠르게 자라 우성 난포가 됨</li><li>나머지 난포는 퇴화 → 종속 난포 (이 갈림이 deviation)</li><li>deviation은 다음 난포가 중요한 크기에 도달하기 전 빠르게 일어난다</li></ul></div>
+<p class="rb-p">우성 난포가 낮은 FSH에서도 살아남는 비결: ① 작은 난포엔 부족한 낮은 FSH 농도에서도 계속 자라는 능력을 키우고 ② 8mm에 도달하면 과립세포에 LH 수용체가 발달하기 시작한다(FSH가 자극). 이 LH 수용체가 FSH 역할을 대신해, FSH가 낮아도 우성 난포만 계속 성장한다. 성장 말기엔 황체 퇴행 여부에 따라 우성 난포가 배란하거나, LH 수용체를 잃고 위축된다.</p>
+<p class="rb-p">우성 난포가 퇴화하기 시작하면 E2·인히빈이 줄어 FSH surge가 일어나고, 이것이 다음 난포파를 시작시킨다. 난포의 E2 분비가 멈추면 FSH가 다시 올라 다음 파동·난소 주기가 재개된다.</p>
+<div class="rb-clinical"><b>두 난소 = 하나의 단위</b> 좌우 난소의 난포파는 하나의 난포파로 해석한다. 그리고 황체기에도 난포는 계속 자란다(다만 높은 P4 때문에 배란으로 이어지지 않을 뿐).</div>
+<div class="rb-sub">난포파와 황체 용해(옥시토신 수용체) 기전</div>
+<p class="rb-p">배란 직후(Day 0) 제1난포파가 시작되어 우성 난포 → E2 → 자궁내막에 옥시토신 수용체 형성으로 이어진다. 단 이 시기엔 P4가 너무 높아 배란까지 가지 못한다.</p>
+<ul class="rb-list"><li><b class="rb-label">제1난포파 E2의 역할</b> 옥시토신 수용체 합성을 미리 자극하는 자궁내막 &quot;프라이밍&quot;.</li><li><b class="rb-label">제1난포파 E2·인히빈</b> FSH를 낮게 유지해(deviation) 제2난포파가 동시에 진행되지 못하게 막는다.</li><li><b class="rb-label">10~12일 P4 노출</b> 자궁내막의 P4 민감도가 점점 떨어지기 시작.</li><li><b class="rb-label">제2난포파 E2</b> 옥시토신 수용체 합성을 급격히 증가시켜 황체 용해(퇴행)를 가능하게 함.</li></ul>
+<p class="rb-p">참고: 난포는 발달하는 난자를 보호·영양 공급하고, 발정 행동을 조절하는 스테로이드(E2)를 분비하며, 배란 후 황체를 형성하는 세포를 제공한다. 황체는 배란 후 난포 세포로부터 만들어지는 일시적 내분비선이다. 생후 첫 몇 주에도 난포파는 있으나 우성 난포가 위축될 뿐 배란으로 이어지지 않고, 사춘기 이후에야 배란으로 끝나는 난포파가 시작된다.</p>
+<div class="rb-sub">2파 vs 3파 주기 — 황체 동태</div>
+<p class="rb-p">한 주기에 난포파는 보통 2~3회 친다. 첫 난포파는 항상 배란일(0일)에 출현하고, 두 번째는 2파 주기에서 9~10일, 3파 주기에서 8~9일에, 3파에서는 세 번째가 15~16일에 나온다.</p>
+<div class="rb-key"><div class="rb-key-t">2파 vs 3파</div><ul><li>&quot;21일 주기&quot;는 평균값일 뿐 — 실제는 2파 ≈ 20일, 3파 ≈ 23일</li><li>황체 퇴행 시작: 2파 ≈ 16일, 3파 ≈ 19일 → 2파 주기가 더 짧다</li><li>갈림 변수: 1차 우성 난포가 우성을 오래 유지할수록 2파(이 기간이 2파에서 더 김)</li><li>품종·연령보다 영양·열스트레스에 좌우 — 나쁘면 3파↑</li><li>한 마리가 한 양상을 보이면 다음 주기도 같을 확률 70%</li></ul></div>
+<div class="rb-clinical"><b>두 난소 = 한 몸</b> 연속 우성 난포가 좌우 어느 쪽에 생길지는 무작위. 단 임신 중 우성 난포는 황체 반대쪽에 더 자주(75~80%) 생긴다.</div>
+<div class="rb-sub">PGF 저항성·공동성 황체·동난포 수(AFC)</div>
+<div class="rb-caution"><b>어린 황체의 PGF 저항성</b> 발정 후 첫 5~6일은 PGF를 줘도 황체용해가 잘 안 된다. 수용체가 없어서가 아니라(배란 2일 후부터 수용체는 있음), 성숙 황체가 가진 양성 되먹임 고리(옥시토신·TNF로 내막 PGF 방출을 스스로 부름)가 어린 황체엔 없기 때문. → 어린 황체엔 반복 투여 필요. 황체기 6일 이전 PGF2α는 권장하지 않는다.</div>
+<div class="rb-clinical"><b>공동성 황체</b> 정상 황체의 40~70%가 발달 중 가운데 액체 찬 공동(무에코)을 갖는다. 프로게스테론 농도는 공동 유무와 무관 — 공동이 있어도 기능이 떨어지는 게 아니다. 황체 낭종과 혼동 금지.</div>
+<p class="rb-p">난포낭종의 근본 원인은 저프로게스테론–과잉 LH 상황이다. 우성 난포가 멈춰야 할 시점에 P4가 낮아 LH 억제가 풀려 있으면, 난포가 배란도 퇴행도 못 하고 계속 커져 낭종이 된다(고비유 초기 강한 음에너지 균형이 흔한 배경).</p>
+<div class="rb-key"><div class="rb-key-t">동난포 수(AFC)</div><ul><li>난포파 출현 시 난포 수는 개체 안에서 매우 반복적 — 한 번 재면 그 소의 과배란 잠재력 가늠 가능</li><li>AFC 높은 분만 후 젖소: 수태율↑, 분만–수태 간격↓</li><li>임신 첫 1/3 영양 제한 어미의 딸: AFC 60% 낮게 태어남</li></ul></div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('book',15)} 3. 생식기 해부학</span><span class="gst-sub">생식기관 구성·지지(광인대)와 난소·난관·자궁·경부의 구조</span></span></div>
+<div class="rb-block"><div class="rb-sub">생식기관의 구성과 지지</div>
+<p class="rb-p">암소 생식기관은 난소, 난관, 자궁(자궁체+자궁각), 자궁경부, 질(질전정·외음부·음핵 포함)로 이루어진다.</p>
+<ul class="rb-list"><li><b class="rb-label">지지 구조 — 광인대</b> 생식기 전체는 광인대에 의해 매달려 지지된다.</li><li><b class="rb-label">난소간막</b> 난소를 지지.</li><li><b class="rb-label">난관간막</b> 난관을 지지.</li><li><b class="rb-label">자궁간막</b> 자궁·자궁경부, 그리고 질의 일부를 지지.</li></ul>
+<div class="rb-sub">난소의 구조</div>
+<ul class="rb-list"><li><b class="rb-label">수질(속질)</b> 결합조직, 혈관, 신경섬유로 구성.</li><li><b class="rb-label">피질(겉질)</b> 난포와 황체가 있으며 난소 기질에 둘러싸여 있다.</li></ul>
+<p class="rb-p">암컷은 사춘기가 시작되면, 배아 발생 동안 이미 형성되어 있던 &quot;유한한&quot; 난모세포 집단을 모집해 사용하기 시작한다. 평생 생식세포를 계속 만드는 수컷과 대조적이다.</p>
+<div class="rb-clinical"><b>촉진 팁</b> 명확한 황체가 있는 난소는 촉진이 더 쉽다. 신경계와 호르몬계가 함께 생식을 조절하며, 그 중심은 시상하부–뇌하수체–난소 축이다. 발정 주기 동안 스테로이드 호르몬(P4·E2)과 성선자극호르몬(FSH·LH)의 혈청 농도가 변한다.</div>
+<div class="rb-sub">난관의 세 부분</div>
+<ul class="rb-list"><li><b class="rb-label">누두부(깔때기)</b> 깔때기 모양의 말단부로 복강 쪽으로 열려 있고 등쪽에서만 난소에 부착. 가장자리의 술 모양 구조(난관채)가 배란된 난자를 포획할 가능성을 높인다.</li><li><b class="rb-label">팽대부</b> 난관의 중간 부분. (수정이 일어나는 부위)</li><li><b class="rb-label">협부</b> 가장 좁은 부분으로 자궁과 연결된다.</li></ul>
+<div class="rb-sub">자궁·자궁경부의 벽 구조</div>
+<p class="rb-p">자궁은 난관을 질과 연결하는 기관으로, 두 개의 자궁각 + 자궁체 + 자궁경부로 구성된다. 자궁각은 두부–복측 방향으로 만곡되어 있다. 자궁체는 짧다.</p>
+<ul class="rb-list"><li><b class="rb-label">장막층(serosa)</b> 가장 바깥층.</li><li><b class="rb-label">자궁근층(myometrium)</b> 중간 근육층.</li><li><b class="rb-label">자궁내막(endometrium)</b> 가장 안쪽 점막층.</li><li><b class="rb-label">자궁경부(cervix)</b> 자궁체와 질을 구분하는 관 모양 기관. 정자를 수송하면서 동시에 장벽 역할. 자궁경관(cervical canal)은 다수의 주름·고리로 특징지어지며, 외구(external orifice)가 질과 자궁을 구분한다.</li></ul>
+<div class="rb-sub">위치와 외음부·질</div>
+<p class="rb-p">소의 생식기는 직장 바로 아래, 골반강 내에 있다(산차가 높으면 복강 쪽으로 처짐). 직장 검사가 가능한 이유다.</p>
+<ul class="rb-list"><li><b class="rb-label">외음부</b> 항문 바로 아래. 미경산우 길이 10~15cm, 경산우 15~20cm. 산차가 높을수록 커진다. 발정기엔 통통하게 붓고 충혈된다.</li><li><b class="rb-label">질</b> 길이 25~35cm. 발정기엔 질벽 충혈·습윤도가 올라간다. 자궁질부 한가운데 외자궁구가 있다.</li></ul>
+<div class="rb-sub">자궁경관·자궁</div>
+<ul class="rb-list"><li><b class="rb-label">자궁경관</b> 길이 10~15cm, 폭 3~5cm. 딱딱하고 앞뒤로 훑으면 오독오독(연골 같은) 감촉. 직장 검사·인공수정의 핵심 랜드마크.</li><li><b class="rb-label">자궁</b> 자궁각(좌우, 길이 20~35cm)과 자궁체로 구분. 분만 직후엔 좌우 자궁각 크기 차이가 있다가 40~50일이면 같아짐.</li><li><b class="rb-label">자궁체</b> 겉보기 10cm지만 실제는 2~3cm로 매우 짧다. 인공수정 시 정액 주입 부위.</li></ul>
+<div class="rb-caution"><b>꼭 인식</b> 자궁체가 생각보다 매우 짧다는 점을 모르면 주입 부위가 어긋난다.</div>
+<div class="rb-sub">난관·난소</div>
+<ul class="rb-list"><li><b class="rb-label">난관</b> 자궁각 끝에서 뻗은 가는 관(20~25cm). 끝의 난관채가 난자를 받는다. 정자–난자가 수정되는 장소이며, 수정란이 5~6일 발육 후 자궁으로 내려온다. 보통 직장 검사로는 못 만진다.</li><li><b class="rb-label">난소</b> 좌우 1개씩, 길이 2~3cm. 구조물(난포·황체) 유무로 크기가 변한다.</li><li><b class="rb-label">여포(난포)</b> 난포액으로 찬 매끈한 구체, 물풍선 같은 파동감. 발정 시 15~18mm.</li><li><b class="rb-label">황체</b> 배란 후 형성. 세포가 꽉 차 고기 같은 탄력. 2.5~3.0cm까지 발육.</li></ul>
+<div class="rb-clinical"><b>촉진 기준점</b> 고유난소인대(2~3mm, 오독오독한 감촉)를 기준으로 난소 내 여포·황체 위치를 기록한다.</div>
+<div class="rb-sub">태반 구조와 태반정체</div>
+<p class="rb-p">자궁내막에는 혈관이 솟은 소구(caruncle)가 점점이 박혀 있고, 임신하면 이 소구가 태아쪽 융모엽(cotyledon)과 단추 채우듯 맞물려 태반분엽(placentome)을 이룬다. 소 자궁엔 소구가 약 100개.</p>
+<div class="rb-clinical"><b>태반정체의 해부학적 이유</b> 태반정체로 태반이 끈질기게 안 떨어지는 이유가 이 소구–융모엽 맞물림 구조에 있다.</div>
+<p class="rb-p">경관은 단단·근육질로 내강에 돌출한 3~4개 원형주름이 맞물려 자궁을 밀폐한다(검사·AI의 기준점). 질천장은 자궁경이 배쪽으로 돌출해 등쪽이 배쪽보다 깊다 — AI 시 기구가 배쪽으로 미끄러지지 않게 주의.</p></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('search',15)} 4. 발정 관찰과 발정 징후</span><span class="gst-sub">관찰 시간·횟수, 진짜 발정(ST)과 그 외 징후</span></span></div>
+<div class="rb-block"><div class="rb-sub">관찰 시간·횟수가 발견율을 좌우한다</div>
+<div class="rb-key"><div class="rb-key-t">발정 발견율 데이터</div><ul><li>1회 60분 × 아침·저녁 2회 → 94% 발견</li><li>1회 30분 × 하루 3회 → 65% 발견</li><li>1회 10분 × 하루 3회 → 45%만 발견</li><li>착유 작업 틈틈이 30분씩만 → 30~41%로 급락</li></ul></div>
+<p class="rb-p">작업 중 곁눈질 관찰만으로는 많이 놓친다. 발정 관찰만을 위한 시간(1회 20~30분)을 하루 2~3회 따로 마련하는 것이 핵심. 정해진 시간에 같은 페이스로 봐야 &quot;평소와 다름&quot;이 보인다.</p>
+<p class="rb-p">발정은 밤중~이른 아침에 발현하기 쉽다. 아침 착유 전, 저녁 착유 후, 밤 시간대가 좋다. 여름엔 발정이 저녁~밤으로 치우치므로 시원한 시간대·심야 관찰이 유리하다.</p>
+<div class="rb-sub">진짜 발정 = 스탠딩(ST)</div>
+<p class="rb-p">다른 소가 올라타도(마운팅) 가만히 서서 받아주는 상태가 스탠딩(ST)이며, 이것이 &quot;진짜 발정&quot;이다. 올라탄 소(MT)도 발정 가능성이 높다. 미끄러운 콘크리트 바닥에선 ST·MT가 줄고, 흙바닥·방목지에선 늘어난다.</p>
+<div class="rb-caution"><b>안전</b> 프리스톨에서 등을 돌렸을 때 사람 등에 반사적으로 올라탈 수 있다. 주위를 살피며 관찰할 것.</div>
+<div class="rb-sub">ST·MT 이외의 발정 징후 (이걸 봐야 발견율이 오른다)</div>
+<div class="rb-key"><div class="rb-key-t">왜 중요한가</div><ul><li>ST만 보면 발견율 12~30%</li><li>그 외 징후까지 포함하면 74~90%까지 상승 (관찰 횟수가 더 적어도)</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">외음부 종창·충혈</b> 발정기엔 통통하게 붓고 주름이 펴지며 점막 충혈이 강해진다.</li><li><b class="rb-label">점액 배출</b> 투명하고 잘 늘어나는 점액(바닥까지 끊기지 않음)이면 좋은 발정 → 즉시 수정 경향. 단단하고 백색이면 시작·종료기 → 반나절 늦춰도 됨.</li><li><b class="rb-label">외음부 냄새 맡기 / 턱 괴기</b> 다른 소 엉덩이 냄새를 맡거나 허리에 턱을 올림. 하는 소·당하는 소 모두 확인.</li><li><b class="rb-label">플레멘 반응</b> 냄새 맡은 뒤 윗입술을 말아 올림.</li><li><b class="rb-label">그룹 형성</b> 발정우들이 모여 서로 냄새 맡고 뭉쳐 다님. 매우 눈에 띔.</li><li><b class="rb-label">활동량 증가</b> 휴식 시간에 혼자 서 있거나, 자주 울고, 콧김이 거칠고, 추울 때 등에서 김이 남.</li><li><b class="rb-label">눈물·충혈</b> 눈을 부릅뜨고 촉촉·충혈.</li><li><b class="rb-label">좌골결절 찰과상</b> 승가 당한 흔적. 생생하면 반나절 이내, 마른 딱지면 1일 이상 경과.</li><li><b class="rb-label">발정 후 출혈</b> 발정 종료 2일 전후 배출. 이미 배란이 끝난 경우가 많아 &quot;발정을 놓쳤다&quot;는 신호. 2~3일 전 발정으로 기록하고 다음 회귀일을 노린다.</li></ul>
+<div class="rb-clinical"><b>핵심 자세</b> &quot;평소와 다르다&quot; 싶으면 적극적으로 발정 여부를 확인한다. 발정 강약·컨디션까지 기록해 두면 수정 판단이 정확해진다.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('clipboard',15)} 5. 직장 검사</span><span class="gst-sub">준비·삽입·자궁경관/자궁/난소 접근과 촉진 판단</span></span></div>
+<div class="rb-block"><div class="rb-sub">준비와 삽입</div>
+<ul class="rb-list"><li><b class="rb-label">사전 준비</b> 자기 손가락·손바닥 폭을 재 두면 촉진 크기 평가에 쓸 수 있다. 손톱은 짧게. 어깨까지 장갑, 공기 빼고 착용, 윤활제 사용.</li><li><b class="rb-label">소 다루기</b> 예민한 소는 날뛸 수 있으니 갑자기 넣지 말고 천천히. 필요시 확실히 보정.</li><li><b class="rb-label">삽입</b> 다섯 손가락 모아 삽입, 팔꿈치 앞까지. 분변을 긁어내고 직장벽을 이완. 손가락 끝이 아니라 새끼손가락~손바닥 외측을 &quot;선&quot;으로 직장벽을 넓히며 전진.</li><li><b class="rb-label">가스·연동운동</b> 가스로 벽이 긴장되면 주름을 손가락에 걸어 앞으로 당겨 가스를 뺀다. 연동운동·노책이 오면 거스르지 말고 가만히 있으면 지나간다.</li></ul>
+<div class="rb-sub">접근 순서: 자궁경관 → 자궁 → 난소</div>
+<ul class="rb-list"><li><b class="rb-label">자궁경관</b> 랜드마크. 손을 옆으로 밀어 단단한 골반을 느끼고 아래로, 골반이 없는 부드러운 곳이 생식기. 떠내듯 회전시키면 오독오독한 관(자궁경관)이 잡힘.</li><li><b class="rb-label">자궁</b> 자궁경관에서 손바닥 하나 안쪽 아래. 자궁각 사이에 손을 넣어 굵기·탄력·벽 두께를 좌우 비교. 좌우 차이가 크거나 벽이 얇고 탄력 없으면 이상 의심. 임신 여부도 확인.</li><li><b class="rb-label">난소</b> 자궁에서 손바닥 하나 좌/우로 수평 이동해 탐색. 매끈하고 둥근 구조물이 난소. 손바닥으로 떠받치고 고유난소인대를 손가락 사이에 끼워 고정 후 엄지·검지로 훑는다. 길 잃으면 자궁경관으로 복귀.</li></ul>
+<div class="rb-sub">자궁 수축·황체·여포 촉진 판단</div>
+<ul class="rb-list"><li><b class="rb-label">발정기 자궁</b> 강하게 조여 탄력(익힌 소시지 같은 단단함). = 수축 상태. 발정 진단에 중요.</li><li><b class="rb-label">황체기 자궁</b> 부드럽고 윤곽이 흐릿. = 이완 상태.</li><li><b class="rb-label">기능성 황체</b> 25mm 전후, 충실감·적당한 부드러움(닭가슴살). 내부에 검게 빠진 낭종양 황체가 50%에서 보이나 기능 정상.</li><li><b class="rb-label">퇴행 황체</b> 20mm 미만, 단단·울퉁불퉁.</li><li><b class="rb-label">여포</b> 파동감·매끈한 반구. 10mm 미만 단단/팽팽 → 15mm↑ 파동감·팽팽함 약해짐 → 배란 직전 강한 파동감·물렁함.</li></ul>
+<div class="rb-caution"><b>직장 검사의 마음가짐</b> 자신감은 갖되 과신 금물. 난소 촉진 때 &quot;정말 황체인가? 여포일 가능성은?&quot;을 늘 의심하며 만진다.</div>
+<div class="rb-sub">난포·황체 평가의 최적 크기 (초음파 기준)</div>
+<div class="rb-key"><div class="rb-key-t">난포</div><ul><li>배란 가능성 높은 우성 난포: 13~16mm (최소 10mm)</li><li>17mm 이상은 과성숙 → 난자 노화·신선도 저하</li></ul></div>
+<div class="rb-key"><div class="rb-key-t">황체 — 임신 유지력 기준</div><ul><li>이상적 크기 15~25mm, 가장 좋은 건 20~25mm</li><li>15mm 미만은 부적합</li><li>공동성 황체는 공동이 18mm 이하이거나 전체 면적의 40% 미만이면 정상으로 봄</li></ul></div>
+<div class="rb-caution"><b>맥락 구분</b> 이 &quot;황체 15~25mm&quot;는 임신을 떠받칠 기능성 황체의 이상적 크기다. 수정 가부를 볼 때의 &quot;황체 20mm 미만 = 수정 OK&quot;는 발정기에 퇴행 중인 황체 기준이라 맥락이 다르다(6장 참고).</div>
+<div class="rb-sub">난소 소견으로 발정주기 시점 추정 (2난포파 가정)</div>
+<div class="rb-key"><div class="rb-key-t">황체가 있을 때</div><ul><li>우성 난포 1개 → 주기 6~10일</li><li>난포 여러 개 → 13~18일</li><li>뚜렷한 난포 없음 → 11~12일</li></ul></div>
+<div class="rb-key"><div class="rb-key-t">황체가 없을 때</div><ul><li>우성 난포 1개 → 19~21일 (발정 임박)</li><li>난포 여러 개 → 3~5일</li><li>난포도 없음 → 1~2일 (배란 직후)</li></ul></div>
+<div class="rb-caution"><b>한쪽만 보면 오진</b> 좌우 난소는 한 단위로 작동한다. 한쪽만 촉진하면 틀릴 수 있다(한쪽엔 우성 난포, 다른 쪽엔 퇴행 황체만 보일 수 있음). P4는 황체에서 나와 중추에서 GnRH를 억제하므로, 황체가 있으면 우성 난포가 있어도 배란은 차단된다.</div>
+<div class="rb-sub">주기 단계 판단의 실전 원칙</div>
+<p class="rb-p">발정주기는 세 부분으로 나눠 본다. 시작(1~5일)과 끝(19~21일)만 직장 검사로 확실히 진단할 수 있고, 중앙부(5~19일)는 정확한 날짜를 알기 어렵다. 하지만 임상에선 &quot;정확한 날짜&quot;보다 &quot;어느 시기인지&quot;만 알아도 치료 방침 결정엔 충분하다.</p>
+<div class="rb-clinical"><b>크기보다 단단함</b> 황체 평가에서 크기는 주관적이다(퇴행 중·형성 초기 황체가 의외로 크게 느껴짐). 황체의 단단함(경도)이 사실상 가장 신뢰할 유일한 지표 — 부드러우면 주기 초기, 단단하면 말기에 가깝다. 황체의 &quot;샴페인 코르크&quot; 돌기가 안쪽으로 발달하면 촉진이 어려울 수 있다.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('pin',15)} 6. 인공수정 (AI)</span><span class="gst-sub">수정 적기와 위생적 시술, 수정 가/부 판단</span></span></div>
+<div class="rb-block"><div class="rb-sub">수정 적기</div>
+<div class="rb-key"><div class="rb-key-t">타이밍 기준</div><ul><li>ST(스탠딩) 개시 후 4~12시간이 적기 (16시간 이내면 양호)</li><li>AM-PM법: 발정 발견 12시간 후 — 단, 발견이 발정 중후반이면 늦음</li><li>현대 고능력우는 발정이 짧아 발정 발견 후 6시간 이내 수정이 실용적</li><li>하루 1회만 관찰한다면 발견 즉시 가능한 한 빨리 수정</li></ul></div>
+<div class="rb-sub">시술 순서 (위생이 핵심)</div>
+<ul class="rb-list"><li><b class="rb-label">도구</b> 동결정액 융해용 온수·온도계, 직장 검사용 장갑, 역성비누. 주입기·핀셋·스트로 커터는 매번 알코올 솜으로 닦고 건조(알코올 남으면 정자 사멸).</li><li><b class="rb-label">소 준비</b> 보정·꼬리 묶기. 외음부와 주변·꼬리 뒷면을 온수로 씻고 알코올 솜으로 닦는다.</li><li><b class="rb-label">정액 융해</b> 회사별 권장 온도 준수(예 35~37°C 45초, 38°C 15초). 캐니스터는 서리 라인에서 멈추고 15초 이내에 꺼냄. 한 번에 한 개씩.</li><li><b class="rb-label">주입기 준비</b> 정액 장전부를 종이타월 마찰열로 데움(20°C 이하로 떨어지면 cold shock). 스트로 면전 쪽을 장착, 밀봉부 수직 절단, 시스관 &quot;딸깍&quot;까지.</li><li><b class="rb-label">주입</b> 외음부 벌려 위 45°로 질 삽입 → 10cm에서 아래 45°로 끝까지. 직장에 손 넣어 자궁경관 앞 1/3을 잡고, 회전시키며 끌어당겨 주입기를 내자궁구 너머 자궁체부로. 정액은 자궁체부에 주입. 뺀 뒤 정액 배출·피·고름 여부 확인.</li></ul>
+<div class="rb-sub">수정 전 직장 검사: 수정 가/부 판단</div>
+<div class="rb-key"><div class="rb-key-t">수정 OK 조건 (둘 다 충족)</div><ul><li>한쪽에 15mm 이상 난포 존재</li><li>황체가 20mm 미만 (= 퇴행 중)</li></ul></div>
+<div class="rb-caution"><b>수정 금지</b> 20mm 이상의 기능성 황체가 만져지면 발정이 아니다 → 수정 금지. &quot;난포 있음 = 발정&quot;이 성립하지 않는다(황체기에도 15mm 난포는 흔함).</div>
+<p class="rb-p">발정 확인 흐름: ① 외음부 종창·충혈 ② 점액 유무 ③ 자궁 수축(배란 직전엔 약할 수 있음) ④ 15mm 이상 난포 ⑤ 20mm 미만 황체. 그리고 수정 직전 8~10일 전에 수정 이력이 있으면 임신 가능성을 의심해 자궁을 확인한다(임신 중 수정 시 약 50% 유산).</p></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('dna',15)} 7. 수정에서 임신까지</span><span class="gst-sub">수정·배아 발육·자궁 하강·모체 임신 인식(IFN-τ)</span></span></div>
+<div class="rb-block"><div class="rb-sub">수정과 배아의 이동</div>
+<p class="rb-p">배란된 난자는 난관채에 받아들여져 난관팽대부–협부 접합부에 머문다. 자궁에 주입된 정자는 자궁경관을 지나 난관협부에 도착, 상피와 결합해 일정 시간 저장되었다가 배란에 맞춰 수정능을 획득하고 난자와 만나 수정된다.</p>
+<div class="rb-key"><div class="rb-key-t">배아 발육 일정</div><ul><li>Day 1 2세포기 → Day 2 4세포기 → Day 3 8세포기</li><li>Day 4~5 상실배, 8~16세포기에 난관→자궁으로 하강</li><li>Day 6~7 자궁각으로 이동, 배반포 형성 후 투명대 탈출(부화)</li></ul></div>
+<div class="rb-sub">배아 신장과 모체의 임신 인식 (핵심 기전)</div>
+<p class="rb-p">배반포는 Day 13경 3mm 구형이지만 Day 17엔 25cm 가느다란 필라멘트(신장배)로 급성장한다. 이 영양막에서 인터페론-타우(IFN-τ)가 분비된다.</p>
+<div class="rb-clinical"><b>임신 인식의 원리</b> 배아가 있으면 Day 15 전후 IFN-τ가 자궁내막에 작용 → PGF2α 생성 억제 → 황체 퇴행이 막혀 임신 유지. 배아가 없거나 발육이 늦어 IFN-τ가 부족하면 Day 15~17 PGF2α가 나와 황체 퇴행 → 발정 재귀.</div>
+<div class="rb-caution"><b>지연성 재발정</b> 불수태우의 약 30%에서 황체 퇴행이 지연되어 재발정이 늦어진다. 배아가 IFN-τ를 분비하다 도중에 사멸하면 황체 퇴행 스위치가 늦게 켜지기 때문. → 수정우는 25~26일까지 재발정을 확인해야 한다.</div>
+<p class="rb-p">수정 후 42~45일 이후부터를 &quot;태자(Fetus)&quot;라 부른다(그 전은 배아). 임신 30일이면 자궁각 좌우 차이가 보이기 시작하고, 50일·70일로 갈수록 임신각이 뚜렷이 커진다.</p>
+<div class="rb-sub">임신 인식 심화 — IFN-타우의 저울</div>
+<p class="rb-p">임신 성립의 첫 관문은 황체를 살리는 것이다. 수태산물이 분비하는 IFN-타우가 자궁의 프로스타글란딘 저울을 바꾼다 — PGF2α(황체 녹임) ↔ PGE2(황체 지킴). IFN-타우가 저울을 PGE2 쪽으로 기울여 황체를 살린다. IFN-타우는 임신 15~17일에 최다, 28일까지 관찰. 부족해 PGF2α 쪽으로 기울면 황체가 녹고 임신이 깨진다.</p>
+<div class="rb-sub">초기 임신과 프로게스테론·착상</div>
+<p class="rb-p">프로게스테론은 임신 첫 200일을 황체에서 공급한다(태반은 3분기에야 충분히 생산). 즉 초기 임신은 전적으로 황체에 달려 있다. P4는 황체 유지뿐 아니라 자궁 환경을 임신에 맞게 세팅한다 — 내막 분비로 수태산물에 먹이를 대고, 자궁 평활근을 이완 상태로 묶는다.</p>
+<div class="rb-key"><div class="rb-key-t">P4 보충 효과 (수정 후 5~9일)</div><ul><li>영양막 길이 4배</li><li>자궁 IFN-타우 6배</li><li>→ 초기 P4가 높을수록 수태산물이 잘 자라고 수태율↑ (낮으면 내막 영양소 수송체가 줄어 수태산물이 굶음)</li></ul></div>
+<p class="rb-p">수태산물은 9~10일 부화 → 14일부터 실처럼 신장 → 19~20일 30cm. 소의 착상은 임신 3주째 시작되는 표재성 부착. 태반은 자궁벽 소구 약 100개가 태아쪽 융모엽과 맞물려 태반분엽을 이룬다.</p>
+<div class="rb-sub">프리마틴 (Freemartin) — 임상 필수</div>
+<div class="rb-caution"><b>수소와 쌍태로 난 암송아지</b> 두 태아의 태반 혈관이 문합되어 피가 섞이면, 성 분화 중인 암컷이 수컷 쌍태의 테스토스테론·항뮐러관호르몬에 노출되어 불임이 된다(프리마틴). 수컷 조혈줄기세포까지 넘어와 키메라가 되기도. 수소와 쌍태로 난 암송아지를 번식우로 쓸지 판단할 때 반드시 떠올린다.</div>
+<div class="rb-clinical"><b>임신 중 어미 변화</b> 심박출량이 최대 30~40% 증가(분만 후 자궁태반 혈류가 유선으로 재분배 → 최고 비유). 젖소 임신 말 영양 요구는 같은 체중 비임신 소보다 약 75% 높다. 임신 7개월에 태아가 출생체중의 40% → 예상 분만 약 60일 전 건유로 비유–태아 성장 경쟁을 막는다.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('clipboard',15)} 8. 임신 감정</span><span class="gst-sub">직장 검사(시기별)·초음파·PAG, 판정 포인트</span></span></div>
+<div class="rb-block"><div class="rb-sub">직장 검사에 의한 임신 감정 (시기별)</div>
+<div class="rb-key"><div class="rb-key-t">감정 가능 시기</div><ul><li>직장 검사: 수정 후 30일 이후</li><li>초음파(에코): 수정 후 26일 이후</li><li>PAG 검사(혈액·유즙): 수정 후 28일 전후</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">30~40일</b> 양막낭 촉지, 태막 슬립(자궁각을 끼워 올릴 때 &quot;드르륵&quot; 미끄러지는 감촉, 40일 이후 권장). 태자는 황체 있는 쪽 자궁각에 위치.</li><li><b class="rb-label">60일 전후</b> 자궁각·양막낭이 커져 태막 슬립이 주 방법. 좌우 자궁각 차이로 판정. 연습은 이 시기 소로.</li><li><b class="rb-label">80일 전후</b> 태반소엽(자궁소구에서 발달)이 울퉁불퉁 만져진다.</li><li><b class="rb-label">90일 이후</b> 자궁이 복강으로 가라앉아 자궁동맥(중자궁동맥) 박동·진전음으로 확인. 임신각 쪽 8~10mm &quot;쏴-쏴-&quot;, 비임신각 5mm로 약함.</li><li><b class="rb-label">6개월 이후</b> 타진법(부구법): 우측에서 압박하면 태자가 주먹에 부딪힘.</li></ul>
+<div class="rb-sub">초음파(에코)와 감별</div>
+<p class="rb-p">초음파는 B모드(밝기) 영상. 액체(난포액·물)는 검게(에코프리), 근육·황체는 회색, 뼈·금속은 희게 보인다. 난포는 검은 구체, 황체는 약간 진한 회색.</p>
+<div class="rb-clinical"><b>초음파의 강점</b> 수정 후 26일부터 태자와 심박을 직접 확인 가능. 심박이 없으면 배아 사멸. 26일 0.5cm → 30일 2.5~3.0cm → 60~65일 머리·목·몸통·사지·탯줄 구별.</div>
+<div class="rb-caution"><b>자궁축농증 vs 임신</b> 자궁 내강에 농·점액이 차도 자궁이 부푼다. 양쪽 자궁각이 같게 부풀고 태막 슬립(&quot;드르륵&quot;)이 없으면 임신이 아니라 자궁 질환을 의심.</div>
+<div class="rb-sub">초음파 스캔 기법</div>
+<p class="rb-p">횡종단면에서 방광 → 자궁경부 → 자궁체 → 자궁각 순으로 보며, 프로브를 좌우로 움직여 난소를 확인한다. 한쪽 난소 → 자궁(임신 시 태아 포함) → 반대쪽 난소 순으로 스캔한다.</p>
+<ul class="rb-list"><li><b class="rb-label">기본 준비</b> 직장 촉진으로 구조물을 찾는 연습이 먼저. 손으로 더듬으며 배설물을 제거하는 동작을 함께 해 방향 감각을 익힌다.</li><li><b class="rb-label">스캔 순서</b> 자궁체 위에서 시작 → 자궁각을 따라 프로브를 옮기며 좌우 스위프(sweep) → 자궁각 분기부(bifurcation)를 지나 계속 전진 → 난소를 찾으면 여러 각도에서 관찰.</li></ul>
+<div class="rb-sub">난소 구조물의 초음파 소견</div>
+<ul class="rb-list"><li><b class="rb-label">난포(Follicles)</b> 내부는 과립세포층(granulosa), 외부는 난포막세포층(theca)으로 둘러싸임. 난모세포는 난구(cumulus oophorus)에 의해 난포강(antrum)에 매달림. 난포액은 초음파를 흡수하므로 검은색(무에코) 원형 구조물로 보인다.</li><li><b class="rb-label">황체(CL)</b> 난소 기질 내에 강한 에코(하얗게) 영역. 배란 후 3~4일부터 커져 12~16일 사이 최대 직경. 직경 2~3cm면 성숙 황체로, 이때 혈중 P4가 최고.</li><li><b class="rb-label">출혈성 황체</b> 배란 직후~약 3일 관찰. 주변 기질보다 어둡게 보이고 내부에 액체가 남기도. 퇴행기 황체와 둘 다 에코가 낮아 구분이 어렵다.</li><li><b class="rb-label">공동성 황체(cavitary CL)</b> 내부에 액체로 찬 공동(cavity)을 가진 황체. 황체기 전반부에 보이며 점차 닫히는 정상적 생리 변이. 황체 낭종(luteal cyst)과 혼동하면 안 된다.</li></ul>
+<div class="rb-caution"><b>구분의 한계</b> 발달 중·성숙·퇴행 중 황체를 초음파만으로 명확히 구분하기는 어렵다.</div>
+<div class="rb-sub">자궁의 초음파 소견과 임신 판정</div>
+<p class="rb-p">프로브를 자궁 종축을 따라 회전시키면 안쪽부터 바깥쪽 순으로 자궁강 → 자궁내막 → 혈관층 → 자궁근층(myometrium) → 자궁외막(perimetrium)이 보인다. 난포기에는 자궁각이 더 심하게 구부러져 화면에 자궁각 단면 수가 늘어난다.</p>
+<ul class="rb-list"><li><b class="rb-label">발정 전후</b> 근층과 내막의 에코 차이로 여러 층이 뚜렷이 구분되고, 혈관층(검게 보이는 작은 혈관)과 자궁내막 주름(endometrial folds)이 잘 보인다.</li><li><b class="rb-label">비임신 자궁</b> 자궁체·자궁각을 관찰해 태아액(fetal fluids)이 없으면 비임신으로 진단.</li><li><b class="rb-label">임신 자궁</b> 임신측 자궁각에 태아를 감싸는 액체(태수)가 보인다. 비임신측에도 소량 액체가 구분되기도 한다.</li></ul>
+<div class="rb-clinical"><b>쌍태 단서</b> 황체가 여러 개 보이면 쌍태 임신을 의미한다(소의 쌍태아는 대부분 이란성).</div>
+<div class="rb-sub">초음파 검사 일정과 경제성</div>
+<p class="rb-p">초음파로 임신을 더 일찍 발견할 수 있다(단 임신 90일 이내 초기 배아사·태아사가 6~15% 발생할 수 있어 후속 확인 필요). 그래도 &quot;비임신우(open cow)&quot;를 조기에 가려내 얻는 날짜 이득의 경제적 이익이 검사 비용을 충분히 넘는다.</p>
+<div class="rb-key"><div class="rb-key-t">방문 시기별 초음파 검사 항목</div><ul><li>분만 후 15~30일: 자궁 복구·자궁염(metritis) 감염 확인</li><li>30~60일: 자궁 검사·난포파 발달·비임신 확인</li><li>28~30일부터: 임신 진단</li><li>60~80일: 임신 확인 + 태아 성별 판정</li></ul></div>
+<p class="rb-p">분만 후 정상적으로는 25~30일부터 난소 활동이 시작되지만, 분만 후 무발정(음에너지 균형 부족 영향)으로 지연될 수 있다. 30~60일엔 자궁 복구 완료·잔여물·병적 액체 여부를 보고, 낭종이 보이면 난포낭종인지 황체낭종인지 구분해 치료를 달리한다.</p>
+<div class="rb-sub">초음파 임신 진단·태아 발육·성별 판정</div>
+<p class="rb-p">초음파의 가장 중요한 활용 중 하나는 비임신의 조기 발견이다(양성 진단은 사실 확인에 불과). 쌍태를 조기에 발견하면 프리마틴 등 위험을 미리 대비할 수 있다.</p>
+<div class="rb-key"><div class="rb-key-t">태아 발육 이정표</div><ul><li>25일경: 배아 심박동 확인 (무에코+고에코가 리듬감 있게 교차)</li><li>30일경: 배아포(embryonic vesicle, 자궁강 내 액체 찬 영역)</li><li>35일 이후: 배아 10mm(30일)→20mm로 커져 진단 쉬워짐</li><li>45일: cotyledons·태아 움직임</li><li>50일 배아포 ~42mm, 56일 배아 ~53mm(갈비뼈 석회화 시작)</li></ul></div>
+<div class="rb-key"><div class="rb-key-t">태아 나이 추정 (25~45일)</div><ul><li>태아 길이(mm, 두–미) + 18 = 일령</li><li>예: 15mm→33일 / 20~25mm→40일 / 40mm→50일 / 80mm→60일</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">성별 판정</b> 55~60일부터 가능. 생식결절(genital tubercle) 위치로 판단 — 고에코 이중엽 구조물. 수컷=제대(umbilical cord) 바로 뒤, 암컷=꼬리 아래·뒷다리 사이.</li></ul>
+<div class="rb-caution"><b>태아 사망 징후</b> 태아막 분리는 사망 징후. 양막액·요막액의 양과 투명도도 함께 평가한다.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('calendar',15)} 9. 호르몬 제제와 발정·배란 동기화</span><span class="gst-sub">제제 5종 + 발정 동기화 + 오브싱크/E2+P4 정시 AI</span></span></div>
+<div class="rb-block"><div class="rb-sub">대표 호르몬 제제 5종 (자세히)</div>
+<ul class="rb-list"><li><b class="rb-label">GnRH</b> 우성 난포(11mm 이상)를 배란시켜 새 난포파를 만든다. 투여 후 26~30시간에 배란, 36시간 지나도 배란 없으면 무효. 난포가 없으면 효과 없다.</li><li><b class="rb-label">hCG</b> LH 작용. 수정 후 5일째 투여 → 제1난포파 우성 난포(13mm 이상)를 배란시켜 부황체 형성 → 혈중 P4 상승(황체 기능 보강).</li><li><b class="rb-label">PGF2α</b> 황체 퇴행 유도 → 발정. 자궁축농증·내막염 치료도. 단, 발정주기 6일 이전엔 잘 안 듣고, 중증 자궁 질환 땐 황체가 안 죽을 수 있다. 투여 후 발정은 2~6일(주로 3~4일)에 발현.</li><li><b class="rb-label">E2</b> 발정 유도·자궁경관 확장. 발정 유도 시 투여 23시간 뒤 LH 서지, 약 49~53시간 뒤 배란. 주로 P4와 병용.</li><li><b class="rb-label">P4(질 내 유치형, CIDR)</b> 혈중 P4를 높여 발정·배란 억제. 단독 사용 시 10~14일 유치 후 제거, 2~4일 발정 관찰.</li></ul>
+<div class="rb-sub">발정 동기화 (관찰·수정 필요)</div>
+<ul class="rb-list"><li><b class="rb-label">PGF2α법</b> 황체 보유우에 투여 → 퇴행 → 발정. 투여 시점 난포 상태에 따라 발현 2~6일로 폭이 넓음. 3~4일째 집중 관찰.</li><li><b class="rb-label">질 내 P4 유치법</b> P4로 발정 억제하다 제거해 발정을 집중화. 단독으로는 난포파 조절이 안 돼 수태율이 떨어질 수 있어 보통 정시 AI와 병용.</li><li><b class="rb-label">셀렉트 싱크(Select-Synch)</b> GnRH(0일)로 난포파 리셋 → PGF2α(7일)로 황체 퇴행 → 7~10일 발정 관찰·수정, 10일에도 발정 없으면 수정.</li></ul>
+<div class="rb-clinical"><b>난포 일령</b> 난포는 5~10일령부터 수태율이 서서히 떨어지고 11일령을 넘으면 급락한다. 동기화의 목적은 적정 일령 난포에 수정하는 것.</div>
+<div class="rb-sub">배란 동기화·정시 인공수정 (TAI) — 관찰 없이 시간 맞춰 수정</div>
+<p class="rb-p">정시 AI는 ① 난포파 발현 유도 ② 우성 난포 발육 ③ 황체 퇴행 유도 ④ 배란 유도 ⑤ 수정의 5단계로 이뤄진다. 목적은 &quot;수태율을 높이는 것&quot;이 아니라 &quot;관찰 노동 없이 효율적으로 수정하는 것&quot;임을 분명히 인식해야 한다.</p>
+<div class="rb-key"><div class="rb-key-t">오브싱크(Ovsynch) 프로토콜</div><ul><li>GnRH 투여 (0일) — 우성 난포 배란·새 난포파</li><li>PGF2α 투여 (7일) — 황체 퇴행</li><li>GnRH 투여 (9일, PGF 48~56시간 후) — 배란 유도</li><li>정시 인공수정 (9일, 2차 GnRH 후 8~24시간)</li></ul></div>
+<div class="rb-caution"><b>오브싱크 적기</b> 첫 GnRH 때 배란시킬 우성 난포(11mm↑)가 있어야 성공. 발정주기 5~10일이 시작 적기. 5일 이전·14일 이후는 부적절(14일 이후엔 P4 제제 병용).</div>
+<p class="rb-p">E2+P4 프로그램은 발정주기와 무관하게 시작 가능한 장점이 있다. E2+P4로 난포파를 리셋하고(평균 4일째 새 난포파), 9일 발육 후 PGF2α+P4 제거, E2로 배란 유도해 정시 AI한다.</p>
+<div class="rb-sub">동기화 3대 타임라인 (외우면 전부 풀린다)</div>
+<div class="rb-key"><div class="rb-key-t">제제별 반응 시간</div><ul><li>GnRH 투여 → 24~32시간(평균 28~30h) 후 배란 + 새 난포파(평균 2일 후)</li><li>PGF2α 투여 → 12~24h 황체용해 → 24h P4 최저 → 48~72h 발정 (전체 3~5일)</li><li>P4 제제(CIDR) 제거 → 2~4일 후 발정</li></ul></div>
+<div class="rb-sub">CIDR 단독 유치와 Select-Synch</div>
+<ul class="rb-list"><li><b class="rb-label">CIDR 단독</b> 보통 10~14일 유치 후 제거. 유치 길수록 발정 집중(21일 유치는 2일째 96% 집중 — 유치 중 자기 황체가 퇴행하는 소가 늘기 때문). 단 14·21일 단독은 7d+PGF2α보다 수태율↓ (오래 발육·노화한 난포에 수정). 7일 유치는 제거 시 황체 보유우가 많아 PGF2α 병용 필수.</li><li><b class="rb-label">Select-Synch</b> 황체 존재 전제. GnRH(0일)로 우성 난포 배란·새 난포파 → PGF2α(7일, 난포 5.5일령)로 황체 퇴행 → 발정 관찰 후 AI. 난포 일령 5~10일에 수태율이 떨어지고 11일↑ 급락하므로 적정 일령 난포에 수정하는 게 목표.</li></ul>
+<div class="rb-sub">오브싱크 시작 시기와 변법</div>
+<div class="rb-caution"><b>오브싱크 시작 적기</b> 주기 5일 이전: 우성 난포가 작아 1차 GnRH로 배란이 안 됨 → 실패. 주기 14일 이후: PGF2α 전에 황체가 이미 퇴행해 AI 전 배란 → 실패. 결론: 주기 5~14일 사이에 시작.</div>
+<ul class="rb-list"><li><b class="rb-label">히트싱크(Heatsynch)</b> 마지막 배란 유발제로 GnRH 대신 E2를 써서 AI 시 발정 징후를 볼 수 있게 한 변법. PGF2α 24h 후(8일) E2 → 24~36h(9~9.5일) AI. E2 투여 약 42~52h 후 배란.</li><li><b class="rb-label">시더싱크(CIDR-Synch)</b> 오브싱크는 황체 보유가 수태율 전제. 시작 시 황체가 불명확하거나 주기 후반 시작이면 P4 제제를 병용.</li><li><b class="rb-label">eCG 프로토콜</b> 무발정·생식력 저하 소에. P4 장치(0일) → PGF2α(6일) → 장치 제거 + eCG 400~600IU(7일, 쌍태 방지 위해 용량 조절) → 56h에 정시 AI(가장 흔함).</li></ul>
+<div class="rb-clinical"><b>대원칙</b> 호르몬 처치는 소의 난소·자궁·과거~현재 상태를 이해한 뒤 한다. 오브싱크·시더싱크 모두 &quot;황체 보유&quot;가 수태율의 전제임을 잊지 않는다.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('noEntry',15)} 10. 번식 장애</span><span class="gst-sub">난소·자궁 질환과 리피트 브리더의 병태·원인·대응</span></span></div>
+<div class="rb-block"><div class="rb-sub">개요</div>
+<div class="rb-key"><div class="rb-key-t">분포</div><ul><li>번식 장애는 우군의 약 10~20%</li><li>난소 관련 50~60% · 자궁 관련 20~30%</li><li>리피트 브리더 5~20%</li></ul></div>
+<p class="rb-p">번식 장애는 &quot;황체가 형성되는가(성주기가 도는가)&quot;를 먼저 본다. 황체 형성 유무를 7~10일 간격으로 재평가해 분류한다.</p>
+<div class="rb-sub">난소 관련 — 황체 형성(−): 성주기 정지</div>
+<ul class="rb-list"><li><b class="rb-label">난소 정지</b> 병태: 난포가 10mm 이상 발육해도 E2 부족으로 발정·배란 없이 폐쇄가 반복(LH 펄스 저하). 원인: 분만 후 질병(저칼슘혈증·케토시스·태반정체·자궁염), 음의 에너지 밸런스. 대응: 배란 유도제(GnRH/hCG) 또는 오브싱크+CIDR.</li><li><b class="rb-label">난포 낭종</b> 병태: 난포가 배란 없이 25mm 이상으로 10일 이상 유지·반복. 발정을 보이기도 하나 대개 무발정. 원인: 고산유우 분만 후 1~4개월, 스트레스. 대응: 낭종 이면의 우성 난포 배란을 노려 배란 유도/동기화, 1~2주 후 새 황체 형성 확인.</li><li><b class="rb-label">난소 위축</b> 병태: 난포가 우성 난포(10mm)까지 못 가고 발정 전무, 난소가 작고 딱딱. 원인: 분만 후 대사성 질환·수척·만성 통증. 대응: 호르몬 효과 기대 어려움 → 컨디션 회복이 우선.</li></ul>
+<div class="rb-sub">난소 관련 — 황체 형성(+): 성주기 불규칙·이상</div>
+<ul class="rb-list"><li><b class="rb-label">황체 유존</b> 병태: 임신 아닌데 황체가 장기 유지(20mm↑가 15일 이상)되어 무발정. 원인: 자궁 내 이물질(미이라·농·점액), 내막염에 의한 PGF2α 저해. 대응: PGF2α 투여, 자궁 이상 시 세척·주입 병행.</li><li><b class="rb-label">황체 발육 부전</b> 병태: 황체 크기는 정상 비슷해도 P4 기능 부족 → 조기 퇴행, 발정주기가 10±2일로 짧아짐. 원인: 배란 난포 발육 부실, FSH/LH·수용체 부족. 대응: 발정 시 또는 AI 후 5일째 hCG 투여로 황체 보강·부황체 형성.</li><li><b class="rb-label">배란 지연</b> 병태: 발정·배란은 되나 발정 개시~배란이 길어짐(보통 30시간 → 42시간 이후). 원인: 여름철 고온 스트레스(E2 저하). 대응: 다음 발정 시 배란 전 난포 확인 후 배란 유도제(GnRH/hCG) 동시 투여.</li></ul>
+<div class="rb-sub">자궁·질 관련</div>
+<p class="rb-p">먼저 외음부에서 비정상 배출물(점액 이외 — 농=하얀 덩어리, 뇨=소변)이 있는지 확인한다.</p>
+<ul class="rb-list"><li><b class="rb-label">요질(Urovagina)</b> 소변이 질 내로 역류·저류(황색·요취). 노령우·수척우에 많음. 외자궁구를 덮을 정도면 발정 시 소변이 자궁으로 역류해 번식 곤란.</li><li><b class="rb-label">질염</b> 농·질벽 충혈(발정 충혈보다 붉은기 강함). 난산·태반정체·자궁염에 속발. 역성비누 온수/생리식염수로 반복 세척.</li><li><b class="rb-label">자궁내막염</b> 외자궁구 농 배출=임상성, 농 안 보이면=잠재성(사이토브러시로 확인). 정상 발정인데 3회 수정 불수태면 의심. 처치: 자궁 내 주입(항생제·2% 요드 50~100ml)이 1선택, 심하면 생리식염수 1~2L 세척.</li><li><b class="rb-label">자궁축농증</b> 자궁강에 농 저류 + 난소에 황체 유지(농이 PGF2α를 막아 황체가 안 죽음). 임신 2~3개월과 감별(태막 슬립 없음, 좌우 대칭 팽만). 처치: PGF2α로 발정 유도·농 배출, 이후 자궁 내 주입.</li></ul>
+<div class="rb-sub">리피트 브리더 (Repeat Breeder)</div>
+<p class="rb-p">발정주기·생식기가 정상인데도 3회 이상 수정해도 수태되지 않는 소(발생률 10~20%).</p>
+<ul class="rb-list"><li><b class="rb-label">우군 전체 다발 시</b> 수정 타이밍·기술 확인(너무 일찍 수정?), 분만 전후 사양 관리(에너지·단백 불균형, 저칼슘·케토시스).</li><li><b class="rb-label">배란 지연형</b> 발정이 1~2일 길게 지속. 수정과 동시에 GnRH/hCG 근주(수정 시 GnRH로 수태율 약 10%↑: 32%→42%).</li><li><b class="rb-label">잠재성 자궁내막염형</b> AI 1일 후 배란 확인 시점에 0.5% 포비돈 요드 자궁 내 주입이 효과적.</li><li><b class="rb-label">진성(True) 리피트 브리더</b> hCG/질 내 P4(MFBP)로 황체 보강, E2+P4 변법, 수정란 이식(ET)·추가 이식, 배사멸 반복 시 임신 확인 후 P4 제제 2주 유치.</li></ul>
+<div class="rb-clinical"><b>결론</b> 단일 처치로 다 해결되지 않는다. 우군마다 유효한 방법이 달라 시도하며 최적 전략을 찾는다.</div>
+<div class="rb-sub">초음파로 본 자궁 병변</div>
+<p class="rb-p">자궁 내 액체 축적은 병적 상태를 의심케 하나, 발정기·황체기 전반부엔 소량 액체가 정상일 수 있다. 액체의 양·질·자궁벽 상태를 함께 본다. 프로브 삽입 전 자궁을 끌어올려(retract) 두면 검사가 완전해진다.</p>
+<ul class="rb-list"><li><b class="rb-label">자궁내막염</b> 자궁벽이 두꺼워지고 액체 축적. 무에코에 흰 반점(cloudy)→점액에 고름. 균일 회색→점액화농성, 균일 흰색(고에코)→농밀한 고름.</li><li><b class="rb-label">자궁농증(Pyometra)</b> 내용물은 자궁내막염과 유사하나 자궁벽이 압력으로 매우 얇아 보임. 자궁경부 닫힘 + 난소에 황체 존재가 특징.</li><li><b class="rb-label">점액자궁증(Mucometra)</b> 다량의 정상 액체(고에코~검은색), 자궁벽은 보통 정상 두께. 부분적 자궁 무형성(aplasia)과 연관되어 배출이 안 되는 경우가 많음.</li><li><b class="rb-label">배아 흡수</b> 태아 심박동으로 생존 판단. 배아사·태아사 시 액체 성상이 변하고(crepitant) 내용물이 무질서해짐. 양막은 늦게 사라져 액체 속에 부분 잔존.</li></ul>
+<div class="rb-sub">초음파로 본 난소 낭종 (감별)</div>
+<p class="rb-p">직장 촉진만으로 2.5cm 이상 액체 낭종(황체 없고 10일 이상 지속)은 대부분 진단되나 공동성 황체와는 구분이 안 된다. 초음파를 병용하면 촉진으로 안 잡히는 낭종과 유형 감별이 가능하다.</p>
+<div class="rb-key"><div class="rb-key-t">난포낭종 vs 황체화 난포낭종</div><ul><li>난포낭종: 얇은 벽(3mm 이하) + 균일 무에코 + 혈장 P4 &lt; 0.9 ng/ml</li><li>황체화 난포낭종: 벽 3mm 이상(3~5mm) + 내부 회색 입자 + 혈장 P4 &gt; 0.9 ng/ml</li><li>공통: 2.5cm 이상, 벽이 점차 황체화하면 trabeculae가 보임</li></ul></div>
+<div class="rb-caution"><b>혼동 주의</b> 벽이 두꺼워진 황체화 낭종(내부 액체)은 생리적 공동성 황체와 헷갈리기 쉽다 — 낭종 벽 두께를 주의 깊게 본다. 양쪽 난소에 공동성 낭종이 다수인 다낭성 난소는 예후가 대체로 보존적. 무발정은 난소 주기가 멈춰 구조물이 전혀 없는 상태로, 고산유우의 음에너지 균형 시 사료 관리가 핵심.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('refresh',15)} 11. 분만 후 생식기 회복</span><span class="gst-sub">자궁 수복과 난소 기능 회복(산욕기)</span></span></div>
+<div class="rb-block"><div class="rb-sub">자궁 수복</div>
+<div class="rb-key"><div class="rb-key-t">정상 회복 수치(목표)</div><ul><li>자궁 중량 절반으로 감소: 분만 후 ~5일</li><li>오로(자궁 내 저류물) 배출 완료: ~25일</li><li>좌우 자궁각 차이 소실: ~30일</li><li>자궁 내 농 소실: ~35일</li><li>자궁내막 염증 수습: ~40일</li><li>→ 정상 분만이면 30~40일경 수복 완료</li></ul></div>
+<p class="rb-p">오로는 분만 후 2~3일에 가장 많고 10일까지 보인다. 처음 적갈색 → 점차 옅어져 백색·유리창 점액으로. 점액 없이 적갈색 수양성 오로가 나오면 자궁염, 발열·식욕부진까지 있으면 산욕열로 보고 치료한다.</p>
+<ul class="rb-list"><li><b class="rb-label">수복 지연·자궁염 원인</b> 난산(손상·면역 저하), 태반 정체(이물질→세균 번식), 쌍태 분만, 유열(칼슘 저하→수축 약화), 과비(BCS 3.75↑, 대사병 유발).</li></ul>
+<div class="rb-sub">난소 기능 회복</div>
+<div class="rb-key"><div class="rb-key-t">회복 일정</div><ul><li>분만 후 첫 난포파: ~4~5일</li><li>우성 난포 출현: 평균 ~11.6일</li><li>분만 후 첫 배란: 평균 ~27.4일</li><li>분만 후 60일까지 약 68.8% 배란·성주기 재개(고능력우 농장 기준)</li></ul></div>
+<p class="rb-p">첫 난포파에서 바로 배란하는 소는 분만 전후 대사·간 기능이 좋고 유량이 낮은 경향. 고산유우는 간 부하가 크고 글루코스가 유선으로 우선 가서 배란·발정 재개가 늦다.</p>
+<div class="rb-clinical"><b>무발정 배란</b> 난소가 회복돼 성주기가 돌아도 겉으로 발정이 안 보일 수 있다. 첫 배란의 89%가 무발정 배란! 2회째 ~35%, 3회째 ~15%, 5회 이후 7%로 감소. 또 첫 배란 후 다음이 21일이 아닌 10일 전후로 짧을 수 있어 주기 추적이 필요.</div>
+<div class="rb-caution"><b>분만 후 60일 함정</b> 분만 1개월경 발정을 보이다 60일 이후 사라지는 경우가 있다. 유량 급증으로 에너지 밸런스가 가장 마이너스가 되는 시기라 발정이 약해지기 때문. 더 심하면 배란 자체가 멈춘다 → 사양 관리 개선이 답.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('star',15)} 12. 실전 번식 관리</span><span class="gst-sub">번식 성적 지표·VWP, 협업, 번식 잘 되는 소의 선순환</span></span></div>
+<div class="rb-block"><div class="rb-sub">핵심 번식 성적 지표</div>
+<ul class="rb-list"><li><b class="rb-label">발정 발견율</b> 수정해야 할 소 대비 발정을 발견한 비율. 못 찾으면 수정 자체가 불가 → 가장 기본. 과거 21일 기준 평가.</li><li><b class="rb-label">수태율</b> 수정한 소 대비 수태된 비율. &lt;20%면 수정 기술·타이밍·사양 관리 재검토.</li><li><b class="rb-label">평균 공태 일수</b> 분만~수태 일수. 가장 이해하기 쉽지만 임신우만 반영(장기 불수태우가 안 잡힘). → 농장 전체 임신우 비율과 함께 평가.</li><li><b class="rb-label">임신율</b> 수정률 × 수태율. 실시간·실제적 지표.</li><li><b class="rb-label">VWP</b> 분만 후 일정 기간 수정하지 않는 자발적 대기 기간. 보통 60일(생식기 회복 빠르면 50일, 고능력우는 70~80일).</li></ul>
+<div class="rb-key"><div class="rb-key-t">임신율 목표 공식</div><ul><li>목표 임신율 21% = 발정 발견율 70%↑ × 수태율 30%↑</li></ul></div>
+<div class="rb-sub">현대 고능력 착유우의 특징 (관리가 어려운 이유)</div>
+<div class="rb-key"><div class="rb-key-t">꼭 기억</div><ul><li>유량↑ → 발정 지속시간↓ (25~30kg 14.7h → 50~55kg 2.8h), 발정 강도도 약화</li><li>수정 후 재발정이 25일경에도 옴 → 수정우는 25~26일까지 관찰</li><li>유량↑ → 다배란·쌍둥이↑ (쌍둥이는 배사멸·난산·후산정체·산욕열↑)</li><li>20년간 수태율 저하(초회 60%→44%), 분만 간격 연장(407→435일)</li></ul></div>
+<p class="rb-p">단, 유량이 높아도 우군 관리 능력이 좋은 농장은 번식 성적이 좋다(농장 단위로는 산유량과 분만 간격이 음의 상관). 즉 유량 자체보다 관리가 결정적이다.</p>
+<div class="rb-sub">기술자 협업과 관찰·기록의 중요성</div>
+<p class="rb-p">번식 관리에는 낙농가·인공수정사·수의사가 함께 관여하며 각자 입장(임신우 확보 vs 수태율 vs 미수정우 감소)이 달라 갈등이 생기기 쉽다. 특히 정시 AI에서 그렇다. 공통 인식과 긴밀한 소통이 핵심.</p>
+<div class="rb-clinical"><b>번식 잘하는 농장의 공통점</b> 개별 소를 잘 관찰하고 기록한다. 초회 수정이 다소 늦더라도 &quot;이거다!&quot; 싶은 발정에 수정하고, 수정우는 다음 발정 예정일에 다시 관찰해 재수정한다. 그래서 미수태우를 놓치지 않는다.</div>
+<div class="rb-sub">번식 성적이 높은 소의 선순환</div>
+<div class="rb-key"><div class="rb-key-t">BCS가 결정한다</div><ul><li>분만 후 21일 BCS 변화 → 60일 수정 수태율 좌우</li><li>BCS 감소군 22.8% / 유지군 36.0% / 증가군 78.3%</li></ul></div>
+<p class="rb-p">분만 후 질병(태반정체·자궁염·유방염 등)에 걸리면 그 유기 내내 번식 성적이 떨어지고 도태율도 오른다. 분만 시 과비(Fat Cow)일수록 분만 후 BCS가 급락하고 질병이 늘어난다.</p>
+<div class="rb-clinical"><b>선순환 만들기</b> 악순환: 수태 지연 → 과비로 분만 → BCS 급락·질병 → 다시 번식 저하. 근본 대책은 분만 시 과비 예방 = 이전 유기에 적기 수태(공태 일수 단축). 분만 후 130일 이내 수태가 다음 유기까지 좋게 하는 핵심.</div>
+<div class="rb-sub">생산과 번식 사이클의 관계</div>
+<div class="rb-key"><div class="rb-key-t">목표 사이클</div><ul><li>분만 후 110일 이전 임신이 이상적</li><li>분만 후 83일에 임신 → 임신 282일 더해 분만 간격 365일 달성</li><li>건유 60일 + 비유 305일 = 표준 비유 기간(standard lactation)</li></ul></div>
+<p class="rb-p">전환기(transition period)는 분만 21일 전~21일 후. 이 시기를 잘 관리하면 ① 대사성 질병을 예방하고 ② 번식 가능한 정상 발정주기를 빠르게 회복시킨다.</p>
+<ul class="rb-list"><li><b class="rb-label">건물 섭취(DMI)</b> 분만 직전엔 섭취량이 줄고(비만우·초산우에서 두드러짐), 분만 후 점진 증가해 젖 생산 정점을 따라간다. 분만 전 잘 먹는 소가 분만 후에도 잘 먹는다.</li><li><b class="rb-label">BCS 마지노선</b> BCS가 2.5 이하로 내려가면 안 된다 — 그러면 가임 주기 회복이 훨씬 늦어진다. 2.5 이하로 안 떨어진 소가 임신율이 높다.</li><li><b class="rb-label">생식 지연의 비용</b> 비유 후기로 갈수록 산유량이 떨어진다(예: 175일 32.4L/일 → 210일 이후 30.5L/일). 이 감소는 순전히 수태 지연 탓 → 공태 일수를 줄이는 것이 곧 생산성이다.</li></ul>
+<div class="rb-sub">번식 검진 실무 — 빈도·전략·대상우</div>
+<div class="rb-caution"><b>검진 빈도: 3주 간격 절대 금지</b> 보통 2주 간격(대규모 1주, 소규모 4주). 3주(=21일=발정주기)는 매번 같은 주기 같은 타이밍의 소만 보게 돼 평가가 불가능해진다.</div>
+<div class="rb-key"><div class="rb-key-t">세 가지 기본 전략</div><ul><li>① 적기까지 초회 AI (VWP 후 21일 이내 모든 대상우 AI)</li><li>② 발정 발견율 올리기 (관찰 시간·테일페인트·만보계·동기화)</li><li>③ 수태율 올리기 (적기 AI·정액 취급·환경 냉각·BCS)</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">검진 대상우 5</b> ① 프레쉬 체크(분만 후 30~40일, 자궁 평가) ② 이상 분비물우(자궁내막염) ③ VWP 경과 무발정우(무배란/둔성발정/발견실패) ④ 리피트 브리더(150일↑ 미수태 or AI 3회 실패) ⑤ 임신 감정(AI 후 25일↑ 무발정 — 직장검사 35일·초음파 26일, 60일 재감정).</li></ul>
+<div class="rb-clinical"><b>대전제 &amp; 수익성</b> 생식기 확인 전에 소체부터 — 파행(제병)·유방염은 번식을 크게 떨어뜨리니 먼저 치료. 개별 소는 분만 후 120일까지 수태가 수익성 플러스, 130~150일 넘기면 다음 분만 시 난산·주산기 질환↑.</div></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('star',15)} 13. 사춘기와 후보우 관리</span><span class="gst-sub">사춘기 기전·연령 결정 요인·교배 타이밍·생식기 점수(RTS)</span></span></div>
+<div class="rb-block"><div class="rb-sub">사춘기의 정의와 기전</div>
+<p class="rb-p">사춘기는 미경산우가 스스로 임신할 수 있게 되는 때. 임상적으로는 혈청 P4가 처음 1ng/ml를 넘는 날로 잡는다(첫 발정 전에 이미 P4가 오르기 시작하므로).</p>
+<div class="rb-caution"><b>사춘기 ≠ 첫 배란</b> 대부분 사춘기 전후에 겉으로 발정 없이 배란하는 무발정 배란을 한 번 거치고, 그때 황체도 짧게 끝난다. &quot;발정을 안 보였으니 미성숙&quot;이라 단정하면 틀린다.</div>
+<p class="rb-p">기전: 어린 미경산우의 시상하부–뇌하수체는 E2 음성 되먹임에 지나치게 민감해 LH가 눌려 있다(배란 능력 자체는 일찍부터 있음). 사춘기가 가까워지며 이 민감도가 떨어지면 LH 박동이 잦아져(첫 배란 무렵 시간당 약 1회) 난포를 성숙시키고 배란성 LH 급증을 부른다.</p>
+<div class="rb-clinical"><b>P4의 예비점화</b> 사춘기 직전 약하게 한두 번 오르는 P4가 시상하부를 E2 양성 되먹임에 길들여 이후 정상 주기를 확립한다. 첫 배란 후 황체가 짧은 것은 내막 옥시토신 수용체가 많아 PGF2α가 일찍 터지기 때문(P4에 12~14일 노출돼야 수용체 하향 조절). → 프로게스틴 처치가 사춘기를 앞당기고 동기화 수태율을 올리는 근거.</div>
+<div class="rb-sub">사춘기 연령을 좌우하는 것</div>
+<div class="rb-key"><div class="rb-key-t">핵심: 연령보다 체중</div><ul><li>보통 9~10개월(폭은 6~24개월)</li><li>같은 골격이면 더 무거운 쪽이 더 일찍</li><li>품종 효과가 압도적 — 성숙 체격 큰 품종일수록 늦고 더 무거움</li><li>증체 예: 100kg부터 하루 1.1/0.8/0.5kg → 사춘기 9/11/16개월</li><li>신호: 렙틴(체지방 역치)·키스펩틴</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">어미·태아 영양</b> 처녀우(어린 어미)의 딸은 1년령 AFC가 적다(난소 비축 작음) → 성숙한 어미의 딸을 후보로. 임신 후기 단백 보충 어미의 딸은 14일 일찍 사춘기.</li><li><b class="rb-label">기질·수소 노출</b> 예민한 보스 인디쿠스는 코르티솔↑로 사춘기 늦음. 수소 노출은 소에선 사춘기를 앞당기지 않음(양·염소·돼지와 다름).</li></ul>
+<div class="rb-sub">교배 타이밍과 사춘기 앞당기기</div>
+<div class="rb-caution"><b>첫 발정에 바로 교배 금지</b> 사춘기 첫 발정에 수태시키면 분만율이 3차 발정 교배보다 21% 낮다. 미경산우는 교배 예정보다 1~3개월 앞서 사춘기에 도달해 있어야 한다.</div>
+<div class="rb-key"><div class="rb-key-t">체중 목표</div><ul><li>사춘기 때 성숙 체중의 55~60%</li><li>교배 목표 ≈ 성숙 체중의 65% (품종마다 다름)</li><li>2년령 분만이 3년령보다 생애 송아지 수↑ → 이득</li></ul></div>
+<ul class="rb-list"><li><b class="rb-label">앞당기기 도구</b> 광주기(겨울이 늦춤; 멜라토닌·연장 일장이 앞당김) / 프로게스틴(MGA 8일 또는 CIDR; 예비점화 가속) / 영양(4~9개월령이 결정적 창, 조기 이유+고농후사료로 300일 이전 조숙성 가능).</li></ul>
+<div class="rb-sub">생식기 점수(RTS)로 사춘기 가늠</div>
+<p class="rb-p">직장검사로 난소 난포 발달과 자궁각 긴장도·크기를 보고 1~5로 매기는 주관적 지표. 점수가 높을수록 AI 수태율과 양의 상관.</p>
+<ul class="rb-list"><li><b class="rb-label">RTS 1</b> 긴장도 없는 작은 자궁각 + 구조물 없는 작은 난소(유아형). 사춘기에서 가장 멀다.</li><li><b class="rb-label">RTS 2</b> 자궁각·난소가 더 커진 단계.</li><li><b class="rb-label">RTS 3</b> 자궁 긴장도와 난포가 만져져 주기 직전.</li><li><b class="rb-label">RTS 4</b> 자궁각이 꼬이고 배란전 크기 난포 존재(주기 도는 것으로 보되 황체는 잘 구별 안 됨).</li><li><b class="rb-label">RTS 5</b> 거기에 황체까지 만져지는 단계.</li></ul></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('dna',15)} 14. 태아 프로그래밍과 영양</span><span class="gst-sub">자궁 내 환경이 평생 성적·다음 세대를 좌우한다</span></span></div>
+<div class="rb-block"><div class="rb-sub">태아 프로그래밍이란</div>
+<p class="rb-p">태아기에 어미가 겪은 환경이 새끼의 평생 표현형을 바꿔놓고, 그 효과는 출생 후 아무리 잘 관리해도 되돌리기 어렵다. 같은 유전형이라도 노출이 배아·태아·송아지 중 언제 일어났느냐로 영향이 달라지며, 발달 가소성이 가장 높은 태아기가 제일 취약하다.</p>
+<div class="rb-caution"><b>출생체중만 보면 안 된다</b> 저체중 송아지는 이환·폐사↑, 성장 느림, 지방↑·근육↓의 나쁜 체성분, 대사·번식 기능 저하. 그러나 출생체중이 멀쩡해도 프로그래밍 효과가 숨어 있다 나중에 드러날 수 있다.</div>
+<p class="rb-p">소는 양과 다르다 — 양 태반은 임신 첫 2/3에 다 자라고 태아 성장 90%가 마지막 1/3에 몰리지만, 소 태반은 임신 내내 커지되 태아가 태반보다 훨씬 빨리 자란다. 양 연구를 소에 그대로 적용하면 안 된다.</p>
+<div class="rb-sub">근섬유 수는 출생 전에 확정된다</div>
+<div class="rb-key"><div class="rb-key-t">꼭 기억</div><ul><li>총 근섬유 수는 소에서 임신 180일에 확정 — 그 뒤 새 근섬유는 생기지 않음</li><li>출생 후 성장은 전부 기존 근섬유가 굵고 길어지는 것뿐</li><li>수율 좋은 도체는 출생 후가 아니라 자궁 안에서 승부가 난다</li></ul></div>
+<p class="rb-p">자궁에서 영양이 부족하면 대사 성향이 지질 저장 쪽으로 굳어, 나중에 잘 먹여도 따라잡기 성장의 상당 부분이 근육이 아니라 지방으로 간다.</p>
+<div class="rb-sub">어미 영양과 결정적 창</div>
+<ul class="rb-list"><li><b class="rb-label">분만 전 100일 굶김</b> 송아지 출생체중 7%↓, 폐사율 10%↑. 단 태아 체중당 혈류 효율은 오히려 좋아지는 보상.</li><li><b class="rb-label">임신 첫 1/3 제한</b> 딸의 동난포 수(AFC) 60% 낮게 태어남 → 딸의 평생 가임성에 영향.</li><li><b class="rb-label">임신 후기 단백 보충</b> 딸이 14일 일찍 사춘기 도달.</li></ul>
+<div class="rb-clinical"><b>멜라토닌 보충</b> 임신 후반 어미 멜라토닌 보충 → 자궁동맥 혈류↑, 출생체중은 그대로지만 이유 체중↑(육우 57파운드). 태아 근육의 위성세포 활성·근생성↑, 지방생성↓. 진짜 태아 프로그래밍 효과.</div>
+<div class="rb-key"><div class="rb-key-t">임상 요지</div><ul><li>임신 중 어미 영양은 출생체중을 넘어 평생 성장·도체·번식 성적과 다음 세대까지 좌우</li><li>결정적 창: 임신 첫 1/3(딸의 난소 비축) + 임신 후기(근육·체중)</li></ul></div></div>
   `;
 }
 function renderVet(){
   const main = document.getElementById('main');
   if(!main) return;
-  if(UI.vetTab==='repro'){ main.innerHTML = reproContentHtml(); }
+  if(UI.vetTab==='repro'){ main.innerHTML = reproContentHtml(); groupGrassSections(main); }
   else { main.innerHTML = grassContentHtml(); groupGrassSections(main); }
 }
 function renderVetShell(isDark){
@@ -4578,7 +4855,7 @@ function showLoadErrorBanner(){
   bar.id = 'load-error-banner';
   bar.style.cssText = 'position:sticky;top:0;z-index:9999;background:#A32D2D;color:#fff;'
     + 'padding:10px 14px;font-size:13px;font-weight:700;text-align:center;line-height:1.5;';
-  bar.innerHTML = '⚠️ 저장된 데이터를 불러오지 못했어요. 표시된 건 기본 시드 데이터이며 '
+  bar.innerHTML = svgIcon('noEntry',14)+' 저장된 데이터를 불러오지 못했어요. 표시된 건 기본 시드 데이터이며 '
     + '<u>저장이 잠겨 있어</u> 덮어쓰기 사고는 일어나지 않아요. 새로고침하면 다시 시도합니다.';
   document.body.prepend(bar);
 }
