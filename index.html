@@ -861,6 +861,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .lib-close-row{margin-top:12px;display:flex;justify-content:flex-end;flex:0 0 auto;}
 
 /* 공태관리 */
+/* 요약카드 클릭 필터 */
+.preg-stat.clickable{cursor:pointer;transition:all .12s;position:relative;}
+.preg-stat.clickable:hover{filter:brightness(.97);}
+.preg-stat.clickable.sel{outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px;}
+.filter-note{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;display:flex;align-items:center;gap:8px;}
+.filter-clear{font-size:12px;font-weight:700;color:var(--primary-dark);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;}
 .open-wrap{padding:4px 2px;}
 .open-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
 .open-head h2{font-size:18px;font-weight:800;color:var(--ink);margin:0;}
@@ -881,6 +887,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .open-basis{font-size:10.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:5px;padding:0 5px;}
 .open-chev{flex:0 0 auto;color:var(--ink-soft);font-size:20px;}
 .open-st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 7px;margin-left:4px;vertical-align:middle;}
+.open-row.oneline{gap:9px;}
+.open-row.oneline .open-name{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.open-row.oneline .open-st{flex:0 0 auto;margin-left:0;}
+.open-row.oneline .open-due{flex:0 0 auto;font-size:13px;color:var(--ink);font-weight:700;display:flex;align-items:center;gap:6px;}
+.open-row.oneline .open-due.muted{color:var(--ink-soft);font-weight:600;}
+
 .open-st.rebreed{color:var(--notpregnant-bg);background:var(--notpregnant-soft,#FBE9E7);}
 .open-st.unbred{color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);}
 
@@ -2220,14 +2232,18 @@ function renderPregCheckView(){
   const avgServices = svcSuccess ? (totalServices / svcSuccess).toFixed(1) : '—';
   const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
 
+  const pf = UI.pregFilter || 'all';   // all | active | pregnant
+  const showActive = (pf==='all' || pf==='active');
+  const showPreg   = (pf==='all' || pf==='pregnant');
+
   return `
     <div class="panel">
       <div class="preg-summary five preg-five">
-        <div class="preg-stat">
+        <div class="preg-stat clickable ${pf==='active'?'sel':''}" data-action="setPregFilter" data-filter="active">
           <div class="preg-stat-num">${active.length}</div>
           <div class="preg-stat-label">임신감정 대상</div>
         </div>
-        <div class="preg-stat pregcol">
+        <div class="preg-stat pregcol clickable ${pf==='pregnant'?'sel':''}" data-action="setPregFilter" data-filter="pregnant">
           <div class="preg-stat-num">${pregnant.length}</div>
           <div class="preg-stat-label">임신중</div>
         </div>
@@ -2244,10 +2260,11 @@ function renderPregCheckView(){
           <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${totalServices} / 수태 ${svcSuccess}</span></div>
         </div>
       </div>
-      <div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
-      <div class="pregcheck-list">${activeHtml}</div>
-      <div class="section-title" style="margin-top:26px;"><span>🐄 임신중 (${pregnant.length}두)</span></div>
-      <div class="pregcheck-list">${pregnantHtml}</div>
+      ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':'임신중'}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
+      ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
+      <div class="pregcheck-list">${activeHtml}</div>`:''}
+      ${showPreg?`<div class="section-title" ${showActive?'style="margin-top:26px;"':''}><span>🐄 임신중 (${pregnant.length}두)</span></div>
+      <div class="pregcheck-list">${pregnantHtml}</div>`:''}
     </div>
   `;
 }
@@ -2308,29 +2325,19 @@ function renderOpenView(){
   const ddLabel = dd => dd<=0 ? `<span class="open-dd today">오늘! D-0</span>`
     : `<span class="open-dd">D-${dd}</span>`;
 
-  const stBadge = st => st==='비임신'
-    ? `<span class="open-st rebreed">재수정 대기</span>`
-    : `<span class="open-st unbred">미수정</span>`;
-
   const rowsHtml = withDate.map(({a,date,dd,basis,st}) => `
-    <div class="open-row" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+    <div class="open-row oneline" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
-      <div class="open-main">
-        <div class="open-name">${esc(owner)} ${esc(animalShortName(a))} ${stBadge(st)}</div>
-        <div class="open-due">다음 발정예정 <b>${fmtShort(date)}</b> ${ddLabel(dd)}
-          <span class="open-basis">${basis==='수기'?'입력':'추정'}</span>
-        </div>
-      </div>
+      <div class="open-name">${esc(animalShortName(a))}</div>
+      <div class="open-due">${fmtShort(date)} ${ddLabel(dd)}</div>
       <div class="open-chev">›</div>
     </div>`).join('');
 
   const noInfoHtml = noInfo.map(({a,st}) => `
-    <div class="open-row noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+    <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
-      <div class="open-main">
-        <div class="open-name">${esc(owner)} ${esc(animalShortName(a))} ${stBadge(st)}</div>
-        <div class="open-due muted">정보없음</div>
-      </div>
+      <div class="open-name">${esc(animalShortName(a))}</div>
+      <div class="open-due muted">정보없음</div>
       <div class="open-chev">›</div>
     </div>`).join('');
 
@@ -2367,7 +2374,21 @@ function renderDiseaseView(){
   let improvedCount = 0;
   cystAnimals.forEach(id => { const latest = animalRecords(id)[0]; if(latest && !recHasCyst(latest)) improvedCount++; });
 
-  const rows = recs.map(r => {
+  const df = UI.diseaseFilter || 'all';   // all | uterine | uterineResolved | ovary | cystImproved
+  const matchFilter = r => {
+    if(df==='all') return true;
+    const hasUt = (r.uterineDisease||'').trim();
+    const hasOv = (r.ovarianDisease||'').trim();
+    const latest = animalRecords(r.animalId)[0];
+    if(df==='uterine') return hasUt && !r.uterineResolved;
+    if(df==='uterineResolved') return hasUt && r.uterineResolved;
+    if(df==='ovary') return hasOv || recHasCyst(r);
+    if(df==='cystImproved') return recHasCyst(r) && latest && !recHasCyst(latest);
+    return true;
+  };
+  const filteredRecs = recs.filter(matchFilter);
+
+  const rows = filteredRecs.map(r => {
     const d = dkey(r);
     const tags = [];
     if((r.uterineDisease||'').trim()){
@@ -2405,24 +2426,25 @@ function renderDiseaseView(){
           <div class="preg-stat-num">${animalsSet.size}</div>
           <div class="preg-stat-label">질환 개체</div>
         </div>
-        <div class="preg-stat ratecol">
+        <div class="preg-stat ratecol clickable ${df==='uterine'?'sel':''}" data-action="setDiseaseFilter" data-filter="uterine">
           <div class="preg-stat-num">${uterineCount}</div>
           <div class="preg-stat-label">자궁질환</div>
         </div>
-        <div class="preg-stat pregcol">
+        <div class="preg-stat pregcol clickable ${df==='uterineResolved'?'sel':''}" data-action="setDiseaseFilter" data-filter="uterineResolved">
           <div class="preg-stat-num">${uterineResolvedCount}</div>
           <div class="preg-stat-label">자궁 호전</div>
         </div>
-        <div class="preg-stat ratecol2">
+        <div class="preg-stat ratecol2 clickable ${df==='ovary'?'sel':''}" data-action="setDiseaseFilter" data-filter="ovary">
           <div class="preg-stat-num">${ovaryCount}</div>
           <div class="preg-stat-label">난소질환</div>
         </div>
-        <div class="preg-stat pregcol">
+        <div class="preg-stat pregcol clickable ${df==='cystImproved'?'sel':''}" data-action="setDiseaseFilter" data-filter="cystImproved">
           <div class="preg-stat-num">${improvedCount}</div>
           <div class="preg-stat-label">낭종 호전</div>
         </div>
       </div>
-      <div class="section-title"><span>질환 기록 (${recs.length}건)</span></div>
+      ${df!=='all'?`<div class="filter-note">필터 적용 중 · <button class="filter-clear" data-action="setDiseaseFilter" data-filter="all">전체 보기</button></div>`:''}
+      <div class="section-title"><span>질환 기록 (${filteredRecs.length}건)</span></div>
       <div class="pregcheck-list">${rows}</div>
     </div>
   `;
@@ -4220,6 +4242,8 @@ const ACTIONS = {
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
+  setPregFilter: ds=>{ UI.pregFilter = (UI.pregFilter===ds.filter)?'all':ds.filter; renderMain(); },
+  setDiseaseFilter: ds=>{ UI.diseaseFilter = (UI.diseaseFilter===ds.filter)?'all':ds.filter; renderMain(); },
   backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
   addAnimal: ()=>openAnimalModal(null),
   editAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); const a=DATA.animals.find(x=>x.owner===UI.owner&&x.animalId===ds.id); if(a) openAnimalModal(a); },
