@@ -1256,6 +1256,7 @@ function render(){
   const app = document.getElementById('app');
   const status = storageStatusLabel();
   const isDark = DATA.theme==='dark';
+  if(UI.vetMode){ renderVetShell(isDark); return; }
   app.innerHTML = `
     <header class="topbar">
       <div class="title-row">
@@ -1271,10 +1272,9 @@ function render(){
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">로그인</span></button>`
           }
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
-          ${isAdmin()?`<button class="btn secondary small" data-action="openLibrary" title="전공책 보관함">${svgIcon('book')}<span class="btn-label">보관함</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
-          <button class="btn secondary small" data-action="openGrassInfo">${svgIcon('leaf')}<span class="btn-label">수의학</span></button>
+          <button class="btn secondary small" data-action="openVet">${svgIcon('leaf')}<span class="btn-label">수의학</span></button>
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
           ${status?`<span class="status-badge" title="${esc(status.text)}">${svgIcon(status.key)}<span class="btn-label">${esc(status.text)}</span></span>`:''}
         </div>
@@ -3179,16 +3179,8 @@ function fmtCalcDate(d){
   if(!d) return '—';
   return `${d} (${weekdayKr(d)})`;
 }
-function openGrassInfo(){
-  openModal(`
-    <div class="modal" style="max-width:860px;">
-      <div class="vet-back" data-action="closeModal">← 번식진료기록부로 돌아가기</div>
-      <h2>🩺 수의학</h2>
-      <div class="vet-subtabs">
-        <button class="vet-subtab active" data-vettab="grass">풀정보</button>
-        <button class="vet-subtab" data-vettab="repro">번식학</button>
-      </div>
-      <div id="vet-grass" class="vet-panel">
+function grassContentHtml(){
+  return `
       <div class="modal-sub" style="margin-bottom:10px;">🌿 조사료(풀·짚) — 종류별 영양성분·특성 요약</div>
 
       <div class="grass-legend">
@@ -3387,32 +3379,44 @@ function openGrassInfo(){
         </div>
       </div>
 
+    `;
+}
+function reproContentHtml(){
+  return `
+      <div class="modal-sub" style="margin-bottom:10px;">🧬 번식학 — 발정·수정·임신·분만 참고자료</div>
+      <p style="color:var(--ink-soft);font-size:13.5px;line-height:1.8;padding:14px 2px;">번식학 탭이에요. 발정주기·인공수정 적기·임신감정 시기·분만 징후 같은 참고 내용을 여기에 넣을 수 있어요. 어떤 내용을 넣을지 알려주면 채워드릴게요.</p>
+  `;
+}
+function renderVet(){
+  const main = document.getElementById('main');
+  if(!main) return;
+  if(UI.vetTab==='repro'){ main.innerHTML = reproContentHtml(); }
+  else { main.innerHTML = grassContentHtml(); groupGrassSections(main); }
+}
+function renderVetShell(isDark){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="title-row">
+        <h1><span class="home-link" data-action="goHome" style="cursor:pointer;" title="진료기록부로 돌아가기"><span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></span>번식진료기록부</span> <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">수의학</span></h1>
+        <div class="header-actions">
+          <button class="btn secondary small" data-action="goHome">← <span class="btn-label">진료기록부</span></button>
+          <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
+        </div>
       </div>
-      <div id="vet-repro" class="vet-panel" style="display:none;">
-        <div class="modal-sub" style="margin-bottom:10px;">🧬 번식학 — 발정·수정·임신·분만 참고자료</div>
-        <p style="color:var(--ink-soft);font-size:13.5px;line-height:1.8;padding:14px 2px;">번식학 탭이에요. 발정주기·인공수정 적기·임신감정 시기·분만 징후 같은 참고 내용을 여기에 넣을 수 있어요. 어떤 내용을 넣을지 알려주면 채워드릴게요.</p>
+      <div class="vet-subtabs vet-subtabs-header">
+        <button class="vet-subtab ${UI.vetTab!=='repro'?'active':''}" data-action="setVetTab" data-vettab="grass">풀정보</button>
+        <button class="vet-subtab ${UI.vetTab==='repro'?'active':''}" data-action="setVetTab" data-vettab="repro">번식학</button>
       </div>
-
-      <div class="modal-actions">
-        <button class="btn secondary" data-action="closeModal">닫기</button>
-      </div>
-    </div>
-  `);
-  groupGrassSections();
-  const _root=document.getElementById('modalRoot');
-  if(_root){ _root.querySelectorAll('.vet-subtab').forEach(b=>b.addEventListener('click',()=>{
-    _root.querySelectorAll('.vet-subtab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    const t=b.dataset.vettab;
-    const g=_root.querySelector('#vet-grass'), r=_root.querySelector('#vet-repro');
-    if(g) g.style.display = (t==='grass')?'':'none';
-    if(r) r.style.display = (t==='repro')?'':'none';
-  })); }
+    </header>
+    <main id="main"></main>
+  `;
+  renderVet();
 }
 
 /* 풀정보: 섹션 제목 + 카드를 접이식(아코디언)으로 묶기 — 모바일에서 목차부터 보이게 */
-function groupGrassSections(){
-  const root = document.getElementById('modalRoot');
+function groupGrassSections(root){
+  root = root || document.getElementById('main');
   if(!root) return;
   const titles = [...root.querySelectorAll('.grass-section-title')];
   titles.forEach(title => {
@@ -4267,7 +4271,8 @@ const ACTIONS = {
   openBackup: ()=>{ if(!isAdmin()) return noAdminToast(); openBackupModal(); },
   exportData: ()=>exportData(),
   importData: ()=>document.getElementById('import-file-input')?.click(),
-  openGrassInfo: ()=>openGrassInfo(),
+  openVet: ()=>{ UI.vetMode=true; UI.vetTab='grass'; render(); },
+  setVetTab: ds=>{ UI.vetTab=ds.vettab; render(); },
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
@@ -4426,7 +4431,7 @@ const ACTIONS = {
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
   clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
   closeModal: ()=>closeModal(),
-  goHome: ()=>{ closeModal(); UI.view='animal'; UI.selectedAnimal=null; render(); },
+  goHome: ()=>{ closeModal(); UI.vetMode=false; UI.view='animal'; UI.selectedAnimal=null; render(); },
   saveRecord: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveRecord(); },
   saveAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveAnimal(); },
   saveOwner: ()=>actionSaveOwner(),
