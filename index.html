@@ -964,14 +964,37 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .namu-toc-i a{color:var(--accent);text-decoration:none;}
 .namu-toc-i a:hover{text-decoration:underline;}
 .namu-toc-n{color:var(--ink-soft);margin-right:5px;}
-.namu-h2{font-size:19px;font-weight:800;color:var(--ink);margin:36px 0 13px;padding-bottom:5px;border-bottom:2px solid var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap;scroll-margin-top:14px;clear:both;}
-.namu-h3{font-size:16px;font-weight:800;color:var(--ink);margin:26px 0 11px;padding-bottom:4px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;scroll-margin-top:14px;}
-.namu-h2 .namu-htext,.namu-h3 .namu-htext{flex:1 1 auto;}
-.namu-num{color:var(--accent);font-weight:800;text-decoration:none;flex:0 0 auto;}
-.namu-num:hover{text-decoration:underline;}
-.namu-h2 svg{width:18px;height:18px;flex:0 0 auto;}
-.namu-hsub{flex-basis:100%;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:3px;}
-.namu-edit{font-size:10.5px;color:var(--ink-soft);font-weight:600;flex:0 0 auto;}
+.namu-h2{font-size:19px;font-weight:800;color:var(--ink);margin:32px 0 13px;padding-bottom:7px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:7px;flex-wrap:wrap;scroll-margin-top:14px;clear:both;cursor:pointer;}
+.namu-h3{font-size:16px;font-weight:800;color:var(--ink);margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;scroll-margin-top:14px;cursor:pointer;}
+.namu-h2 .namu-htext,.namu-h3 .namu-htext{flex:1 1 auto;color:var(--ink);}
+.namu-num{color:var(--ink);font-weight:800;flex:0 0 auto;}
+.namu-h2 svg.ic{width:18px;height:18px;flex:0 0 auto;}
+.namu-hsub{flex-basis:100%;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:4px;}
+.namu-edit{font-size:11.5px;color:var(--ink-soft);font-weight:600;flex:0 0 auto;}
+.namu-chev{flex:0 0 auto;display:inline-flex;align-items:center;color:var(--ink-soft);transition:transform .15s;}
+.namu-chev svg{width:16px;height:16px;}
+.namu-h2.namu-collapsed .namu-chev,.namu-h3.namu-collapsed .namu-chev{transform:rotate(-90deg);}
+/* 본문 가독성 — 나무위키 데스크탑 밀도 */
+.namu-doc{font-size:13.5px;line-height:1.68;}
+.namu-doc .rb-p{font-size:13.5px;line-height:1.7;color:var(--ink);margin:9px 0;}
+.namu-doc .rb-h{font-size:13.5px;font-weight:800;color:var(--ink);margin:15px 0 5px;}
+.namu-doc .rb-list{margin:7px 0 11px;padding-left:19px;}
+.namu-doc .rb-list li{font-size:13.5px;line-height:1.7;margin-bottom:6px;}
+.namu-doc .rb-label{font-size:11px;padding:1px 8px;}
+.namu-doc .rb-intro{font-size:13px;line-height:1.68;padding:10px 13px;margin:6px 0 15px;}
+.namu-doc .rb-key{padding:11px 14px;margin:12px 0;}
+.namu-doc .rb-key-t{font-size:12.5px;}
+.namu-doc .rb-key li{font-size:13px;line-height:1.68;margin-bottom:5px;}
+.namu-doc .rb-caution{font-size:13px;line-height:1.68;padding:10px 13px;margin:12px 0;}
+.namu-doc .rb-clinical{font-size:13px;line-height:1.68;padding:10px 13px;margin:12px 0;}
+/* 수의학 문서 흰 배경 */
+.vet-main{background:var(--surface);}
+@media (max-width:600px){
+  .namu-doc{font-size:14px;}
+  .namu-doc .rb-p{font-size:14px;line-height:1.72;}
+  .namu-doc .rb-list li{font-size:14px;}
+  .namu-doc .rb-key li,.namu-doc .rb-caution,.namu-doc .rb-clinical,.namu-doc .rb-intro{font-size:13.5px;}
+}
 </style>
 </head>
 <body>
@@ -3249,202 +3272,75 @@ function fmtCalcDate(d){
 }
 function grassContentHtml(){
   return `
-      <div class="modal-sub" style="margin-bottom:10px;">${svgIcon('leaf',15)} 조사료(풀·짚) — 종류별 영양성분·특성 요약</div>
+      <div class="modal-sub" style="margin-bottom:10px;">${svgIcon('leaf',15)} 조사료(풀·짚) — 종류별 영양성분·특성</div>
+      <div class="rb-intro"><b>TDN</b>(가소화양분총량)은 소화 가능한 에너지 비율로, 높을수록 같은 양으로 더 많은 에너지를 준다. <b>CP</b>(조단백질, %)는 번식·근육·면역에 직결된다. 번식우는 CP 10~12% 이상, TDN 55 이상을 기본 목표로 삼는다.</div>
 
-      <div class="grass-legend">
-        <span class="grass-tag" style="background:#FFF3CD;color:#7A5A00;"><b>TDN</b> — 소화 가능한 에너지 비율. 높을수록 같은 양으로 더 많은 에너지 공급</span>
-        <span class="grass-tag" style="background:#D5EDD8;color:#1C5C34;"><b>CP</b> — 조단백질(%). 번식·근육·면역에 직결</span>
-      </div>
-
-      <!-- 짚류 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">📦 짚류</span><span class="gst-sub">저질 조사료 · 반추위 충전재</span></span></div>
-      <div class="grass-grid">
-        <div class="grass-card straw">
-          <div class="grass-name">볏짚</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#C8A44A;"></span>황갈색 건조 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 43.6</span><span class="stat-cp">CP 5.0%</span><span class="stat-price p1">💰 ~200~260원/kg (2026 급등)</span></div>
-          <div class="grass-desc">국내 가장 흔한 기본 조사료. 영양은 낮지만 반추위 pH 안정에 기여. 단독 급여 시 번식 성적 저하 주의.</div>
-          <div class="grass-sim">🔁 유사: 밀짚·보리짚</div>
-        </div>
-        <div class="grass-card straw">
-          <div class="grass-name">밀짚·보리짚</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#D4B85A;"></span>연한 황색, 볏짚과 흡사</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 44~46</span><span class="stat-cp">CP 4~5%</span><span class="stat-price p1">💰 ~200~250원/kg (2026 급등)</span></div>
-          <div class="grass-desc">볏짚과 거의 같은 영양·물리적 특성. 볏짚 가격 오를 때 대체재로 활용. 급여 방법 동일.</div>
-          <div class="grass-sim">🔁 유사: 볏짚</div>
-        </div>
-      </div>
-
-      <!-- 국내 양질 조사료 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🌾 국내 양질 조사료</span><span class="gst-sub">봄 수확 중심 · 국내 생산</span></span></div>
-      <div class="grass-grid">
-        <div class="grass-card quality">
-          <div class="grass-name">이탈리안라이그라스<span class="grass-alias">(IRG)</span><span class="grass-badge rec">⭐ 추천</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#4A8A40;"></span>짙은 녹색, 얇고 부드러운 잎</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58~62</span><span class="stat-cp">CP 10~14%</span><span class="stat-price p2">💰💰 ~210~280원/kg (국산)</span></div>
-          <div class="grass-desc">국내 1순위 양질 조사료. 봄 수확, 소가 가장 즐겨 먹음. 번식우에 특히 권장. 사일리지로 연중 급여 가능.</div>
-          <div class="grass-sim">🔁 유사: 라이그라스 건초, 오차드그라스</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">총체보리<span class="grass-alias">(청보리)</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#78B540;"></span>녹황색, 부드러운 이삭 포함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 59.5</span><span class="stat-cp">CP 9.0%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
-          <div class="grass-desc">국내 자급률 높고 가격 안정적. 이른 봄 수확, 기호성 우수. 사일리지 제조 후 연중 급여. 번식우에 좋은 기본 조사료.</div>
-          <div class="grass-sim">🔁 유사: IRG 사일리지, 호밀</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">옥수수 사일리지</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#A0A830;"></span>황록색, 굵은 줄기+이삭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 62.0</span><span class="stat-cp">CP 8.7%</span><span class="stat-price p2">💰💰 ~200~270원/kg (국산)</span></div>
-          <div class="grass-desc">에너지 함량 조사료 중 최고. 비육우에 특히 유리. 발효 보존으로 연중 급여. CP가 낮아 단백질 보충 필요.<br><span style="font-size:11px;color:var(--primary);font-weight:700;">💡 사일리지: 풀을 공기 차단 후 유산균 발효 저장 — "풀로 만든 김치". 수개월~1년 보관 가능.</span></div>
-          <div class="grass-sim">🔁 유사: 총체벼 사일리지</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">총체벼</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#8AAA30;"></span>연두~황색, 이삭 포함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 54~57</span><span class="stat-cp">CP 7~9%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
-          <div class="grass-desc">벼를 알곡이 여물기 전(유숙기)에 이삭·줄기·잎 통째로 베어 사료화. 볏짚보다 영양 훨씬 높음. 논을 그대로 활용 가능. 사일리지로 저장 후 연중 급여. 쌀 수확을 포기하는 대신 사료용으로 전환하는 방식.</div>
-          <div class="grass-sim">🔁 유사: 옥수수 사일리지, 청보리 사일리지</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">연맥<span class="grass-alias">(귀리)</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#C8C860;"></span>연한 황금색, 처진 이삭·부드러운 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">CP 8~11%</span><span class="stat-price p2">💰💰 ~200~260원/kg (국산)</span></div>
-          <div class="grass-desc">오트밀로 아는 귀리를 알곡 전에 통째로 베어 건초·사일리지로 이용. IRG·청보리와 영양 유사. <b>기호성 매우 좋음</b> — 입 까다로운 소, 분만 직후 식욕 저하 소에게 효과적. 수입산(호주·캐나다)도 많이 유통.</div>
-          <div class="grass-sim">🔁 유사: IRG, 청보리, 호밀 (봄수확 양질 조사료 군)</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">호밀</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#3A7A30;"></span>진한 녹색, 넓은 잎폭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 52~56</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p2">💰💰 ~200~250원/kg (국산)</span></div>
-          <div class="grass-desc">겨울~봄 재배. IRG와 함께 가을 파종. 내한성 강하고 조기 수확 가능. IRG보다 기호성은 약간 낮음.</div>
-          <div class="grass-sim">🔁 유사: 청보리, IRG, 연맥</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">수단그라스</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#5A9040;"></span>녹색, 굵은 줄기</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~58</span><span class="stat-cp">8~10%</span><span class="stat-price p1">💰 ~180~240원/kg (국산, 저렴)</span></div>
-          <div class="grass-desc">여름 재배. 볏짚보다 저렴하고 기호성 양호. 발효제 살포 후 원형베일 사일리지로 이용. 제주피와 혼합 급여 많음.</div>
-          <div class="grass-sim">🔁 유사: 제주피(피 건초)</div>
-        </div>
-        <div class="grass-card quality">
-          <div class="grass-name">제주피<span class="grass-alias">(피 건초)</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#6A9848;"></span>녹색~황록색</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58.8</span><span class="stat-cp">CP 12.9%</span><span class="stat-price p1">💰 ~190~250원/kg (국산)</span></div>
-          <div class="grass-desc">영양성분이 라이그라스와 흡사하면서 가격은 낮아 실용적. 수단그라스와 혼합 유통 多. 기호성 우수.</div>
-          <div class="grass-sim">🔁 유사: IRG, 라이그라스 건초</div>
-        </div>
-      </div>
-
-      <!-- 수입 건초 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">✈️ 수입 건초</span><span class="gst-sub">품질 안정 · 비용 높음</span></span></div>
-      <div class="grass-grid">
-        <div class="grass-card import">
-          <div class="grass-name">알팔파<span class="grass-badge rec">⭐ 번식·단백질</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#2A6E22;"></span>짙은 녹색, 잎이 풍성한 두과목초</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 58~65</span><span class="stat-cp">CP 14%+</span><span class="stat-price p4">💰💰💰💰 ~500~580원/kg (수입)</span></div>
-          <div class="grass-desc">단백질 함량 조사료 중 최고. 분만 전후·수태율 저하 시 단기 보강 효과 큼. 다량 급여 시 고창증 주의. 송아지 첫 섬유질 사료로도 사용.</div>
-          <div class="grass-sim">🔁 유사: 오차드그라스 (단백질 군)</div>
-        </div>
-        <div class="grass-card import">
-          <div class="grass-name">티모시<span class="grass-badge rec">⭐ 기호성 최고</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#90C060;"></span>연녹~황록색, 가늘고 부드러운 원통형 이삭</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 55~60</span><span class="stat-cp">CP 8~10%</span><span class="stat-price p5">💰💰💰💰💰 ~650~700원/kg (수입 최고가)</span></div>
-          <div class="grass-desc">소가 가장 좋아하는 건초. 일본·캐나다 수입. 입이 까다롭거나 컨디션 저하 소에게 효과적. 섭취량이 늘어나는 것 자체가 회복에 도움.</div>
-          <div class="grass-sim">🔁 유사: 오차드그라스 (질감·색상 비슷)</div>
-        </div>
-      </div>
-
-      <!-- 방목지·다년생 목초 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🌱 방목지·다년생 목초</span><span class="gst-sub">한번 심으면 오래 지속</span></span></div>
-      <div class="grass-grid">
-        <div class="grass-card import">
-          <div class="grass-name">오차드그라스</div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#507840;"></span>진녹색, 납작하고 넓은 잎</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 56~62</span><span class="stat-cp">CP 9~13%</span><span class="stat-price p3">💰💰💰 ~400~480원/kg (수입)</span></div>
-          <div class="grass-desc">티모시보다 CP 약간 높음. 사계절 생산 가능하고 재생력 강함. 티모시 대비 저렴. 영양과 기호성 균형이 좋아 범용으로 쓰임.</div>
-          <div class="grass-sim">🔁 유사: 티모시, IRG 건초</div>
-        </div>
-        <div class="grass-card import" style="border-left-color:#B05A30;">
-          <div class="grass-name">톨페스큐<span class="grass-badge warn">${svgIcon('noEntry',12)} 번식우 주의</span></div>
-          <div class="grass-meta"><span class="grass-color-dot" style="background:#608050;"></span>짙은 녹색, 잎이 거칠고 뻣뻣함</div>
-          <div class="grass-stats"><span class="stat-tdn">TDN 54~60</span><span class="stat-cp">CP 8~12%</span><span class="stat-price p4">💰💰💰💰 ~450~520원/kg (수입)</span></div>
-          <div class="grass-desc">내구성·내한성·내서성 모두 강해 <b>방목지 초지 조성에 가장 많이 쓰임</b>. 가뭄·답압에도 강하고 한번 심으면 수년 유지.<br><b style="color:var(--accent);">${svgIcon('noEntry',13)} 내생균류(Endophyte) 감염 품종은 임신우에 위험</b> — 유산율 증가, 발정 불규칙, 비유량 감소 유발 가능. 반드시 Endophyte-free 품종 확인 필요.<br>기호성 낮음 — 다른 좋은 풀 있으면 나중에 먹는 편.</div>
-          <div class="grass-sim">🔁 유사: 오차드그라스 (영양 수준), 볏짚 (기호성 낮음 공통점)</div>
-        </div>
-      </div>
-
-      <!-- 번식우 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">🐄 번식우 급여 가이드</span><span class="gst-sub">시기별 급여 포인트</span></span></div>
-      <div class="grass-rec-grid">
-        <div class="grass-rec">
-          <div class="grass-rec-title">📌 기본 원칙</div>
-          <ul>
-            <li>CP <b>10~12% 이상</b> 확보 목표</li>
-            <li>TDN <b>55 이상</b>이면 번식에 유리</li>
-            <li><b>볏짚 단독 급여 = 번식 성적 저하 주원인</b></li>
-          </ul>
-        </div>
-        <div class="grass-rec">
-          <div class="grass-rec-title">🥇 추천 조합</div>
-          <ul>
-            <li><b>IRG + 볏짚</b> — 가성비 최고, 번식농가 기본 조합</li>
-            <li><b>청보리 사일리지</b> — 균형 좋고 연중 급여 가능</li>
-            <li><b>알팔파 보강</b> — 분만 전후·수태율 저하 시 단기 집중</li>
-            <li><b>티모시</b> — 컨디션 저하·식욕 없는 소에게</li>
-          </ul>
-        </div>
-        <div class="grass-rec">
-          <div class="grass-rec-title">📅 시기별 포인트</div>
-          <ul>
-            <li><b>분만 전 60일</b> — 알팔파 or IRG + 배합사료</li>
-            <li><b>분만 직후</b> — 티모시·IRG (기호성 우선, 먹어야 회복)</li>
-            <li><b>수정 준비기</b> — IRG·청보리 자유채식 → 발정 정상화</li>
-            <li><b>임신 중기</b> — 볏짚 비율 높여도 됨 (과비육 주의)</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- 시세 -->
-      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">💰 가격 안내</span><span class="gst-sub">2026년 상반기 기준 · kg당 (시세 급등)</span></span></div>
-      <div class="grass-rec" style="margin-bottom:10px;border-left:4px solid var(--accent);">
-        <div class="grass-rec-title" style="color:var(--ai-text);">${svgIcon('noEntry',14)} 2026년 시세 안내</div>
-        <ul>
-          <li>유가·환율·작황 영향으로 <b>2026년 들어 값이 크게 올랐어요.</b></li>
-          <li>볏짚 산지 가격이 2025년 평균 약 160원 → <b>2026년 2월 약 250원</b>대로 급등(전남·북 기준). 운송비 포함 시 경기·강원은 더 높음.</li>
-          <li>아래는 대략치이며, 구매 전 <b>NH 한우 월간리포트·농협 조사료 시세</b>로 그날 시세 확인을 권장해요.</li>
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">짚류</span><span class="gst-sub">저질 조사료 · 반추위 충전재</span></span></div>
+      <div class="rb-block">
+        <div class="rb-p">짚류는 영양가는 낮지만 반추위를 채워 되새김과 pH 안정에 기여하는 기본 조사료다. 단독 급여는 번식 성적 저하의 주원인이므로 반드시 양질 조사료와 섞어 준다.</div>
+        <ul class="rb-list">
+          <li><b class="rb-label">볏짚</b> TDN 43.6 · CP 5.0% · 약 200~260원/kg(2026 급등). 국내 가장 흔한 기본 조사료. 영양은 낮지만 반추위 pH 안정에 기여. (유사: 밀짚·보리짚)</li>
+          <li><b class="rb-label">밀짚·보리짚</b> TDN 44~46 · CP 4~5% · 약 200~250원/kg. 볏짚과 거의 같은 영양·물리적 특성. 볏짚 값 오를 때 대체재로 활용.</li>
         </ul>
       </div>
-      <div class="grass-rec-grid">
-        <div class="grass-rec">
-          <div class="grass-rec-title">국내산 (상대적 저렴)</div>
-          <ul>
-            <li><b>볏짚·밀짚·보리짚</b> — 약 200~260원</li>
-            <li><b>수단그라스·제주피</b> — 약 180~250원</li>
-            <li><b>IRG·청보리·호밀·옥수수 사일리지</b> — 약 200~280원</li>
-            <li><b>총체벼·연맥(국산)</b> — 약 200~260원</li>
-          </ul>
-        </div>
-        <div class="grass-rec">
-          <div class="grass-rec-title">수입산 (비쌈)</div>
-          <ul>
-            <li><b>라이그라스 건초(수입)</b> — 약 350~420원</li>
-            <li><b>연맥(수입)</b> — 약 390~450원</li>
-            <li><b>오차드그라스</b> — 약 400~480원</li>
-            <li><b>톨페스큐</b> — 약 450~520원</li>
-            <li><b>알팔파</b> — 약 500~580원</li>
-            <li><b>티모시</b> — 약 650~700원 <span style="color:var(--accent);font-weight:800;">(최고가)</span></li>
-          </ul>
-        </div>
-        <div class="grass-rec">
-          <div class="grass-rec-title">📌 참고</div>
-          <ul>
-            <li>가격은 환율·작황·계절·운송비에 따라 크게 달라짐</li>
-            <li>수입산은 국내산 대비 <b>2~3배</b> 비쌈</li>
-            <li>볏짚 단독 급여는 가장 저렴하지만 번식 성적 저하 주원인</li>
-            <li>티모시·알팔파는 컨디션 저하·분만 전후 단기 집중 활용 추천</li>
-          </ul>
-        </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">국내 양질 조사료</span><span class="gst-sub">봄 수확 중심 · 국내 생산</span></span></div>
+      <div class="rb-block">
+        <div class="rb-p">봄에 수확하는 국내산 양질 조사료다. 기호성과 영양 균형이 좋아 번식우 기본으로 권장되며, 사일리지로 만들면 연중 급여가 가능하다.</div>
+        <div class="rb-clinical"><b>사일리지란</b> 풀을 공기 차단 후 유산균으로 발효 저장한 "풀로 만든 김치"다. 수개월~1년 보관할 수 있어 연중 급여가 가능하다.</div>
+        <ul class="rb-list">
+          <li><b class="rb-label">IRG (이탈리안라이그라스) · 추천</b> TDN 58~62 · CP 10~14% · 약 210~280원/kg. 국내 1순위 양질 조사료. 봄 수확, 소가 가장 즐겨 먹음. 번식우에 특히 권장.</li>
+          <li><b class="rb-label">총체보리(청보리)</b> TDN 59.5 · CP 9.0% · 약 200~260원/kg. 자급률 높고 가격 안정적. 이른 봄 수확, 기호성 우수.</li>
+          <li><b class="rb-label">옥수수 사일리지</b> TDN 62.0 · CP 8.7% · 약 200~270원/kg. 에너지 함량 조사료 중 최고로 비육우에 유리. CP가 낮아 단백 보충 필요.</li>
+          <li><b class="rb-label">총체벼</b> TDN 54~57 · CP 7~9% · 약 200~260원/kg. 벼를 유숙기에 통째로 베어 사료화. 볏짚보다 영양 훨씬 높고 논을 그대로 활용.</li>
+          <li><b class="rb-label">연맥(귀리)</b> TDN 55~58 · CP 8~11% · 약 200~260원/kg. 기호성 매우 좋음 — 입 까다로운 소·분만 직후 식욕 저하 소에 효과적.</li>
+          <li><b class="rb-label">호밀</b> TDN 52~56 · CP 8~10% · 약 200~250원/kg. 겨울~봄 재배, 내한성 강함. IRG보다 기호성은 약간 낮음.</li>
+          <li><b class="rb-label">수단그라스</b> TDN 55~58 · CP 8~10% · 약 180~240원/kg(저렴). 여름 재배. 볏짚보다 저렴하고 기호성 양호.</li>
+          <li><b class="rb-label">제주피(피 건초)</b> TDN 58.8 · CP 12.9% · 약 190~250원/kg. 라이그라스와 영양 흡사하면서 저렴. 기호성 우수.</li>
+        </ul>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">수입 건초</span><span class="gst-sub">품질 안정 · 비용 높음</span></span></div>
+      <div class="rb-block">
+        <ul class="rb-list">
+          <li><b class="rb-label">알팔파 · 번식·단백질</b> TDN 58~65 · CP 14%+ · 약 500~580원/kg. 단백질 함량 조사료 중 최고. 분만 전후·수태율 저하 시 단기 보강 효과가 크다. 송아지 첫 섬유질 사료로도 쓴다.</li>
+          <li><b class="rb-label">티모시 · 기호성 최고</b> TDN 55~60 · CP 8~10% · 약 650~700원/kg(수입 최고가). 소가 가장 좋아하는 건초. 입이 까다롭거나 컨디션 저하 소에 효과적 — 섭취량이 느는 것 자체가 회복에 도움.</li>
+        </ul>
+        <div class="rb-caution"><b>고창증 주의</b> 알팔파는 단백질이 높은 두과목초라 다량 급여 시 고창증(반추위 가스 팽만) 위험이 있으니 양을 조절한다.</div>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">방목지·다년생 목초</span><span class="gst-sub">한번 심으면 오래 지속</span></span></div>
+      <div class="rb-block">
+        <ul class="rb-list">
+          <li><b class="rb-label">오차드그라스</b> TDN 56~62 · CP 9~13% · 약 400~480원/kg. 티모시보다 CP 약간 높음. 사계절 생산·재생력 강하고 티모시보다 저렴해 영양·기호성 균형이 좋은 범용 목초.</li>
+          <li><b class="rb-label">톨페스큐</b> TDN 54~60 · CP 8~12% · 약 450~520원/kg. 내구·내한·내서성이 모두 강해 방목지 초지 조성에 가장 많이 쓴다. 가뭄·답압에도 강하지만 기호성은 낮다.</li>
+        </ul>
+        <div class="rb-caution"><b>번식우 주의 — 톨페스큐 내생균류</b> 내생균류(Endophyte)에 감염된 품종은 임신우에 위험하다 — 유산율 증가, 발정 불규칙, 비유량 감소를 유발할 수 있다. 반드시 Endophyte-free 품종인지 확인하고 쓴다.</div>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">번식우 급여 가이드</span><span class="gst-sub">시기별 급여 포인트</span></span></div>
+      <div class="rb-block">
+        <div class="rb-key"><div class="rb-key-t">기본 원칙</div><ul><li>CP 10~12% 이상 확보 목표</li><li>TDN 55 이상이면 번식에 유리</li><li>볏짚 단독 급여 = 번식 성적 저하 주원인</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">추천 조합</div><ul><li>IRG + 볏짚 — 가성비 최고, 번식농가 기본 조합</li><li>청보리 사일리지 — 균형 좋고 연중 급여 가능</li><li>알팔파 보강 — 분만 전후·수태율 저하 시 단기 집중</li><li>티모시 — 컨디션 저하·식욕 없는 소에게</li></ul></div>
+        <ul class="rb-list">
+          <li><b class="rb-label">분만 전 60일</b> 알팔파 또는 IRG + 배합사료</li>
+          <li><b class="rb-label">분만 직후</b> 티모시·IRG (기호성 우선, 먹어야 회복)</li>
+          <li><b class="rb-label">수정 준비기</b> IRG·청보리 자유채식 → 발정 정상화</li>
+          <li><b class="rb-label">임신 중기</b> 볏짚 비율 높여도 됨 (과비육 주의)</li>
+        </ul>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">가격 안내</span><span class="gst-sub">2026년 상반기 기준 · kg당</span></span></div>
+      <div class="rb-block">
+        <div class="rb-caution"><b>2026년 시세 급등</b> 유가·환율·작황 영향으로 2026년 들어 값이 크게 올랐다. 볏짚 산지 가격이 2025년 평균 약 160원 → 2026년 2월 약 250원대로 급등(전남·북 기준). 구매 전 NH 한우 월간리포트·농협 조사료 시세로 그날 시세를 확인하길 권장한다.</div>
+        <div class="rb-key"><div class="rb-key-t">국내산 (상대적 저렴)</div><ul><li>볏짚·밀짚·보리짚 — 약 200~260원</li><li>수단그라스·제주피 — 약 180~250원</li><li>IRG·청보리·호밀·옥수수 사일리지 — 약 200~280원</li><li>총체벼·연맥(국산) — 약 200~260원</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">수입산 (비쌈)</div><ul><li>라이그라스 건초(수입) — 약 350~420원</li><li>연맥(수입) — 약 390~450원</li><li>오차드그라스 — 약 400~480원</li><li>톨페스큐 — 약 450~520원</li><li>알팔파 — 약 500~580원</li><li>티모시 — 약 650~700원 (최고가)</li></ul></div>
+        <ul class="rb-list">
+          <li>가격은 환율·작황·계절·운송비에 따라 크게 달라진다.</li>
+          <li>수입산은 국내산 대비 약 2~3배 비싸다.</li>
+          <li>볏짚 단독 급여는 가장 저렴하지만 번식 성적 저하의 주원인이다.</li>
+          <li>티모시·알팔파는 컨디션 저하·분만 전후 단기 집중 활용을 추천한다.</li>
+        </ul>
       </div>
 
     `;
@@ -3746,7 +3642,7 @@ function namuify(root, doc){
     const id = 's-'+ci;
     const h = document.createElement('h2');
     h.className='namu-h2'; h.id=id;
-    h.innerHTML = '<span class="namu-num">'+ci+'.</span>'+(iconHtml?' '+iconHtml:'')+' <span class="namu-htext">'+t+'</span><span class="namu-edit">[편집]</span>'+(subText?'<div class="namu-hsub">'+subText+'</div>':'');
+    h.innerHTML = '<span class="namu-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="namu-num">'+ci+'.</span>'+(iconHtml?' '+iconHtml:'')+' <span class="namu-htext">'+t+'</span><span class="namu-edit">[편집]</span>'+(subText?'<div class="namu-hsub">'+subText+'</div>':'');
     ch.replaceWith(h);
     toc.push({lv:1,num:ci+'',t:t,id:id});
     const block = h.nextElementSibling;
@@ -3757,7 +3653,7 @@ function namuify(root, doc){
         const sid = 's-'+ci+'-'+si;
         const h3 = document.createElement('h3');
         h3.className='namu-h3'; h3.id=sid;
-        h3.innerHTML = '<span class="namu-num">'+ci+'.'+si+'.</span> <span class="namu-htext">'+st+'</span><span class="namu-edit">[편집]</span>';
+        h3.innerHTML = '<span class="namu-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="namu-num">'+ci+'.'+si+'.</span> <span class="namu-htext">'+st+'</span><span class="namu-edit">[편집]</span>';
         rs.replaceWith(h3);
         toc.push({lv:2,num:ci+'.'+si,t:st,id:sid});
       });
@@ -3767,6 +3663,18 @@ function namuify(root, doc){
     '<div class="namu-meta">최근 수정 시각: 2026-06-23 (v2026-06-23)</div>'+
     (doc.category?'<div class="namu-cat"><b>분류</b> '+doc.category+'</div>':'')+'</div>';
   root.insertAdjacentHTML('afterbegin', header + introHtml);
+  root.querySelectorAll('.namu-h2,.namu-h3').forEach(function(hh){
+    hh.addEventListener('click', function(){ namuToggle(hh); });
+  });
+}
+function namuToggle(h){
+  var collapsed = h.classList.toggle('namu-collapsed');
+  var stop = (h.tagName === 'H2') ? ['H2'] : ['H2','H3'];
+  var n = h.nextElementSibling;
+  while(n && stop.indexOf(n.tagName) === -1){
+    n.style.display = collapsed ? 'none' : '';
+    n = n.nextElementSibling;
+  }
 }
 function renderVetShell(isDark){
   const app = document.getElementById('app');
@@ -3784,7 +3692,7 @@ function renderVetShell(isDark){
         <button class="vet-subtab ${UI.vetTab==='repro'?'active':''}" data-action="setVetTab" data-vettab="repro">번식학</button>
       </div>
     </header>
-    <main id="main"></main>
+    <main id="main" class="vet-main"></main>
   `;
   renderVet();
 }
