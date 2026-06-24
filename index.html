@@ -988,13 +988,24 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .namu-doc .rb-caution{font-size:13px;line-height:1.68;padding:10px 13px;margin:12px 0;}
 .namu-doc .rb-clinical{font-size:13px;line-height:1.68;padding:10px 13px;margin:12px 0;}
 /* 수의학 문서 흰 배경 */
-.vet-main{background:var(--surface);}
+.vet-main{background:var(--surface);margin:0 20px;}
 @media (max-width:600px){
   .namu-doc{font-size:14px;}
   .namu-doc .rb-p{font-size:14px;line-height:1.72;}
   .namu-doc .rb-list li{font-size:14px;}
   .namu-doc .rb-key li,.namu-doc .rb-caution,.namu-doc .rb-clinical,.namu-doc .rb-intro{font-size:13.5px;}
+  .vet-main{margin:0 12px;}
 }
+/* 수의학 문서 편집 UI */
+.namu-edit{cursor:pointer;}
+.namu-edit:hover{text-decoration:underline;color:var(--accent);}
+.vet-edit-box{outline:2px dashed var(--primary);border-radius:7px;padding:9px 11px;background:var(--surface-alt);margin:4px 0;}
+.vet-edit-box:focus{outline:2px solid var(--primary);}
+.vet-edit-bar{display:flex;gap:8px;margin:8px 0 16px;}
+.vet-eb-save,.vet-eb-cancel{font-family:inherit;font-size:13px;font-weight:700;padding:7px 18px;border-radius:7px;cursor:pointer;border:1px solid var(--line);}
+.vet-eb-save{background:var(--primary);color:#fff;border-color:var(--primary);}
+.vet-eb-save:disabled{opacity:.6;cursor:default;}
+.vet-eb-cancel{background:var(--surface);color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -3356,7 +3367,7 @@ function reproContentHtml(){
 <div class="rb-key"><div class="rb-key-t">화학적 분류</div><ul><li>스테로이드: 에스트라디올(E2)·프로게스테론(P4)·테스토스테론</li><li>펩티드·단백: GnRH·LH·FSH·옥시토신·인히빈</li><li>지방산: PGF2α</li></ul></div>
 <div class="rb-sub">8대 호르몬의 작용 (하나씩 제대로)</div>
 <div class="rb-h">GnRH — 회로의 최상위 지령</div>
-<p class="rb-p">뇌하수체의 생식선자극호르몬(LH·FSH) 분비를 담당하는 유일한 시상하부 신경펩티드다. 박동성으로 방출되어 LH 박동을 그대로 끌어낸다. 이 박동을 만들어내는 발생기(pacemaker)가 시상하부 궁상핵의 키스펩틴 신경세포인데, 키스펩틴·뉴로키닌B·다이노르핀을 함께 내보내기 때문에 KNDy 뉴런이라 부른다. 영양·에너지 정보가 바로 이 KNDy 회로로 들어와 번식의 on/off를 결정한다 — 소가 굶으면 다이노르핀이 키스펩틴을 눌러 GnRH 박동이 줄고 번식 기능이 멈춘다. 체지방 신호인 렙틴이 최소 역치를 넘었다는 &quot;허락&quot;이 있어야 이 회로가 돌아간다. 사춘기와 분만 후 발정 재개가 영양에 휘둘리는 분자 수준의 이유가 이것이다.</p>
+<p class="rb-p">뇌하수체의 생식선자극호르몬(LH·FSH) 분비를 담당하는 유일한 시상하부 신경펩티드다. 박동성으로 방출되어 LH 박동을 그대로 끌어낸다. 이 박동을 만들어내는 발생기(pacemaker)가 시상하부 궁상핵의 키스펩틴 신경세포인데, 키스펩틴·뉴로키닌B·다이노르핀을 함께 내보내기 때문에 KNDy 뉴런이라 부른다. 영양·에너지 정보가 바로 이 KNDy 회로로 들어와 번식의 on/off를 결정한다 — 소가 굶으면 다이노르핀이 키스펩틴을 눌러 GnRH 박동이 줄고 번식 기능이 멈춘다. 체지방이 늘면 거기서 나오는 렙틴이 올라가는데, 이 렙틴이 일정 수준(역치)을 넘으면 &quot;에너지가 충분하다&quot;는 신호가 되어 비로소 이 회로가 정상적으로 작동한다(반대로 그 선에 못 미치면 회로는 켜지지 않는다). 어린 소가 언제 사춘기에 이르는지, 분만한 소가 언제 다시 발정을 보이는지가 영양 상태에 크게 좌우되는 것도 바로 이 KNDy 회로 때문이다.</p>
 <div class="rb-h">LH — 박동과 서지, 두 얼굴</div>
 <p class="rb-p">LH는 평소엔 박동성으로 분비되다가 배란 직전 한 번 크게 터지는 급증(surge)을 이룬다. 박동상 LH는 우성 난포의 최종 성숙과 황체의 발육·유지를 담당하고, 난포에서 프레그네놀론·프로게스테론·안드로겐 생산을 촉진한다. 서지상 LH는 배란을 일으킨다. 황체기에는 P4가 높아 LH 박동이 4~6시간에 한 번꼴로 드물어 평균 LH가 낮게 깔리고, 황체용해로 P4가 떨어지면 LH 박동이 시간당 1회 이상으로 잦아진다 — 이 박동 빈도의 변화야말로 발정주기를 굴리는 핵심 스위치다.</p>
 <div class="rb-h">FSH — 난포파의 시동</div>
@@ -3622,6 +3633,8 @@ function namuify(root, doc){
   if(!root) return;
   doc = doc || {};
   root.classList.add('namu-doc');
+  const admin = (typeof isAdmin==='function') && isAdmin();
+  const tab = (typeof UI!=='undefined' && UI.vetTab) ? UI.vetTab : 'repro';
   const sub = root.querySelector('.modal-sub');
   let titleText = doc.title || (sub ? sub.textContent.trim() : '문서');
   if(sub) sub.remove();
@@ -3629,8 +3642,9 @@ function namuify(root, doc){
   let introHtml = '';
   if(intro){ introHtml = intro.outerHTML; intro.remove(); }
   const stripIcon = s => s.replace(/^[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F\s]+/u,'').replace(/^\s*\d+\.\s*/,'').trim();
+  const chev = '<span class="namu-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>';
   const chapters = [...root.querySelectorAll('.grass-section-title')];
-  const toc = []; let ci=0;
+  let ci=0;
   chapters.forEach(ch=>{
     ci++; let si=0;
     const gm = ch.querySelector('.gst-main');
@@ -3639,32 +3653,38 @@ function namuify(root, doc){
     const iconHtml = svg ? svg.outerHTML : '';
     const t = stripIcon(gm ? gm.textContent : ch.textContent);
     const subText = gs ? gs.textContent.trim() : '';
-    const id = 's-'+ci;
     const h = document.createElement('h2');
-    h.className='namu-h2'; h.id=id;
-    h.innerHTML = '<span class="namu-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="namu-num">'+ci+'.</span>'+(iconHtml?' '+iconHtml:'')+' <span class="namu-htext">'+t+'</span><span class="namu-edit">[편집]</span>'+(subText?'<div class="namu-hsub">'+subText+'</div>':'');
+    h.className='namu-h2'; h.id='s-'+ci;
+    h.dataset.vkey = tab+'::'+t;
+    h.innerHTML = chev+'<span class="namu-num">'+ci+'.</span>'+(iconHtml?' '+iconHtml:'')+' <span class="namu-htext">'+t+'</span>'+(subText?'<div class="namu-hsub">'+subText+'</div>':'');
     ch.replaceWith(h);
-    toc.push({lv:1,num:ci+'',t:t,id:id});
     const block = h.nextElementSibling;
     if(block && block.classList.contains('rb-block')){
       block.querySelectorAll('.rb-sub').forEach(rs=>{
         si++;
         const st = rs.textContent.trim();
-        const sid = 's-'+ci+'-'+si;
         const h3 = document.createElement('h3');
-        h3.className='namu-h3'; h3.id=sid;
-        h3.innerHTML = '<span class="namu-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="namu-num">'+ci+'.'+si+'.</span> <span class="namu-htext">'+st+'</span><span class="namu-edit">[편집]</span>';
+        h3.className='namu-h3'; h3.id='s-'+ci+'-'+si;
+        h3.dataset.vkey = tab+'::'+st;
+        h3.innerHTML = chev+'<span class="namu-num">'+ci+'.'+si+'.</span> <span class="namu-htext">'+st+'</span>'+(admin?'<span class="namu-edit">[편집]</span>':'');
         rs.replaceWith(h3);
-        toc.push({lv:2,num:ci+'.'+si,t:st,id:sid});
       });
+    }
+    if(admin && si===0){
+      const ht = h.querySelector('.namu-htext');
+      if(ht) ht.insertAdjacentHTML('afterend','<span class="namu-edit">[편집]</span>');
     }
   });
   let header = '<div class="namu-head"><h1 class="namu-title">'+titleText+'</h1>'+
     '<div class="namu-meta">최근 수정 시각: 2026-06-23 (v2026-06-23)</div>'+
     (doc.category?'<div class="namu-cat"><b>분류</b> '+doc.category+'</div>':'')+'</div>';
   root.insertAdjacentHTML('afterbegin', header + introHtml);
+  vetApplyOverrides(root);
   root.querySelectorAll('.namu-h2,.namu-h3').forEach(function(hh){
     hh.addEventListener('click', function(){ namuToggle(hh); });
+  });
+  root.querySelectorAll('.namu-edit').forEach(function(ed){
+    ed.addEventListener('click', function(e){ e.stopPropagation(); const hh=ed.closest('.namu-h2,.namu-h3'); if(hh) vetEnterEdit(hh); });
   });
 }
 function namuToggle(h){
@@ -3676,6 +3696,69 @@ function namuToggle(h){
     n = n.nextElementSibling;
   }
 }
+let VETEDITS = {}, _vetLoaded = false, _vetLoading = false;
+async function vetEditsEnsure(){
+  if(_vetLoaded || _vetLoading) return;
+  if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length) return;
+  _vetLoading = true;
+  try{
+    const db = firebase.firestore();
+    const snap = await db.collection('library').doc('vetEdits').get();
+    VETEDITS = (snap.exists && snap.data() && snap.data().data) ? (JSON.parse(snap.data().data)||{}) : {};
+    _vetLoaded = true;
+  }catch(e){ console.warn('vetEdits load 실패', e); }
+  _vetLoading = false;
+  if(typeof UI!=='undefined' && UI.vetMode){ try{ renderVet(); }catch(e){} }
+}
+async function vetEditsSave(){
+  try{
+    const db = firebase.firestore();
+    await db.collection('library').doc('vetEdits').set({data:JSON.stringify(VETEDITS), updated:Date.now()}, {merge:true});
+    if(typeof toast==='function') toast('수정 내용이 저장됐어요.');
+  }catch(e){ console.warn('vetEdits save 실패', e); if(typeof toast==='function') toast('저장 실패 — 주인 계정 로그인 상태를 확인해주세요.'); }
+}
+function vetSecNodes(h){
+  var stop = (h.tagName==='H2') ? ['H2'] : ['H2','H3'];
+  var nodes=[], n=h.nextElementSibling;
+  while(n && stop.indexOf(n.tagName)===-1){ nodes.push(n); n=n.nextElementSibling; }
+  return nodes;
+}
+function vetApplyOverrides(root){
+  if(!VETEDITS) return;
+  root.querySelectorAll('.namu-h2,.namu-h3').forEach(function(h){
+    var key=h.dataset.vkey; if(!key) return;
+    var html=VETEDITS[key]; if(html==null) return;
+    var nodes=vetSecNodes(h); if(!nodes.length) return;
+    var parent=nodes[0].parentNode;
+    var anchor=nodes[nodes.length-1].nextSibling;
+    nodes.forEach(function(n){ n.remove(); });
+    var tmp=document.createElement('div'); tmp.innerHTML=html;
+    while(tmp.firstChild){ parent.insertBefore(tmp.firstChild, anchor); }
+  });
+}
+function vetEnterEdit(h){
+  if(!((typeof isAdmin==='function') && isAdmin())) return;
+  if(document.querySelector('.vet-edit-box')) return;
+  var nodes=vetSecNodes(h); if(!nodes.length) return;
+  var parent=nodes[0].parentNode;
+  var box=document.createElement('div');
+  box.className='vet-edit-box'; box.setAttribute('contenteditable','true');
+  parent.insertBefore(box, nodes[0]);
+  nodes.forEach(function(n){ box.appendChild(n); });
+  var bar=document.createElement('div');
+  bar.className='vet-edit-bar';
+  bar.innerHTML='<button type="button" class="vet-eb-save">저장</button><button type="button" class="vet-eb-cancel">취소</button>';
+  box.insertAdjacentElement('afterend', bar);
+  box.focus();
+  bar.querySelector('.vet-eb-save').addEventListener('click', async function(){
+    VETEDITS[h.dataset.vkey]=box.innerHTML;
+    this.textContent='저장 중…'; this.disabled=true;
+    await vetEditsSave();
+    renderVet();
+  });
+  bar.querySelector('.vet-eb-cancel').addEventListener('click', function(){ renderVet(); });
+}
+
 function renderVetShell(isDark){
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -4554,7 +4637,7 @@ const ACTIONS = {
   openBackup: ()=>{ if(!isAdmin()) return noAdminToast(); openBackupModal(); },
   exportData: ()=>exportData(),
   importData: ()=>document.getElementById('import-file-input')?.click(),
-  openVet: ()=>{ UI.vetMode=true; UI.vetTab='grass'; render(); },
+  openVet: ()=>{ UI.vetMode=true; UI.vetTab='grass'; render(); vetEditsEnsure(); },
   setVetTab: ds=>{ UI.vetTab=ds.vettab; render(); },
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
