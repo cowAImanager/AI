@@ -323,6 +323,7 @@ main{flex:1;padding:18px 20px 70px;}
 /* 임신감정 */
 .preg-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
 .preg-summary.five{grid-template-columns:repeat(5,minmax(0,1fr));}
+.preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));}
 @media (max-width:560px){
   .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
   .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -334,10 +335,10 @@ main{flex:1;padding:18px 20px 70px;}
   .preg-summary.preg-five > :nth-child(4),
   .preg-summary.preg-five > :nth-child(5){grid-column:span 2;}
   /* 질환: 5칸 한 줄 */
-  .preg-summary.disease-five{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;}
-  .preg-summary.disease-five .preg-stat{padding:8px 3px;}
-  .preg-summary.disease-five .preg-stat-num{font-size:17px;}
-  .preg-summary.disease-five .preg-stat-label{font-size:9px;line-height:1.2;letter-spacing:-.02em;}
+  .preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .preg-summary.disease-three .preg-stat{padding:9px 4px;}
+  .preg-summary.disease-three .preg-stat-num{font-size:18px;}
+  .preg-summary.disease-three .preg-stat-label{font-size:10px;line-height:1.2;letter-spacing:-.02em;}
 }
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
@@ -2577,31 +2578,34 @@ function animalShortName(a){
 
 function renderDiseaseView(){
   const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
-  const recs = DATA.records
+  const allDiseaseRecs = DATA.records
     .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim()) || recHasCyst(r)))
     .sort((a,b)=> (dkey(b)||'').localeCompare(dkey(a)||''));
 
-  const uterineRecs = recs.filter(r => (r.uterineDisease||'').trim());
-  const uterineResolvedCount = uterineRecs.filter(r => r.uterineResolved).length;
-  const uterineCount = uterineRecs.length - uterineResolvedCount;   // 진행중(치료완료 제외)
-  const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim()).length;
+  // 호전된 개체는 목록에서 제외 (표시만 제외, 데이터는 보존)
+  // 호전 정의: 가장 최근 진료에서 낭종 없음, 또는 자궁질환이 치료완료 처리됨
+  const isImprovedRec = r => {
+    const latest = animalRecords(r.animalId)[0];
+    const hasUt = (r.uterineDisease||'').trim();
+    const hasCyst = recHasCyst(r);
+    // 낭종 기록인데 최신 진료에 낭종 없음 → 호전
+    if(hasCyst && latest && !recHasCyst(latest)) return true;
+    // 자궁질환인데 치료완료 플래그 → 호전
+    if(hasUt && r.uterineResolved) return true;
+    return false;
+  };
+  const recs = allDiseaseRecs.filter(r => !isImprovedRec(r));
+
+  const uterineCount = recs.filter(r => (r.uterineDisease||'').trim()).length;
+  const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim() || recHasCyst(r)).length;
   const animalsSet   = new Set(recs.map(r=>r.animalId));
 
-  // 낭종 호전 판정: 과거 낭종 기록이 있는데 가장 최근 진료에서 낭종 없음
-  const cystAnimals = new Set(recs.filter(recHasCyst).map(r=>r.animalId));
-  let improvedCount = 0;
-  cystAnimals.forEach(id => { const latest = animalRecords(id)[0]; if(latest && !recHasCyst(latest)) improvedCount++; });
-
-  const df = UI.diseaseFilter || 'all';   // all | uterine | uterineResolved | ovary | cystImproved
+  const df = UI.diseaseFilter || 'all';   // all | uterine | ovary
   const matchFilter = r => {
     if(df==='all') return true;
     const hasUt = (r.uterineDisease||'').trim();
-    const hasOv = (r.ovarianDisease||'').trim();
-    const latest = animalRecords(r.animalId)[0];
-    if(df==='uterine') return hasUt && !r.uterineResolved;
-    if(df==='uterineResolved') return hasUt && r.uterineResolved;
-    if(df==='ovary') return hasOv || recHasCyst(r);
-    if(df==='cystImproved') return recHasCyst(r) && latest && !recHasCyst(latest);
+    if(df==='uterine') return hasUt;
+    if(df==='ovary') return (r.ovarianDisease||'').trim() || recHasCyst(r);
     return true;
   };
   const filteredRecs = recs.filter(matchFilter);
@@ -2611,23 +2615,11 @@ function renderDiseaseView(){
     const tags = [];
     if((r.uterineDisease||'').trim()){
       tags.push(`<span class="disease-tag uterine">${esc(r.uterineDisease.trim())}</span>`);
-      tags.push(r.uterineResolved
-        ? `<span class="disease-tag improved" title="자궁질환 호전">${svgIcon('checkCircle',13)} 호전</span>`
-        : `<span class="disease-tag activecyst" title="자궁질환 진행중">🔴 진행중</span>`);
     }
     if((r.ovarianDisease||'').trim()){
       tags.push(`<span class="disease-tag ovary">${esc(r.ovarianDisease.trim())}</span>`);
     } else if(recHasCyst(r)){
-      // 난소질환 칸은 비었지만 초음파 등에 낭종이 적힌 경우: 종류만 (상세 소견은 행 클릭 시 확인)
       tags.push(`<span class="disease-tag ovary">${esc(cystType(r))}</span>`);
-    }
-    if(recHasCyst(r)){
-      const latest = animalRecords(r.animalId)[0];
-      const resolved = latest && !recHasCyst(latest);
-      const ct = cystType(r);
-      tags.push(resolved
-        ? `<span class="disease-tag improved" title="${esc(ct)} 호전">${svgIcon('checkCircle',13)} 호전</span>`
-        : `<span class="disease-tag activecyst" title="${esc(ct)} 진행중">🔴 진행중</span>`);
     }
     return `
     <div class="disease-row" data-action="editRecord" data-id="${esc(r.id)}">
@@ -2639,7 +2631,7 @@ function renderDiseaseView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary five disease-five">
+      <div class="preg-summary disease-three">
         <div class="preg-stat">
           <div class="preg-stat-num">${animalsSet.size}</div>
           <div class="preg-stat-label">질환 개체</div>
@@ -2648,17 +2640,9 @@ function renderDiseaseView(){
           <div class="preg-stat-num">${uterineCount}</div>
           <div class="preg-stat-label">자궁질환</div>
         </div>
-        <div class="preg-stat pregcol clickable ${df==='uterineResolved'?'sel':''}" data-action="setDiseaseFilter" data-filter="uterineResolved">
-          <div class="preg-stat-num">${uterineResolvedCount}</div>
-          <div class="preg-stat-label">자궁 호전</div>
-        </div>
         <div class="preg-stat ratecol2 clickable ${df==='ovary'?'sel':''}" data-action="setDiseaseFilter" data-filter="ovary">
           <div class="preg-stat-num">${ovaryCount}</div>
           <div class="preg-stat-label">난소질환</div>
-        </div>
-        <div class="preg-stat pregcol clickable ${df==='cystImproved'?'sel':''}" data-action="setDiseaseFilter" data-filter="cystImproved">
-          <div class="preg-stat-num">${improvedCount}</div>
-          <div class="preg-stat-label">낭종 호전</div>
         </div>
       </div>
       ${df!=='all'?`<div class="filter-note">필터 적용 중 · <button class="filter-clear" data-action="setDiseaseFilter" data-filter="all">전체 보기</button></div>`:''}
@@ -3468,7 +3452,8 @@ function reproPhysHtml(){
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('dna',16)} 기초 생리 — 호르몬·발정주기·난포파</div>
 <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('dna',15)} 1. 번식 호르몬과 내분비 축</span><span class="gst-sub">시상하부–뇌하수체–난소 축, 8대 호르몬의 작용과 스테로이드 생성</span></span></div>
 <div class="rb-block"><div class="rb-sub">번식은 하나의 되먹임 회로다</div>
-<p class="rb-p">소의 번식 생리는 결국 시상하부–뇌하수체–난소(성선) 축이라는 하나의 회로가 호르몬을 주고받는 이야기다. 시상하부가 GnRH를 &quot;펄스(pulse)&quot;으로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비하고, 이 둘이 난소로 가서 난포를 키우고 배란시키며 스테로이드(에스트라디올·프로게스테론)를 만들게 한다. 그렇게 난소가 만든 스테로이드는 다시 위로 올라가 GnRH·LH 분비를 조절한다. 이 되먹임 고리가 주기 내내 호르몬 농도를 출렁이게 만들고, 그 출렁임이 겉으로 드러난 것이 곧 발정주기다.</p>
+<p class="rb-p">소의 번식 생리는 결국 시상하부–뇌하수체–난소(성선) 축이라는 하나의 회로가 호르몬을 주고받는 이야기다. 시상하부가 GnRH를 &quot;펄스(pulse)&quot;로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비하고, 이 둘이 난소로 가서 난포를 키우고 배란시키며 스테로이드(에스트라디올·프로게스테론)를 만들게 한다.</p>
+<p class="rb-p">그렇게 난소가 만든 스테로이드는 다시 위로 올라가 GnRH·LH 분비를 조절한다. 이 되먹임 고리가 주기 내내 호르몬 농도를 출렁이게 만들고, 그 출렁임이 겉으로 드러난 것이 곧 발정주기다.</p>
 <p class="rb-p">호르몬은 극미량으로 작동하기 때문에 농도·타이밍·표적세포의 수용체 상태가 모두 맞아떨어져야 효과가 난다. 호르몬 제제를 &quot;분명히 줬는데 안 듣는&quot; 일이 흔한 이유가 여기 있다 — 난포·황체·자궁의 상태와 처치 타이밍이 어긋나면 같은 약도 듣지 않는다.</p>
 <div class="rb-key"><div class="rb-key-t"><svg class="rb-bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="rb-tag">요약</span><span class="rb-tt">화학적 분류</span></div><ul><li>스테로이드: 에스트라디올(E2)·프로게스테론(P4)·테스토스테론</li><li>펩티드·단백: GnRH·LH·FSH·옥시토신·인히빈</li><li>지방산: PGF2α</li></ul></div>
 <div class="rb-sub">8대 호르몬의 작용 (하나씩 제대로)</div>
@@ -5860,7 +5845,7 @@ function showEntryGate(onPass){
   ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0b1f1d;display:flex;align-items:center;justify-content:center;padding:24px;';
   ov.innerHTML = `
     <div style="width:100%;max-width:320px;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;color:#eafaf7;">
-      <div style="font-size:34px;margin-bottom:6px;">🐄</div>
+      <div style="margin-bottom:8px;"><svg viewBox="0 0 32 32" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></div>
       <div style="font-size:18px;font-weight:800;margin-bottom:4px;">번식진료 기록부</div>
       <div style="font-size:12.5px;color:#7fc8bf;margin-bottom:20px;">열람하려면 비밀번호를 입력하세요</div>
       <input id="entry-pw" type="password" inputmode="numeric" placeholder="비밀번호"
