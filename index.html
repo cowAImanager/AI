@@ -212,7 +212,7 @@ main{flex:1;padding:18px 20px 70px;}
 .animal-sort-btn{flex:1 1 0;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:6px 8px;cursor:pointer;transition:all .12s;}
 .animal-sort-btn.active{color:#fff;background:var(--primary);border-color:var(--primary);}
 .list-status{font-size:10.5px !important;padding:3px 8px !important;margin-left:auto;flex:0 0 auto;}
-.animal-list-item{display:flex;flex-direction:column;gap:5px;padding:10px 9px;border-radius:9px;cursor:pointer;border:1px solid transparent;min-width:0;}
+.animal-list-item{display:flex;flex-direction:column;gap:4px;padding:8px 9px;border-radius:9px;cursor:pointer;border:1px solid transparent;min-width:0;}
 .animal-list-item:hover{background:var(--surface-alt);}
 .animal-list-item.active{background:var(--active-item-bg);border-color:var(--tag-yellow);}
 .animal-meta{font-size:11px;color:var(--ink-soft);display:flex;gap:8px;flex-wrap:wrap;}
@@ -350,10 +350,10 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-stat.ratecol .preg-stat-num{color:var(--accent);}
 .preg-stat.ratecol2{background:var(--estrus-soft);}
 .preg-stat.ratecol2 .preg-stat-num{color:var(--estrus-text);}
-.pregcheck-list{display:flex;flex-direction:column;gap:9px;}
+.pregcheck-list{display:flex;flex-direction:column;gap:5px;}
 
 /* 질환 보기 */
-.disease-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 15px;cursor:pointer;flex-wrap:wrap;}
+.disease-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:8px 13px;cursor:pointer;flex-wrap:wrap;}
 .disease-row:hover{background:var(--surface-alt);}
 .disease-date{font-size:13px;color:var(--ink-soft);font-weight:700;}
 .disease-tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
@@ -723,7 +723,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-badge.preg,.pregcheck-badge.confirmed{font-size:11px;padding:4px 9px;}
 
   /* 임신감정 행 — 한 줄 압축 */
-  .pregcheck-list{gap:6px;}
+  .pregcheck-list{gap:4px;}
   .pregcheck-row{padding:9px 11px;gap:8px;border-radius:9px;flex-wrap:nowrap;}
   .pregcheck-row .tag-chip{flex:0 0 auto;}
   .pregcheck-mid{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:1 1 auto;min-width:0;overflow:hidden;}
@@ -748,7 +748,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-row .fatten-badge.sm{font-size:10px;padding:3px 7px;font-weight:800;}
 
   /* 질환 행 — 한 줄 압축 */
-  .disease-row{flex-wrap:nowrap;gap:8px;overflow:hidden;}
+  .disease-row{flex-wrap:nowrap;gap:8px;overflow:hidden;padding:7px 11px;}
   .disease-row .tag-chip{flex:0 0 auto;}
   .disease-date{flex:0 0 auto;}
   .disease-tags{margin-left:auto;display:flex;gap:6px;flex:0 1 auto;min-width:0;flex-wrap:nowrap;overflow:hidden;}
@@ -791,7 +791,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .data-table td{font-size:12.5px;padding:2px 0;}
 
   /* 목록(개체 목록) 행 */
-  .animal-list-item{padding:7px 8px;gap:3px;}
+  .animal-list-item{padding:6px 8px;gap:2px;}
 
   /* 축사정보 (축주 정보) 컴팩트 */
   .info-grid{gap:8px;margin-top:10px;padding-top:10px;}
@@ -877,8 +877,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .open-head h2{font-size:18px;font-weight:800;color:var(--ink);margin:0;}
 .open-count{font-size:13px;font-weight:700;color:#fff;background:var(--primary);border-radius:20px;padding:2px 11px;}
 .open-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;}
-.open-list{display:flex;flex-direction:column;gap:8px;}
-.open-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:all .12s;}
+.open-list{display:flex;flex-direction:column;gap:5px;}
+.open-row{display:flex;align-items:center;gap:12px;padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:all .12s;}
 .open-row:hover{border-color:var(--primary);background:var(--green-soft);}
 .open-row.noinfo{background:var(--surface-alt);}
 .open-id{flex:0 0 auto;min-width:46px;font-size:15px;font-weight:800;color:var(--primary-dark);font-variant-numeric:tabular-nums;}
@@ -907,8 +907,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .open-head h2{font-size:15px;}
   .open-count{font-size:11px;padding:2px 9px;}
   .open-sub{font-size:11px;margin-bottom:10px;}
-  .open-list{gap:6px;}
-  .open-row{padding:9px 11px;gap:9px;border-radius:10px;}
+  .open-list{gap:4px;}
+  .open-row{padding:7px 10px;gap:9px;border-radius:10px;}
   .open-id{min-width:38px;font-size:13px;}
   .open-name{font-size:12.5px;}
   .open-due{font-size:11.5px;gap:6px;}
@@ -946,8 +946,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .rb-intro{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:4px 0 14px;padding:10px 12px;background:var(--surface-alt);border-radius:9px;}
 /* ===== 정보 박스 3종 — 위키 본문형(라벨·테두리 중심) ===== */
 .rb-bi{width:15px;height:15px;flex:0 0 auto;}
-.rb-tag{flex:0 0 auto;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:1.5px 7px;border-radius:5px;color:#fff;}
-.rb-tt{flex:1 1 auto;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.2px;}
+.rb-tag{flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.3px;padding:1.5px 7px;border-radius:5px;color:#fff;}
+.rb-tt{flex:1 1 auto;font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:-.2px;}
 .rb-key-t,.rb-cc-h{display:flex;align-items:center;gap:7px;padding:9px 13px 8px;border-bottom:1px solid var(--line);}
 /* KEY — 요약 */
 .rb-key{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:7px;padding:0;margin:15px 0;overflow:hidden;}
@@ -1012,41 +1012,41 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .namu-chev svg{width:16px;height:16px;}
 .namu-h2.namu-collapsed .namu-chev,.namu-h3.namu-collapsed .namu-chev{transform:rotate(-90deg);}
 /* 본문 가독성 — 나무위키 데스크탑 밀도 */
-.namu-doc{font-size:14.5px;line-height:1.78;color:var(--ink);}
-.namu-doc .rb-p{font-size:14.5px;line-height:1.82;color:var(--ink);margin:11px 0;max-width:none;}
+.namu-doc{font-size:13.5px;line-height:1.65;color:var(--ink);letter-spacing:-0.01em;}
+.namu-doc .rb-p{font-size:13.5px;line-height:1.68;color:var(--ink);margin:9px 0;max-width:none;}
 .namu-doc .rb-p,.namu-doc .rb-list li,.namu-doc .rb-key li,.namu-doc .rb-key-concl,.namu-doc .rb-cc-b,.namu-doc .rb-intro{word-break:normal;overflow-wrap:anywhere;}
 .namu-doc .rb-h{font-size:14.5px;font-weight:800;color:var(--ink);margin:17px 0 6px;}
 .namu-doc .rb-list{margin:8px 0 13px;padding-left:21px;}
-.namu-doc .rb-list li{font-size:14.5px;line-height:1.8;margin-bottom:7px;}
+.namu-doc .rb-list li{font-size:13.5px;line-height:1.65;margin-bottom:5px;}
 .namu-doc .rb-label{font-size:11px;padding:1px 8px;}
 .namu-doc .rb-intro{font-size:14px;line-height:1.78;padding:12px 15px;margin:8px 0 17px;}
 .namu-doc .rb-key{margin:16px 0;}
-.namu-doc .rb-key-t{font-size:13.5px;}
-.namu-doc .rb-key li{font-size:14px;line-height:1.78;margin-bottom:7px;}
-.namu-doc .rb-key-concl{font-size:14px;line-height:1.78;}
-.namu-doc .rb-cc-h{font-size:13.5px;}
-.namu-doc .rb-cc-b{font-size:14px;line-height:1.78;}
+.namu-doc .rb-key-t{font-size:12.5px;}
+.namu-doc .rb-key li{font-size:13px;line-height:1.62;margin-bottom:5px;}
+.namu-doc .rb-key-concl{font-size:13px;line-height:1.62;}
+.namu-doc .rb-cc-h{font-size:12.5px;}
+.namu-doc .rb-cc-b{font-size:13px;line-height:1.64;}
 .namu-doc .rb-caution,.namu-doc .rb-clinical{margin:16px 0;}
 /* 수의학 문서 — 질환관리 등 일반 뷰의 .panel 아래 창과 동일 */
 .vet-main{background:transparent;}
 .vet-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:none;}
 .namu-doc{max-width:none;}
 @media (min-width:1100px){
-  .namu-doc{font-size:15px;line-height:1.82;}
-  .namu-doc .rb-p{font-size:15px;line-height:1.85;}
-  .namu-doc .rb-list li{font-size:15px;}
+  .namu-doc{font-size:14px;line-height:1.68;}
+  .namu-doc .rb-p{font-size:14px;line-height:1.7;}
+  .namu-doc .rb-list li{font-size:14px;}
   .namu-h2{font-size:21px;}
   .namu-h3{font-size:17px;}
   .namu-doc .namu-title{font-size:25px;}
 }
 @media (max-width:600px){
   .vet-panel{padding:11px;border-radius:9px;}
-  .namu-doc{font-size:15px;line-height:1.76;}
-  .namu-doc .rb-p{font-size:15px;line-height:1.8;margin:10px 0;}
-  .namu-doc .rb-h{font-size:15px;}
+  .namu-doc{font-size:13.5px;line-height:1.64;}
+  .namu-doc .rb-p{font-size:13.5px;line-height:1.66;margin:8px 0;}
+  .namu-doc .rb-h{font-size:13.5px;}
   .namu-doc .rb-list{padding-left:19px;}
-  .namu-doc .rb-list li{font-size:15px;line-height:1.76;}
-  .namu-doc .rb-key li,.namu-doc .rb-key-concl,.namu-doc .rb-cc-b,.namu-doc .rb-intro{font-size:14.5px;line-height:1.74;}
+  .namu-doc .rb-list li{font-size:13.5px;line-height:1.64;}
+  .namu-doc .rb-key li,.namu-doc .rb-key-concl,.namu-doc .rb-cc-b,.namu-doc .rb-intro{font-size:13px;line-height:1.62;}
   .namu-h2{font-size:18.5px;margin:30px 0 12px;padding-top:8px;padding-bottom:8px;}
   .namu-h3{font-size:15.5px;margin:22px 0 10px;}
   .namu-hsub{font-size:12.5px;}
@@ -3452,39 +3452,29 @@ function reproPhysHtml(){
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('dna',16)} 기초 생리 — 호르몬·발정주기·난포파</div>
 <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">${svgIcon('dna',15)} 1. 번식 호르몬과 내분비 축</span><span class="gst-sub">시상하부–뇌하수체–난소 축, 8대 호르몬의 작용과 스테로이드 생성</span></span></div>
 <div class="rb-block"><div class="rb-sub">번식은 하나의 되먹임 회로다</div>
-<p class="rb-p">소의 번식 생리는 결국 시상하부–뇌하수체–난소(성선) 축이라는 하나의 회로가 호르몬을 주고받는 이야기다. 시상하부가 GnRH를 &quot;펄스(pulse)&quot;로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비하고, 이 둘이 난소로 가서 난포를 키우고 배란시키며 스테로이드(에스트라디올·프로게스테론)를 만들게 한다.</p>
-<p class="rb-p">그렇게 난소가 만든 스테로이드는 다시 위로 올라가 GnRH·LH 분비를 조절한다. 이 되먹임 고리가 주기 내내 호르몬 농도를 출렁이게 만들고, 그 출렁임이 겉으로 드러난 것이 곧 발정주기다.</p>
-<p class="rb-p">호르몬은 극미량으로 작동하기 때문에 농도·타이밍·표적세포의 수용체 상태가 모두 맞아떨어져야 효과가 난다. 호르몬 제제를 &quot;분명히 줬는데 안 듣는&quot; 일이 흔한 이유가 여기 있다 — 난포·황체·자궁의 상태와 처치 타이밍이 어긋나면 같은 약도 듣지 않는다.</p>
+<ul class="rb-list"><li>소의 번식 생리는 결국 시상하부–뇌하수체–난소(성선) 축이라는 하나의 회로가 호르몬을 주고받는 이야기다.</li><li>시상하부가 GnRH를 &quot;펄스(pulse)&quot;로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비한다.</li><li>이 둘이 난소로 가서 난포를 키우고 배란시키며 스테로이드(에스트라디올·프로게스테론)를 만들게 한다.</li><li>난소가 만든 스테로이드는 다시 위로 올라가 GnRH·LH 분비를 조절한다.</li><li>이 되먹임 고리가 주기 내내 호르몬 농도를 출렁이게 만들고, 그 출렁임이 겉으로 드러난 것이 곧 발정주기다.</li><li>호르몬은 극미량으로 작동하기 때문에 농도·타이밍·표적세포의 수용체 상태가 모두 맞아떨어져야 효과가 난다. 호르몬 제제를 &quot;분명히 줬는데 안 듣는&quot; 일이 흔한 이유가 여기 있다 — 난포·황체·자궁의 상태와 처치 타이밍이 어긋나면 같은 약도 듣지 않는다.</li></ul>
 <div class="rb-key"><div class="rb-key-t"><svg class="rb-bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="rb-tag">요약</span><span class="rb-tt">화학적 분류</span></div><ul><li>스테로이드: 에스트라디올(E2)·프로게스테론(P4)·테스토스테론</li><li>펩티드·단백: GnRH·LH·FSH·옥시토신·인히빈</li><li>지방산: PGF2α</li></ul></div>
 <div class="rb-sub">8대 호르몬의 작용 (하나씩 제대로)</div>
 <div class="rb-h">GnRH — 회로의 최상위 지령</div>
-<p class="rb-p">뇌하수체의 생식선자극호르몬(LH·FSH) 분비를 담당하는 유일한 시상하부 신경펩티드다. 펄스성으로 방출되어 LH 펄스를 그대로 끌어낸다. 이 펄스를 만들어내는 발생기(pacemaker)가 시상하부 궁상핵의 키스펩틴 신경세포인데, 키스펩틴·뉴로키닌B·다이노르핀을 함께 내보내기 때문에 KNDy 뉴런이라 부른다. 영양·에너지 정보가 바로 이 KNDy 회로로 들어와 번식의 on/off를 결정한다 — 소가 굶으면 다이노르핀이 키스펩틴을 눌러 GnRH 펄스가 줄고 번식이 멈춘다. 반대로 체지방이 늘면 거기서 나오는 렙틴이 올라가는데, 이 렙틴이 일정 수준(역치)을 넘으면 &quot;에너지가 충분하다&quot;는 신호가 되어 비로소 회로가 정상 작동한다(그 선에 못 미치면 회로는 켜지지 않는다). 어린 소가 언제 사춘기에 이르는지, 분만한 소가 언제 다시 발정을 보이는지가 영양 상태에 크게 좌우되는 것도 바로 이 KNDy 회로 때문이다.</p>
+<ul class="rb-list"><li>뇌하수체의 생식선자극호르몬(LH·FSH) 분비를 담당하는 유일한 시상하부 신경펩티드다.</li><li>펄스성으로 방출되어 LH 펄스를 그대로 끌어낸다.</li><li>이 펄스를 만들어내는 발생기(pacemaker)가 시상하부 궁상핵의 키스펩틴 신경세포인데, 키스펩틴·뉴로키닌B·다이노르핀을 함께 내보내기 때문에 KNDy 뉴런이라 부른다. 영양·에너지 정보가 바로 이 KNDy 회로로 들어와 번식의 on/off를 결정한다 — 소가 굶으면 다이노르핀이 키스펩틴을 눌러 GnRH 펄스가 줄고 번식이 멈춘다. 반대로 체지방이 늘면 거기서 나오는 렙틴이 올라가는데, 이 렙틴이 일정 수준(역치)을 넘으면 &quot;에너지가 충분하다&quot;는 신호가 되어 비로소 회로가 정상 작동한다(그 선에 못 미치면 회로는 켜지지 않는다). 어린 소가 언제 사춘기에 이르는지, 분만한 소가 언제 다시 발정을 보이는지가 영양 상태에 크게 좌우되는 것도 바로 이 KNDy 회로 때문이다.</li></ul>
 <div class="rb-h">LH — 펄스(pulse)와 서지(surge), 두 얼굴</div>
-<p class="rb-p">LH는 평소엔 펄스(pulse)성으로 분비되다가 배란 직전 한 번 크게 터지는 급증(서지, surge)을 이룬다. 펄스상 LH는 우성 난포의 최종 성숙과 황체의 발육·유지를 맡고, 난포에서 프레그네놀론·프로게스테론·안드로겐 생산을 촉진한다. 서지상 LH는 배란을 일으킨다. 황체기에는 P4가 높아 LH 펄스가 4~6시간에 한 번꼴로 드물어 평균 LH가 낮게 깔리고, 황체용해로 P4가 떨어지면 LH 펄스가 시간당 한 번 이상으로 잦아진다 — 이 펄스 빈도의 변화야말로 발정주기를 굴리는 핵심 스위치다.</p>
-<p class="rb-p">이 배란전 서지를 터뜨리는 방아쇠가 바로 에스트라디올(E2)이다. 우성 난포가 키운 고농도 E2가 역치를 넘어 일정 시간 지속되면, 평소의 음성 되먹임이 양성으로 뒤집혀 GnRH가 대량 방출되고 그것이 LH 서지로 이어진다(자세한 조건은 아래 E2 항목). 단, P4가 낮게 깔려 있어야 이 양성 되먹임이 작동하므로, 황체용해로 P4가 떨어진 난포기에서야 서지가 터진다.</p>
+<ul class="rb-list"><li>LH는 평소엔 펄스(pulse)성으로 분비되다가 배란 직전 한 번 크게 터지는 급증(서지, surge)을 이룬다.</li><li>펄스상 LH는 우성 난포의 최종 성숙과 황체의 발육·유지를 맡고, 난포에서 프레그네놀론·프로게스테론·안드로겐 생산을 촉진한다.</li><li>서지상 LH는 배란을 일으킨다.</li><li>황체기에는 P4가 높아 LH 펄스가 4~6시간에 한 번꼴로 드물어 평균 LH가 낮게 깔리고, 황체용해로 P4가 떨어지면 LH 펄스가 시간당 한 번 이상으로 잦아진다 — 이 펄스 빈도의 변화야말로 발정주기를 굴리는 핵심 스위치다.</li><li>이 배란전 서지를 터뜨리는 방아쇠가 바로 에스트라디올(E2)이다. 우성 난포가 키운 고농도 E2가 역치를 넘어 일정 시간 지속되면, 평소의 음성 되먹임이 양성으로 뒤집혀 GnRH가 대량 방출되고 그것이 LH 서지로 이어진다(자세한 조건은 아래 E2 항목).</li><li>단, P4가 낮게 깔려 있어야 이 양성 되먹임이 작동하므로, 황체용해로 P4가 떨어진 난포기에서야 서지가 터진다.</li></ul>
 <div class="rb-h">FSH — 난포파의 시동</div>
-<p class="rb-p">FSH는 난포파를 시작시킨다. 난소의 과립막세포에 작용해 방향화효소(aromatase)를 켜서, 협막세포가 만든 안드로겐을 에스트로겐으로 바꾸게 한다. 동시에 과립막세포에 LH 수용체가 생기도록 자극한다. 난포가 자라면서 내놓는 E2와 인히빈이 거꾸로 FSH 농도를 떨어뜨리는데, 이 FSH 하강이 곧 편차(deviation) — 우성 난포 하나만 살아남고 나머지는 퇴화하는 분기점이다(자세한 기전은 3장).</p>
+<ul class="rb-list"><li>FSH는 난포파를 시작시킨다.</li><li>난소의 과립막세포에 작용해 방향화효소(aromatase)를 켜서, 협막세포가 만든 안드로겐을 에스트로겐으로 바꾸게 한다. 동시에 과립막세포에 LH 수용체가 생기도록 자극한다.</li><li>난포가 자라면서 내놓는 E2와 인히빈이 거꾸로 FSH 농도를 떨어뜨리는데, 이 FSH 하강이 곧 편차(deviation) — 우성 난포 하나만 살아남고 나머지는 퇴화하는 분기점이다(자세한 기전은 3장).</li></ul>
 <div class="rb-h">에스트라디올(E2) — 발정의 호르몬, 양날의 되먹임</div>
-<p class="rb-p">우성 난포에서 분비되며 발정 행동을 일으킨다(발정 개시 시점에 최고조). 핵심은 시상하부·뇌하수체에 음성·양성 되먹임을 상황에 따라 정반대로 발휘한다는 점인데, 그 전환에는 단순히 &quot;높으냐&quot;만이 아니라 농도·지속시간·프로게스테론 배경·작용 부위라는 네 가지 조건이 함께 걸린다.</p>
-<p class="rb-p">① 농도(역치): E2가 낮거나 중간일 때는 음성 되먹임으로 작동해 GnRH·LH 펄스를 눌러 둔다. 그러다 우성 난포가 자라 E2가 일정 역치를 넘어서면 되먹임의 부호가 뒤집혀 양성으로 전환되고, 거꾸로 GnRH·LH 분비를 자극한다.</p>
-<p class="rb-p">② 지속시간: 단지 역치를 넘는 것만으로는 부족하고, 그 고농도가 일정 시간(대략 반나절 이상) 지속돼야 비로소 배란성 LH 서지가 터진다. 발정 12~18시간 전에 E2가 역치를 넘는다는 2장의 타임라인이 바로 이 &quot;지속&quot; 조건을 가리킨다.</p>
-<p class="rb-p">③ 프로게스테론 배경: 같은 고농도 E2라도 P4가 높게 깔려 있으면(황체기) 양성 되먹임이 차단되어 서지가 일어나지 않는다. 황체용해로 P4가 떨어진 뒤라야 E2의 양성 되먹임이 작동한다 — 동기화에서 P4 제제를 빼야 발정·배란이 열리는 이유가 이것이다. 다만 P4의 역할은 &quot;높을 때 차단&quot;에 그치지 않는다 — 그 전에 P4가 한동안 깔려 이 양성 되먹임 회로를 미리 길들여 둬야(예비점화) 나중에 P4가 빠졌을 때 비로소 서지가 터진다. 그래서 P4가 한 번도 깔린 적 없으면 낮아도 서지가 불발된다(P4 항목 참조).</p>
-<p class="rb-p">④ 작용 부위: 음성 되먹임(펄스 억제)은 주로 시상하부 궁상핵의 KNDy 회로에서 일어나고, 양성 되먹임(서지)은 시상하부 전시각교차전핵(AVPV·preoptic 영역)의 키스펩틴 뉴런이 활성화되며 일어난다 — 같은 E2가 작용하는 부위에 따라 정반대 결과를 내는 셈이다.</p>
+<ul class="rb-list"><li>우성 난포에서 분비되며 발정 행동을 일으킨다(발정 개시 시점에 최고조).</li><li>핵심은 시상하부·뇌하수체에 음성·양성 되먹임을 상황에 따라 정반대로 발휘한다는 점인데, 그 전환에는 단순히 &quot;높으냐&quot;만이 아니라 농도·지속시간·프로게스테론 배경·작용 부위라는 네 가지 조건이 함께 걸린다.</li><li>농도(역치): E2가 낮거나 중간일 때는 음성 되먹임으로 작동해 GnRH·LH 펄스를 눌러 둔다. 그러다 우성 난포가 자라 E2가 일정 역치를 넘어서면 되먹임의 부호가 뒤집혀 양성으로 전환되고, 거꾸로 GnRH·LH 분비를 자극한다.</li><li>지속시간: 단지 역치를 넘는 것만으로는 부족하고, 그 고농도가 일정 시간(대략 반나절 이상) 지속돼야 비로소 배란성 LH 서지가 터진다. 발정 12~18시간 전에 E2가 역치를 넘는다는 2장의 타임라인이 바로 이 &quot;지속&quot; 조건을 가리킨다.</li><li>프로게스테론 배경: 같은 고농도 E2라도 P4가 높게 깔려 있으면(황체기) 양성 되먹임이 차단되어 서지가 일어나지 않는다. 황체용해로 P4가 떨어진 뒤라야 E2의 양성 되먹임이 작동한다 — 동기화에서 P4 제제를 빼야 발정·배란이 열리는 이유가 이것이다. 다만 P4의 역할은 &quot;높을 때 차단&quot;에 그치지 않는다 — 그 전에 P4가 한동안 깔려 이 양성 되먹임 회로를 미리 길들여 둬야(예비점화) 나중에 P4가 빠졌을 때 비로소 서지가 터진다. 그래서 P4가 한 번도 깔린 적 없으면 낮아도 서지가 불발된다(P4 항목 참조).</li><li>작용 부위: 음성 되먹임(펄스 억제)은 주로 시상하부 궁상핵의 KNDy 회로에서 일어나고, 양성 되먹임(서지)은 시상하부 전시각교차전핵(AVPV·preoptic 영역)의 키스펩틴 뉴런이 활성화되며 일어난다 — 같은 E2가 작용하는 부위에 따라 정반대 결과를 내는 셈이다.</li></ul>
 <div class="rb-key"><div class="rb-key-t"><svg class="rb-bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="rb-tag">요약</span><span class="rb-tt">E2 되먹임 — 두 얼굴 한눈에</span></div><ul><li>음성 되먹임(평소·브레이크) — E2 저~중농도 → GnRH·LH 펄스를 눌러 둔다. 자리: 시상하부 궁상핵 KNDy 회로</li><li>양성 되먹임(배란·액셀) — E2 고농도 → GnRH·LH 대량 방출(서지) → 배란. 자리: AVPV(전시각교차전핵) 키스펩틴</li><li>음성을 양성으로 뒤집는 4조건 — ① 농도(역치 넘김) ② 지속(반나절 이상) ③ P4 배경(낮고, 미리 프라이밍돼 있어야) ④ 작용 부위(궁상핵=음성 / AVPV=양성)</li><li>한 줄 — 같은 E2라도 농도·지속·P4·부위에 따라 브레이크(음성)가 액셀(양성)로 뒤집힌다</li></ul></div>
-<p class="rb-p">되먹임 외에 E2는 자궁내막의 옥시토신 수용체 수를 늘려 황체용해를 미리 준비시키고, 인히빈과 함께 다른 난포들의 퇴화를 촉진하며, 농도가 오르면 FSH를 낮춘다.</p>
+<ul class="rb-list"><li>되먹임 외에 E2는 자궁내막의 옥시토신 수용체 수를 늘려 황체용해를 미리 준비시킨다.</li><li>인히빈과 함께 다른 난포들의 퇴화를 촉진한다.</li><li>농도가 오르면 FSH를 낮춘다.</li></ul>
 <div class="rb-h">프로게스테론(P4) — 주기의 브레이크이자 임신의 토대</div>
-<p class="rb-p">황체에서 나오는 임신 유지 호르몬이자 발정주기의 브레이크다. 임신 후기에는 태반도 P4를 만들지만, 소는 약 200일까지는 황체가 P4 공급을 책임지므로 초기 임신은 전적으로 황체에 달려 있다.</p>
-<p class="rb-p">중추에서 P4는 LH 펄스 빈도를 눌러(황체기 4~6시간에 1회) 우성 난포가 과도하게 성숙·배란하는 것을 막는다. 동시에 E2의 양성 되먹임(서지)을 차단하므로, 황체기에는 E2가 높아도 LH 서지가 터지지 않는다(E2 4조건 ③과 같은 축). 이 억제는 용량 의존적이라, P4가 어중간하게 낮으면 LH 억제가 풀려 우성 난포가 멈추지도 배란하지도 못한 채 계속 자라 낭종이 된다(3장).</p>
-<p class="rb-p">한편 P4의 중추 작용에는 정반대 얼굴이 하나 더 있다 — 황체기 동안 한동안 깔린 P4는 당장의 서지는 막지만, 동시에 시상하부의 E2 양성 되먹임 회로(서지를 일으키는 AVPV 키스펩틴)를 미리 길들여 둔다(예비점화, priming). 그래서 서지가 터지려면 &quot;P4가 깔렸다가 → 빠지는&quot; 두 박자가 필요하다 — 한동안 깔린 적이 있어야 회로가 준비되고, 그 뒤 빠져야 비로소 E2가 서지를 터뜨린다. 한 번도 P4가 충분히 깔린 적 없는 소(사춘기 전 미경산우, 황체가 안 생긴 낭종 소)는 이 예비점화가 없어 E2가 있어도 서지가 안 터진다(3장; 사양·육성의 사춘기 편).</p>
+<ul class="rb-list"><li>황체에서 나오는 임신 유지 호르몬이자 발정주기의 브레이크다.</li><li>임신 후기에는 태반도 P4를 만들지만, 소는 약 200일까지는 황체가 P4 공급을 책임지므로 초기 임신은 전적으로 황체에 달려 있다.</li><li>중추에서 P4는 LH 펄스 빈도를 눌러(황체기 4~6시간에 1회) 우성 난포가 과도하게 성숙·배란하는 것을 막는다. 동시에 E2의 양성 되먹임(서지)을 차단하므로, 황체기에는 E2가 높아도 LH 서지가 터지지 않는다(E2 4조건 ③과 같은 축). 이 억제는 용량 의존적이라, P4가 어중간하게 낮으면 LH 억제가 풀려 우성 난포가 멈추지도 배란하지도 못한 채 계속 자라 낭종이 된다(3장).</li><li>한편 P4의 중추 작용에는 정반대 얼굴이 하나 더 있다 — 황체기 동안 한동안 깔린 P4는 당장의 서지는 막지만, 동시에 시상하부의 E2 양성 되먹임 회로(서지를 일으키는 AVPV 키스펩틴)를 미리 길들여 둔다(예비점화, priming). 그래서 서지가 터지려면 &quot;P4가 깔렸다가 → 빠지는&quot; 두 박자가 필요하다 — 한동안 깔린 적이 있어야 회로가 준비되고, 그 뒤 빠져야 비로소 E2가 서지를 터뜨린다. 한 번도 P4가 충분히 깔린 적 없는 소(사춘기 전 미경산우, 황체가 안 생긴 낭종 소)는 이 예비점화가 없어 E2가 있어도 서지가 안 터진다(3장; 사양·육성의 사춘기 편).</li></ul>
 <div class="rb-key"><div class="rb-key-t"><svg class="rb-bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span class="rb-tag">요약</span><span class="rb-tt">프라이밍(예비점화) — 한눈에</span></div><ul><li>원리 — E2가 LH 서지를 터뜨리려면, 서지를 일으키는 시상하부 회로(AVPV 키스펩틴)가 먼저 P4에 길들여져 있어야(프라이밍) 한다</li><li>두 박자 — ① P4가 한동안 깔림(프라이밍) → ② P4가 빠짐 → ③ 그제야 E2가 서지를 터뜨려 배란</li><li>결핍 ① 사춘기 전 미경산우 — P4를 겪은 적이 없어 프라이밍이 안 됨 → E2를 만들어도 자발 배란 못 함(사양·육성의 사춘기 편)</li><li>결핍 ② 난포낭종 — 황체가 안 생겨 P4가 쭉 낮아 프라이밍이 빠짐 → E2가 있어도 서지 불발, 난포가 계속 커짐(3장)</li><li>임상 레버 — 빠진 프라이밍을 P4 제제(질내 CIDR·프로게스틴)로 채운다 → 사춘기 유도·낭종 치료. 동기화는 P4를 넣었다 빼며 이 두 박자를 인위로 재현하는 것</li></ul></div>
-<p class="rb-p">자궁에서는 두 가지 일을 한다. 첫째, 자궁근의 수축을 억제해(자궁 정온) 임신 내내 자궁을 잠재워 둔다 — 분만이 다가와 P4가 떨어지면 이 브레이크가 풀린다. 둘째, 자궁내막 분비선을 자극해 &quot;자궁유(uterine milk)&quot;를 내어 착상 전 배아에 영양을 댄다. 그래서 수정 후 초기 P4가 높을수록 영양막이 잘 자라고 인터페론 타우(IFN-τ) 분비가 늘어 수태율이 오른다(8장 P4 보충 효과와 직결).</p>
-<p class="rb-p">혈중 P4 농도는 황체 크기와 잘 비례한다 — 직장검사·초음파에서 황체 크기로 그 소의 P4(황체 기능)를 가늠하는 근거다(5·9장). 임상에서는 우유·혈중 P4 측정으로 황체 유무·임신 여부·무발정의 원인을 감별하고, 외인성 P4(질내 유치형 CIDR)로 발정을 억제했다가 제거해 동기화에 활용한다(10장).</p>
+<ul class="rb-list"><li>자궁에서는 두 가지 일을 한다. 첫째, 자궁근의 수축을 억제해(자궁 정온) 임신 내내 자궁을 잠재워 둔다 — 분만이 다가와 P4가 떨어지면 이 브레이크가 풀린다. 둘째, 자궁내막 분비선을 자극해 &quot;자궁유(uterine milk)&quot;를 내어 착상 전 배아에 영양을 댄다. 그래서 수정 후 초기 P4가 높을수록 영양막이 잘 자라고 인터페론 타우(IFN-τ) 분비가 늘어 수태율이 오른다(8장 P4 보충 효과와 직결).</li><li>혈중 P4 농도는 황체 크기와 잘 비례한다 — 직장검사·초음파에서 황체 크기로 그 소의 P4(황체 기능)를 가늠하는 근거다(5·9장). 임상에서는 우유·혈중 P4 측정으로 황체 유무·임신 여부·무발정의 원인을 감별하고, 외인성 P4(질내 유치형 CIDR)로 발정을 억제했다가 제거해 동기화에 활용한다(10장).</li></ul>
 <div class="rb-h">PGF2α — 황체를 무너뜨리는 자궁의 신호</div>
-<p class="rb-p">자궁내막에서 펄스성으로 분비되는 황체용해 인자다. 자궁정맥에서 난소동맥으로 직접 넘어가는 국소 역류 경로로 고농도가 되어 황체에 작용한다. 주기 16~17일경, 옥시토신이 자궁내막의 옥시토신 수용체와 결합하면서 터져 나온다. 임신이 성립하려면 바로 이 PGF2α의 분비를 막아야 한다(8장 IFN-τ).</p>
+<ul class="rb-list"><li>자궁내막에서 펄스성으로 분비되는 황체용해 인자다.</li><li>자궁정맥에서 난소동맥으로 직접 넘어가는 국소 역류 경로로 고농도가 되어 황체에 작용한다.</li><li>주기 16~17일경, 옥시토신이 자궁내막의 옥시토신 수용체와 결합하면서 터져 나온다.</li><li>임신이 성립하려면 바로 이 PGF2α의 분비를 막아야 한다(8장 IFN-τ).</li></ul>
 <div class="rb-h">옥시토신</div>
-<p class="rb-p">자궁내막 옥시토신 수용체와 결합해 내막 PGF2α 분비를 일으킨다. 이 수용체가 주기 16~17일경 늘어 발정 시 최고조에 이르므로, 옥시토신–PGF2α–황체용해의 방아쇠가 바로 이 시기에 당겨진다.</p>
+<ul class="rb-list"><li>자궁내막 옥시토신 수용체와 결합해 내막 PGF2α 분비를 일으킨다.</li><li>이 수용체가 주기 16~17일경 늘어 발정 시 최고조에 이르므로, 옥시토신–PGF2α–황체용해의 방아쇠가 바로 이 시기에 당겨진다.</li></ul>
 <div class="rb-h">인히빈</div>
-<p class="rb-p">우성 난포의 과립막세포에서 나와 FSH 방출을 억제한다. 난포파 초기엔 작은 난포들이 내는 인히빈 A가, 이후엔 우성 난포의 E2가 FSH를 누르는 주역을 맡는다.</p>
+<ul class="rb-list"><li>우성 난포의 과립막세포에서 나와 FSH 방출을 억제한다.</li><li>난포파 초기엔 작은 난포들이 내는 인히빈 A가, 이후엔 우성 난포의 E2가 FSH를 누르는 주역을 맡는다.</li></ul>
 <div class="rb-sub">스테로이드는 어떻게 만들어지나 — 2세포설</div>
 <p class="rb-p">난포의 스테로이드 생성은 두 세포의 분업이다. 바깥쪽 협막세포가 LH 자극을 받아 콜레스테롤로부터 안드로겐을 만들고, 안쪽 과립막세포가 FSH 자극으로 방향화효소를 켜 그 안드로겐을 에스트라디올로 바꾼다. 그래서 충분한 E2가 나오려면 협막(LH)과 과립막(FSH)이 둘 다 제대로 작동해야 한다.</p>
 <div class="rb-clinical"><div class="rb-cc-h"><svg class="rb-bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M9 5h6M6 9v4a6 6 0 0 0 12 0V9"/><path d="M6 9H4M18 9h2"/><circle cx="12" cy="19" r="2"/></svg><span class="rb-tag">임상</span><span class="rb-tt">이 분업을 알면 풀린다</span></div><div class="rb-cc-b">&quot;왜 FSH만으로는 발정이 안 오는가&quot;, &quot;왜 우성 난포가 8mm에서 과립막에 LH 수용체를 갖추는 것이 생존의 열쇠인가&quot;가 이 2세포설에서 곧바로 설명된다 — LH 수용체를 얻은 우성 난포는 FSH가 낮아져도 LH로 계속 자라며 E2를 뿜을 수 있다.</div></div></div>
