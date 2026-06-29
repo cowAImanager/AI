@@ -2991,7 +2991,7 @@ function openRecordModal(record, owner, presetAnimalId){
 
       <div class="fieldset-title">날짜 정보</div>
       <div class="form-grid date-grid">
-        ${dateOnlyField('진료일시','examDate',r.examDate)}
+        ${dtField('진료일시','examDate',r.examDate)}
         ${dtField('발정일시','estrusDate',r.estrusDate)}
         ${dtField('수정일시','aiDate',r.aiDate)}
         <div class="field">
@@ -3146,7 +3146,7 @@ function actionSaveRecord(){
   const rec = {
     id: modalCtx.id || uid(owner+'-rec'),
     owner, animalId,
-    examDate: g('f_examDate').value || null,
+    examDate: combineDT(g('f_examDate_date').value, g('f_examDate_time').value),
     estrusDate: combineDT(g('f_estrusDate_date').value, g('f_estrusDate_time').value),
     aiDate: combineDT(g('f_aiDate_date').value, g('f_aiDate_time').value),
     doubleAi: (g('f_doubleAi')||{value:''}).value==='1',
@@ -5779,7 +5779,7 @@ function exportExcel(){
   const recRows = DATA.records.map(r => {
     const row = [
       r.owner, r.animalId,
-      r.examDate ? r.examDate.slice(0,10) : '',
+      r.examDate || '',
       r.estrusDate || '', r.aiDate || '', r.aiInterval || '',
       r.nextEstrusDate ? r.nextEstrusDate.slice(0,10) : '',
       r.expectedCalving ? r.expectedCalving.slice(0,10) : '',
