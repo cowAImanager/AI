@@ -5020,10 +5020,11 @@ function buildSharePayload(owner){
   const animals = DATA.animals.filter(a=>a.owner===owner)
     .sort((a,b)=>a.animalId.localeCompare(b.animalId))
     .map(a=>{ const s=shareAnimalStatus(owner,a); return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a) }; });
-  // 동기화/처치 일정: 그 축주가 수동 입력한 스케줄 (오늘 기준 과거 7일~미래)
+  // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 모두 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
   const cutoff = addDays(todayStr(), -7);
-  const schedule = DATA.schedule.filter(s=>s.owner===owner && (s.note||'').trim() && dateOnly(s.date) >= cutoff)
-    .map(s=>({ date: dateOnly(s.date), id: s.animalId, note: (s.note||'').trim() }))
+  const schedule = scheduleRowsForOwner(owner)
+    .filter(r => (r.note||'').trim() && r.date >= cutoff && !r.skipped)
+    .map(r => ({ date: r.date, id: r.aid, note: r.note.trim() }))
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   return { owner, updatedAt: todayStr(), animals, schedule };
 }
