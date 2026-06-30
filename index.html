@@ -5007,7 +5007,9 @@ function shareAnimalStatus(owner, a){
   const aiD = dateOnly(aiRecs[0].aiDate);
   const days = Math.floor((new Date(todayStr()+'T00:00') - new Date(aiD+'T00:00'))/86400000);
   if(preg==='X') return { status:'비임신', days };
-  if(preg==='O') return { status:'임신중', days:null };
+  if(preg==='O') return calvedAfterPregnancy(recs)
+    ? { status:'분만', days:null }      // O 떴지만 이미 분만 → 임신중 아님
+    : { status:'임신중', days:null };
   return { status: days>=30 ? '임신감정 필요' : '감정 대기', days };
 }
 function shareExpCalving(owner, a){
@@ -5029,7 +5031,7 @@ function buildSharePayload(owner){
     .map(r => ({
       date: r.date,
       id: r.aid,
-      note: (r.note||'').split(' / ').map(t=>t.trim()).filter(t=>t && !isNonTreat(t)).join(' / ').replace(/CIDR/gi, '사이더')
+      note: (r.note||'').split(' / ').map(t=>t.trim()).filter(t=>t && !isNonTreat(t)).join(' / ').replace(/CIDR/gi, '사이더').replace(/\bAI\b/g, '인공수정')
     }))
     .filter(r => r.note)
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
