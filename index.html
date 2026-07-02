@@ -2297,7 +2297,9 @@ function renderPregCheckView(){
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
       pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, fattening: !!a.fattening });
   });
-  rows.sort((x,y)=> (y.days==null?-1:y.days) - (x.days==null?-1:x.days));
+  // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
+  const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
+  rows.sort((x,y)=> effDays(y) - effDays(x) || (y.calvDate||'').localeCompare(x.calvDate||''));
 
   const pregnant = rows.filter(r => r.isPreg);
   const active   = rows.filter(r => !r.isPreg);
