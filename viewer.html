@@ -83,6 +83,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-gitem{display:flex;align-items:center;gap:9px;padding:6px 0;}
 .v-gitem+.v-gitem{border-top:1px solid var(--bg);}
 .v-sched-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink);}
+.v-sched-ids{display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center;}
 .v-sched-note{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary-dark);background:var(--surface-alt);padding:4px 12px;border-radius:7px;white-space:nowrap;}
 .v-sgroup.today .v-sched-note{background:var(--primary);color:#fff;}
 
@@ -264,11 +265,17 @@ function schedGroup(g){
   if(n===0){ cls='today'; dcls='v-dday today'; dtxt='오늘'; }
   else if(n>0 && n<=2){ dcls='v-dday soon'; }
   else if(n<0){ cls='past'; }
-  const rows = g.items.map(s=>`
-    <div class="v-gitem">
-      <span class="v-sched-id">${esc(s.id)}</span>
-      <span class="v-sched-note">${esc(s.note||'')}</span>
-    </div>`).join('');
+  // 날짜 안에서 같은 처치끼리 한 줄로 모으기
+  const byNote = {};
+  g.items.forEach(s=>{ const k=(s.note||'').trim(); (byNote[k]=byNote[k]||[]).push(s); });
+  const rows = Object.keys(byNote).sort((a,b)=>a.localeCompare(b)).map(note=>{
+    const ids = byNote[note].slice().sort((x,y)=>(x.id||'').localeCompare(y.id||''))
+      .map(s=>`<span class="v-sched-id">${esc(s.id)}</span>`).join('');
+    return `<div class="v-gitem">
+      <span class="v-sched-ids">${ids}</span>
+      <span class="v-sched-note">${esc(note)}</span>
+    </div>`;
+  }).join('');
   return `
     <div class="v-sgroup ${cls}">
       <div class="v-sgroup-head">
