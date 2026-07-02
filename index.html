@@ -2095,49 +2095,6 @@ function buildAutoSchedule(owner){
     }
   });
 
-  // 발정주기 예측 → 예상 발정일 ±1일에 '발정확인' 자동 추가
-  DATA.animals.filter(a=>a.owner===owner).forEach(a => {
-    if(a.fattening) return;                                                  // 비육전환 개체 제외
-    const recs = DATA.records.filter(r=>r.owner===owner && r.animalId===a.animalId)
-      .sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-    if(!recs.length) return;
-    if(isCurrentlyPregnant(recs)) return;                                    // 임신 중(분만 전) 제외
-    if(awaitingPregOutcome(recs)){                                           // 수정 후 감정 결과 대기 중
-      return;                                                                // 임신감정·발정확인 자동 표시 안 함 (1차 X 뜨면 다시)
-    }
-    const est = estimateCycleToday(a, recs);
-    if(!est || typeof est.day!=='number' || !est.baseDate){
-      // 추정 불가(낭종/판정불가/미입력)여도, 수기로 적어둔 '다음발정일'이 있으면 그걸로 발정확인 표시
-      const manualNext = manualNextEstrus(recs);
-      if(manualNext){
-        const range = DATA.scheduleRange[owner];
-        const end = (range && range.end) ? range.end : addDays(todayStr(), 30);
-        const cyc = 21;
-        let ed = manualNext;
-        // 이미 지난 예정일은 21일씩 미래로 투영
-        let guard0 = 0;
-        while(ed < addDays(todayStr(),-1) && guard0++ < 60){ ed = addDays(ed, cyc); }
-        for(let k=0;k<3;k++){
-          const d = addDays(ed, k*cyc);
-          if(d > end) break;
-          add(a.animalId, addDays(d,-1), '발정확인');
-          add(a.animalId, d, '발정확인');
-          add(a.animalId, addDays(d,1), '발정확인');
-        }
-      }
-      return;
-    }
-    const cycleLen = est.cycleLen;
-    if(daysBetween(est.baseDate, todayStr()) > cycleLen*2) return;            // 2주기 넘게 지난 추정 제외
-    const daysToEstrus = (cycleLen - est.day) % cycleLen;
-    const nextEstrus = addDays(todayStr(), daysToEstrus);
-    for(let k=0;k<3;k++){
-      const ed = addDays(nextEstrus, k*cycleLen);
-      add(a.animalId, addDays(ed,-1), '발정확인');
-      add(a.animalId, ed, '발정확인');
-      add(a.animalId, addDays(ed,1), '발정확인');
-    }
-  });
   return result;
 }
 
