@@ -1715,12 +1715,11 @@ function latestCalvingRec(recs){
 }
 // 직전 임신(1차 O) 이후 분만했는지
 function calvedAfterPregnancy(recs){
-  const sorted = recs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
-  const o1 = sorted.find(r => (r.pregnant||'').trim().toUpperCase()==='O');
-  if(!o1) return false;
-  const oDate = recDate(o1);
   const calv = latestCalvingDate(recs);
-  return !!(calv && (!oDate || calv >= oDate));
+  if(!calv) return false;                                                    // 분만일 없으면 분만완료 아님
+  // 분만일 이후에 임신(O) 감정이 다시 찍혔으면 재임신 → 분만완료 아님(임신중)
+  const reBred = recs.some(r => (r.pregnant||'').trim().toUpperCase()==='O' && recDate(r) > calv);
+  return !reBred;
 }
 function isCurrentlyPregnant(recs){
   if(!recs || !recs.length) return false;
@@ -2104,18 +2103,7 @@ function buildAutoSchedule(owner){
     if(!recs.length) return;
     if(isCurrentlyPregnant(recs)) return;                                    // 임신 중(분만 전) 제외
     if(awaitingPregOutcome(recs)){                                           // 수정 후 감정 결과 대기 중
-      const aiRecs = recs.filter(r=>r.aiDate);
-      const latestAi = aiRecs.reduce((m,r)=> (!m || r.aiDate > m.aiDate) ? r : m, null);
-      if(latestAi){
-        const range = DATA.scheduleRange[owner];
-        const end = (range && range.end) ? range.end : addDays(todayStr(), 30);
-        const todayS = todayStr();
-        let d = addDays(dateOnly(latestAi.aiDate), 40);                       // 수정일+40일
-        if(d < todayS) d = todayS;                                           // 이미 지났으면 오늘부터
-        let guard = 0;
-        while(d <= end && guard++ < 400){ add(a.animalId, d, '임신감정'); d = addDays(d, 1); }  // 범위 끝까지 매일
-      }
-      return;                                                                // 발정확인은 안 넣음 (1차 X 뜨면 다시)
+      return;                                                                // 임신감정·발정확인 자동 표시 안 함 (1차 X 뜨면 다시)
     }
     const est = estimateCycleToday(a, recs);
     if(!est || typeof est.day!=='number' || !est.baseDate){
@@ -2397,7 +2385,7 @@ function renderPregCheckView(){
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${row.aiDate?('<span class="pcd-prefix">수정일 </span>'+fmtShort(row.aiDate)):'수정기록 없음'}</span>
-        ${row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''}
+        ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:'')}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end">${badge}${subTag}</span>
