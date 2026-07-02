@@ -2172,8 +2172,6 @@ function renderScheduleAgenda(){
       body += `<div class="allsched-item ${r.done?'done':''} ${r.skipped?'skipped':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
         <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
         <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
-        <button class="done-btn ${r.done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="함(완료)">${svgIcon('check',14)}</button>
-        <button class="skip-btn ${r.skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(r.aid)}" data-date="${r.date}" data-stop="1" title="안 함">${svgIcon('x',14)}</button>
       </div>`;
     });
   }
@@ -2220,10 +2218,6 @@ function renderScheduleGrid(){
       return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''} ${skipped&&hasContent?'skipped':''}">
         <div class="sched-cell-inner">
           <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
-          ${hasContent?`<div class="sched-cell-btns">
-            <button class="done-btn ${done?'is-done':''}" data-action="cellDoneToggle" data-aid="${esc(aid)}" data-date="${d}" title="함(완료)">${svgIcon('check',14)}</button>
-            <button class="skip-btn ${skipped?'is-skip':''}" data-action="cellSkipToggle" data-aid="${esc(aid)}" data-date="${d}" title="안 함">${svgIcon('x',14)}</button>
-          </div>`:''}
         </div>
       </td>`;
     }).join('');
