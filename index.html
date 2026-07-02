@@ -406,6 +406,9 @@ main{flex:1;padding:18px 20px 70px;}
 .pregcheck-badge{font-size:12px;font-weight:800;color:#fff;background:var(--accent);padding:5px 11px;border-radius:7px;margin-left:auto;}
 .pregcheck-badge.notpregnant{background:var(--notpregnant-bg);}
 .pregcheck-end{margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;}
+.sched-add-btn{flex:0 0 auto;color:var(--ink-soft);}
+.sched-add-btn:hover{color:var(--accent);}
+.disease-row .sched-add-btn{margin-left:auto;}
 .pregcheck-end .pregcheck-badge{margin-left:0;}
 .preg-subtag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;flex:0 0 auto;}
 /* 임신감정 통일 배지 — 분만D-day / 임신감정 필요 / 재수정 대기 / 비육전환 모두 동일 모양·크기 */
@@ -2351,11 +2354,12 @@ function renderPregCheckView(){
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
-        <span class="pregcheck-date">${row.aiDate?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
+        <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:'')}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end">${badge}${subTag}</span>
+      <button class="iconbtn sched-add-btn" data-action="addAnimalToSchedule" data-id="${esc(row.animalId)}" data-stop="1" title="스케줄에 추가">${svgIcon('calendar',14)}</button>
     </div>
   `;
   };
@@ -2581,6 +2585,7 @@ function renderDiseaseView(){
       <span class="tag-chip" data-animal-id="${esc(r.animalId)}">${esc(r.animalId)}</span>
       <span class="disease-date">${d?fmtShort(d):'—'}</span>
       <span class="disease-tags">${tags.join('')}</span>
+      <button class="iconbtn sched-add-btn" data-action="addAnimalToSchedule" data-id="${esc(r.animalId)}" data-stop="1" title="스케줄에 추가">${svgIcon('calendar',14)}</button>
     </div>`;
   }).join('') || `<div class="empty-state">등록된 질환 기록이 없어요.</div>`;
 
@@ -4698,6 +4703,15 @@ function actionAddScheduleAnimal(){
   renderMain();
   toast('스케줄에 추가했어요.');
 }
+function actionAddAnimalToSchedule(id){
+  if(!id) return;
+  ensureAnimalExists(UI.owner, id);
+  ensureOwnerMeta(UI.owner);
+  const added = !DATA.scheduleAnimals[UI.owner].includes(id);
+  if(added) DATA.scheduleAnimals[UI.owner].push(id);
+  saveState();
+  toast(added ? '스케줄에 추가했어요. 스케줄 탭에서 날짜를 채워주세요.' : '이미 스케줄에 있어요.');
+}
 function actionRemoveScheduleAnimal(id){
   openConfirm('이 개체의 스케줄 일정을 모두 삭제할까요?', ()=>{
     DATA.scheduleAnimals[UI.owner] = DATA.scheduleAnimals[UI.owner].filter(x=>x!==id);
@@ -5404,6 +5418,7 @@ const ACTIONS = {
   extendRange: ()=>{ const r=DATA.scheduleRange[UI.owner]; r.end=addDays(r.end,7); saveState(); renderMain(); },
   addScheduleAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionAddScheduleAnimal(); },
   removeScheduleAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionRemoveScheduleAnimal(ds.id); },
+  addAnimalToSchedule: ds=>{ if(!isAdmin()) return noAdminToast(); actionAddAnimalToSchedule(ds.id); },
   dismissSchedItem: ds=>{
     if(!isAdmin()) return noAdminToast();
     dismissCell(UI.owner, ds.aid, ds.date);
