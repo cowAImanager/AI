@@ -2966,7 +2966,7 @@ function openRecordModal(record, owner, presetAnimalId){
           <input type="text" id="f_aiInterval" value="${esc(r.aiInterval)}">
         </div>
         ${dateOnlyField('다음발정일','nextEstrusDate', r.nextEstrusDate || (r.estrusDate ? addDays(dateOnly(r.estrusDate), 21) : (r.aiDate ? addDays(dateOnly(r.aiDate), 21) : null)))}
-        ${dateOnlyField('예상분만일','expectedCalving',r.expectedCalving)}
+        ${dateOnlyField('예상분만일','expectedCalving', r.expectedCalving || (r.aiDate ? addDays(dateOnly(r.aiDate), 285) : null))}
         ${textField('예상발정주기','expectedCycle',r.expectedCycle,'예: 21일')}
       </div>
 
@@ -5589,6 +5589,10 @@ function initEvents(){
     else if(t.id==='f_estrusDate_date' || t.id==='f_aiDate_date'){
       const nextEl = document.getElementById('f_nextEstrusDate');
       if(nextEl && t.value){ nextEl.value = addDays(t.value, 21); }
+      if(t.id==='f_aiDate_date'){
+        const calvEl = document.getElementById('f_expectedCalving');
+        if(calvEl && t.value){ calvEl.value = addDays(t.value, 285); }   // 수정일 + 285일 = 예상분만일 (수정 가능)
+      }
     }
     else if(t.dataset && t.dataset.animalField){
       if(!isAdmin()) return noAdminToast();
