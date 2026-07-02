@@ -4983,15 +4983,13 @@ function buildSharePayload(owner){
     .sort((a,b)=>a.animalId.localeCompare(b.animalId))
     .map(a=>{ const s=shareAnimalStatus(owner,a); return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a) }; });
   // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
-  // 단, 임신감정·발정확인은 처치가 아니므로 viewer에서 제외(같은 날 처치가 함께 있으면 처치만 남김)
   const cutoff = addDays(todayStr(), -7);
-  const isNonTreat = t => t.includes('임신감정') || t.includes('발정확인');
   const schedule = scheduleRowsForOwner(owner)
     .filter(r => r.date >= cutoff && !r.skipped)
     .map(r => ({
       date: r.date,
       id: r.aid,
-      note: (r.note||'').split(' / ').map(t=>t.trim()).filter(t=>t && !isNonTreat(t)).join(' / ').replace(/CIDR/gi, '사이더').replace(/\bAI\b/g, '인공수정')
+      note: (r.note||'').split(' / ').map(t=>t.trim()).filter(t=>t).join(' / ').replace(/CIDR/gi, '사이더').replace(/\bAI\b/g, '인공수정')
     }))
     .filter(r => r.note)
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
