@@ -2288,8 +2288,9 @@ function renderPregCheckView(){
     const calfSex = calvRec ? (calvRec.calfSex||'') : '';
     const expCalv = dateOnly(lastNonEmpty(sorted,'expectedCalving')||'');
     const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate)) || aiRec || sorted[0];
+    const lastCalv = [latestCalvingDate(allRecs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
-      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, fattening: !!a.fattening });
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening });
   });
   // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
@@ -2351,7 +2352,7 @@ function renderPregCheckView(){
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
-        ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:'')}
+        ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end">${badge}${subTag}</span>
