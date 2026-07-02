@@ -1365,6 +1365,13 @@ function fmtShort(str){
   return `${m}/${d}` + (time ? ' '+time : '');
 }
 function fmtFull(str){ return str || '—'; }
+function fmtYmd(str){
+  if(!str) return '—';
+  const date = str.slice(0,10);
+  const time = str.length>10 ? str.slice(11,16) : '';
+  const [y,m,d] = date.split('-');
+  return `${y}/${m}/${d}` + (time ? ' '+time : '');
+}
 function ageMonths(birth){
   if(!birth) return '—';
   const [y,m,d] = birth.split('-').map(Number);
@@ -1717,9 +1724,12 @@ function latestCalvingRec(recs){
 function calvedAfterPregnancy(recs){
   const calv = latestCalvingDate(recs);
   if(!calv) return false;                                                    // 분만일 없으면 분만완료 아님
-  // 분만일 이후에 임신(O) 감정이 다시 찍혔으면 재임신 → 분만완료 아님(임신중)
-  const reBred = recs.some(r => (r.pregnant||'').trim().toUpperCase()==='O' && recDate(r) > calv);
-  return !reBred;
+  // 분만일 이후에 새 수정(AI)이나 임신(O) 감정이 있으면 새 번식주기 시작 → 분만완료 아님
+  const bredAgain = recs.some(r =>
+    (r.aiDate && dateOnly(r.aiDate) > calv) ||
+    ((r.pregnant||'').trim().toUpperCase()==='O' && recDate(r) > calv)
+  );
+  return !bredAgain;
 }
 function isCurrentlyPregnant(recs){
   if(!recs || !recs.length) return false;
@@ -2122,7 +2132,7 @@ function scheduleRowsForOwner(owner){
   const range = DATA.scheduleRange[owner];
   const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
   const auto = buildAutoSchedule(owner);
-  const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto)])));
+  const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(owner, aid, d)))])));
   const rows = [];
   ids.forEach(aid => {
     dates.forEach(d => {
@@ -2186,7 +2196,7 @@ function renderScheduleGrid(){
 
   // 자동생성 스케줄 계산 (동기화 단계 + 발정 예측)
   const auto = buildAutoSchedule(UI.owner);
-  const animalIds = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto)])));
+  const animalIds = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(UI.owner, aid, d)))])));
 
   const header = `<th class="corner">개체번호</th>` + dates.map(d => `
     <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
@@ -2341,7 +2351,7 @@ function renderPregCheckView(){
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
-        <span class="pregcheck-date">${row.aiDate?('<span class="pcd-prefix">수정일 </span>'+fmtShort(row.aiDate)):'수정기록 없음'}</span>
+        <span class="pregcheck-date">${row.aiDate?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:'')}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
@@ -4692,6 +4702,9 @@ function actionRemoveScheduleAnimal(id){
   openConfirm('이 개체의 스케줄 일정을 모두 삭제할까요?', ()=>{
     DATA.scheduleAnimals[UI.owner] = DATA.scheduleAnimals[UI.owner].filter(x=>x!==id);
     DATA.schedule = DATA.schedule.filter(s=>!(s.owner===UI.owner && s.animalId===id));
+    // 자동 일정(동기화 등)은 기록에서 재생성되므로, 이 개체의 자동 칸을 모두 숨김 처리 ('숨김 복원'으로 되돌릴 수 있음)
+    const auto = buildAutoSchedule(UI.owner);
+    if(auto[id]) Object.keys(auto[id]).forEach(d => dismissCell(UI.owner, id, d));
     saveState();
     renderMain();
   });
