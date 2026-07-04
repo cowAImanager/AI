@@ -1268,6 +1268,7 @@ function buildInitial(){
   d.scheduleAnimals = {};
   d.scheduleRange = {};
   d.ownerProfiles = {};
+  d.vaccineLogs = [];
   d.theme = 'light';
   d.owners.forEach(o=>{
     const ids = [...new Set(d.schedule.filter(s=>s.owner===o).map(s=>s.animalId))];
@@ -1491,7 +1492,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['vaccine','백신관리'],['schedule','스케줄']];
   if(isAdmin()) tabs.unshift(['owner','축사정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
@@ -1597,6 +1598,7 @@ function renderMain(){
   else if(UI.view==='pregcheck') main.innerHTML = renderPregCheckView();
   else if(UI.view==='open') main.innerHTML = renderOpenView();
   else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
+  else if(UI.view==='vaccine') main.innerHTML = renderVaccineView();
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
     const newList = document.getElementById('animalListBox');
@@ -1641,8 +1643,27 @@ function animalSortGroup(id){
   const n = parseInt(g,10);
   return isNaN(n) ? Infinity : n;
 }
-function sortScheduleIds(ids){
+function sortScheduleIds(ids, owner, auto){
+  const mode = DATA.scheduleSortMode || 'date';
   const asc = (DATA.scheduleSortDir||'asc') !== 'desc';
+  if(mode==='date' && owner){
+    const today = todayStr();
+    const keyOf = aid => {
+      const dates = new Set();
+      if(auto && auto[aid]) Object.keys(auto[aid]).forEach(d=>{ if(!isCellDismissed(owner,aid,d)) dates.add(d); });
+      DATA.schedule.filter(s=>s.owner===owner && s.animalId===aid && (s.note||'').trim()).forEach(s=>dates.add(dateOnly(s.date)));
+      const arr = Array.from(dates).filter(Boolean).sort();
+      const up = arr.filter(d=>d>=today);
+      return up.length ? '0'+up[0] : '1';   // 다가오는 일정 가까운 순 → 없으면 뒤로(번호순)
+    };
+    return ids.slice().sort((a,b)=>{
+      const ka=keyOf(a), kb=keyOf(b);
+      if(ka!==kb) return ka<kb?-1:1;
+      const ga=animalSortGroup(a), gb=animalSortGroup(b);
+      if(ga!==gb) return ga-gb;
+      return String(a).localeCompare(String(b));
+    });
+  }
   return ids.slice().sort((a,b)=>{
     const ka=animalSortGroup(a), kb=animalSortGroup(b);
     if(ka!==kb) return asc ? ka-kb : kb-ka;
@@ -2124,7 +2145,7 @@ function renderScheduleView(){
       <button class="${mode==='list'?'active':''}" data-action="setSchedMode" data-mode="list">📋 목록</button>
       <button class="${mode==='grid'?'active':''}" data-action="setSchedMode" data-mode="grid">📊 표</button>
     </div>
-    <button class="btn secondary small" data-action="toggleSchedSort" title="개체번호(3번째 그룹) 정렬">번호순 ${asc?'▲ 올림':'▼ 내림'}</button>
+    <button class="btn secondary small" data-action="toggleSchedSort" title="정렬 방식 전환">${(DATA.scheduleSortMode||'date')==='date'?'📅 일정순':'🔢 번호순'}</button>
   </div>`;
   return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
 }
@@ -2135,7 +2156,7 @@ function scheduleRowsForOwner(owner){
   const range = DATA.scheduleRange[owner];
   const dates = dateRangeArray(range.start, range.end).filter(d => d >= addDays(todayStr(),-2)); // 3일 이상 지난 일정 숨김
   const auto = buildAutoSchedule(owner);
-  const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(owner, aid, d)))])));
+  const ids = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(owner, aid, d)))])), owner, auto);
   const rows = [];
   ids.forEach(aid => {
     dates.forEach(d => {
@@ -2197,7 +2218,7 @@ function renderScheduleGrid(){
 
   // 자동생성 스케줄 계산 (동기화 단계 + 발정 예측)
   const auto = buildAutoSchedule(UI.owner);
-  const animalIds = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(UI.owner, aid, d)))])));
+  const animalIds = sortScheduleIds(Array.from(new Set([...(DATA.scheduleAnimals[UI.owner] || []), ...Object.keys(auto).filter(aid => Object.keys(auto[aid]).some(d => !isCellDismissed(UI.owner, aid, d)))])), UI.owner, auto);
 
   const header = `<th class="corner">개체번호</th>` + dates.map(d => `
     <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
@@ -2449,7 +2470,6 @@ function renderPregCheckView(){
 ============================================================ */
 /* ===== 공태관리: 미수정 개체의 다음 발정예정일 모음 ===== */
 function nextEstrusForAnimal(a, recs){
-  // 1순위: 수기로 적어둔 '다음발정일'
   const cycleLen = parseInt(a.cycleLength,10) || 21;
   const today = todayStr();
   const project = (d) => { // 오늘 지난 예정일은 주기 더해 미래로
@@ -2457,14 +2477,19 @@ function nextEstrusForAnimal(a, recs){
     while(x < today && guard++ < 60){ x = addDays(x, cycleLen); }
     return x;
   };
-  const manual = manualNextEstrus(recs);
-  if(manual) return { date: project(manual), basis:'수기', cycleLen };
-  // 2순위: 발정주기 추정으로 다음 발정일 계산
+  // 수기 '다음발정일'과 그 출처 기록의 기준일
+  const manRec = recs.filter(r => dateOnly(r.nextEstrusDate||''))
+    .sort((x,y)=> dateOnly(y.nextEstrusDate).localeCompare(dateOnly(x.nextEstrusDate)))[0];
+  const manual = manRec ? dateOnly(manRec.nextEstrusDate) : '';
+  const manualBase = manRec ? dateOnly(manRec.examDate || manRec.aiDate || manRec.estrusDate || '') : '';
+  // 발정주기 추정
   const est = estimateCycleToday(a, recs);
-  if(est && typeof est.day==='number' && est.baseDate){
-    const daysToEstrus = (est.cycleLen - est.day) % est.cycleLen;
-    return { date: addDays(today, daysToEstrus), basis:'추정', cycleLen: est.cycleLen };
-  }
+  const estOk = est && typeof est.day==='number' && est.baseDate;
+  const estDate = () => addDays(today, (est.cycleLen - est.day) % est.cycleLen);
+  // 추정 기준(초음파 등)이 수기 다음발정일의 출처보다 최근이면 추정을 우선 — 최신 진료 반영
+  if(estOk && (!manual || est.baseDate > manualBase)) return { date: estDate(), basis:'추정', cycleLen: est.cycleLen };
+  if(manual) return { date: project(manual), basis:'수기', cycleLen };
+  if(estOk) return { date: estDate(), basis:'추정', cycleLen: est.cycleLen };
   return null; // 정보없음
 }
 function renderOpenView(){
@@ -2546,8 +2571,12 @@ function renderDiseaseView(){
     const hasCyst = recHasCyst(r);
     // 낭종 기록인데 최신 진료에 낭종 없음 → 호전
     if(hasCyst && latest && !recHasCyst(latest)) return true;
-    // 자궁질환인데 치료완료 플래그 → 호전
-    if(hasUt && r.uterineResolved) return true;
+    // 자궁질환: 이 기록 또는 이후(같은 날 포함) 진료에서 '치료완료' 체크되면 호전
+    if(hasUt){
+      const rDate = dkey(r);
+      if(r.uterineResolved) return true;
+      if(animalRecords(r.animalId).some(x => x.uterineResolved && dkey(x) >= rDate)) return true;
+    }
     return false;
   };
   const recs = allDiseaseRecs.filter(r => !isImprovedRec(r));
@@ -2903,6 +2932,139 @@ function parseDT(str){
   const [hh,mm] = timePart.split(':').map(Number);
   return new Date(y, m-1, d, hh, mm);
 }
+/* ============================================================
+   백신관리 — 접종 로그 + 다음 접종일 자동 계산
+   로그: {id, owner, animalId, vaccine:'resp'|'diarrhea', dose:'1차'|'2차'|'보강', date}
+   ============================================================ */
+const VAC_LABEL = { resp:'호흡기', diarrhea:'설사' };
+function vaccineLogsFor(owner, animalId, vaccine){
+  return (DATA.vaccineLogs||[])
+    .filter(v=>v.owner===owner && v.animalId===animalId && (!vaccine || v.vaccine===vaccine))
+    .sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+}
+function currentAiDate(recs){
+  const ai = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x))[0];
+  return ai ? dateOnly(ai.aiDate) : '';
+}
+function currentExpectedCalving(recs){
+  const withC = recs.filter(r=>dateOnly(r.expectedCalving||'')).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+  if(withC.length) return dateOnly(withC[0].expectedCalving);
+  const ai = currentAiDate(recs);
+  return ai ? addDays(ai, 285) : '';
+}
+// 호흡기: 개체별·접종일 기준 (1차 수동 → 2주 후 2차 → 매년 보강)
+function nextRespVaccine(owner, a){
+  const logs = vaccineLogsFor(owner, a.animalId, 'resp');
+  if(logs.length===0) return null;                                  // 1차는 수동 시작
+  const last = logs[logs.length-1];
+  if(logs.length===1 && last.dose==='1차') return { vaccine:'resp', dose:'2차', date: addDays(last.date, 14) };
+  return { vaccine:'resp', dose:'보강', date: addDays(last.date, 365) };
+}
+// 설사: 임신 개체·분만예정일 역산 (첫 임신우 -49/-28, 이후 임신 보강 -28)
+function nextDiarrheaVaccine(owner, a, recs){
+  if(!isCurrentlyPregnant(recs)) return null;
+  const expCalv = currentExpectedCalving(recs);
+  if(!expCalv) return null;
+  const aiStart = currentAiDate(recs);
+  const logs = vaccineLogsFor(owner, a.animalId, 'diarrhea');
+  const prior = logs.filter(v => aiStart && v.date < aiStart);       // 이전 임신 때 접종
+  const thisCycle = logs.filter(v => !aiStart || v.date >= aiStart); // 이번 임신 접종
+  if(prior.length===0){
+    if(thisCycle.length===0) return { vaccine:'diarrhea', dose:'1차', date: addDays(expCalv, -49) };
+    if(thisCycle.length===1) return { vaccine:'diarrhea', dose:'2차', date: addDays(expCalv, -28) };
+    return null;
+  }
+  if(thisCycle.length===0) return { vaccine:'diarrhea', dose:'보강', date: addDays(expCalv, -28) };
+  return null;
+}
+function vaccineItemsForOwner(owner){
+  const items = [];
+  ownerAnimalsFor(owner).filter(a=>!a.archived).forEach(a=>{
+    const recs = animalRecords(a.animalId);
+    const nr = nextRespVaccine(owner, a);
+    const nd = nextDiarrheaVaccine(owner, a, recs);
+    if(nr) items.push({ animalId:a.animalId, ...nr });
+    if(nd) items.push({ animalId:a.animalId, ...nd });
+  });
+  items.sort((x,y)=> (x.date||'').localeCompare(y.date||''));
+  return items;
+}
+function renderVaccineView(){
+  const items = vaccineItemsForOwner(UI.owner);
+  const today = todayStr();
+  const rows = items.map(it=>{
+    const dd = daysBetween(today, it.date);
+    const ddText = dd===0 ? '오늘! D-0' : (dd>0 ? `D-${dd}` : `${-dd}일 지남`);
+    const ddColor = dd<0 ? 'var(--overdue-days-text)' : (dd<=3 ? 'var(--accent)' : 'var(--primary-dark)');
+    const vcls = it.vaccine==='resp' ? 'uterine' : 'ovary';
+    return `
+    <div class="disease-row">
+      <span class="tag-chip" data-animal-id="${esc(it.animalId)}">${esc(it.animalId)}</span>
+      <span class="disease-tags"><span class="disease-tag ${vcls}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span>
+      <span style="font-size:12.5px;color:var(--ink-soft);margin-left:auto;">${fmtShort(it.date)}</span>
+      <span style="font-size:13.5px;font-weight:800;color:${ddColor};min-width:52px;text-align:right;">${ddText}</span>
+      ${isAdmin()?`<button class="btn secondary small" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종함</button>`:''}
+    </div>`;
+  }).join('') || `<div class="empty-state">예정된 백신이 없어요. 호흡기 1차는 아래 버튼으로 시작하세요.</div>`;
+  return `
+    <div class="panel">
+      <div class="open-head"><h2>백신관리</h2><span class="open-count">${items.length}건 예정</span></div>
+      ${isAdmin()?`<div style="margin:10px 0;"><button class="btn" data-action="openVaccineLog">+ 백신 접종 기록</button></div>`:''}
+      <div class="disease-list">${rows}</div>
+      <div style="margin-top:14px;font-size:12px;color:var(--ink-soft);line-height:1.7;">
+        호흡기: 1차(수동) → 2주 후 2차 → 이후 매년 보강(마지막 접종 +365일).<br>
+        설사: 첫 임신우는 분만예정 −7주(1차)·−4주(2차), 이후 임신은 분만예정 −4주 보강.
+      </div>
+    </div>`;
+}
+function openVaccineLog(preset){
+  preset = preset || {};
+  const opts = ownerAnimalsFor(UI.owner).map(a=>`<option value="${esc(a.animalId)}">`).join('');
+  openModal(`
+    <div class="modal">
+      <h2>백신 접종 기록</h2>
+      <div class="modal-sub">축주: ${esc(UI.owner)}</div>
+      <div class="form-grid">
+        <div class="field"><label>개체번호 *</label>
+          <input type="text" id="f_vac_animal" list="vacAnimalList" value="${esc(preset.animalId||'')}" placeholder="개체번호">
+          <datalist id="vacAnimalList">${opts}</datalist></div>
+        <div class="field"><label>백신</label>
+          <select id="f_vac_type">
+            <option value="resp" ${preset.vaccine==='resp'?'selected':''}>호흡기</option>
+            <option value="diarrhea" ${preset.vaccine==='diarrhea'?'selected':''}>설사</option>
+          </select></div>
+        <div class="field"><label>회차</label>
+          <select id="f_vac_dose">
+            <option value="1차" ${preset.dose==='1차'?'selected':''}>1차</option>
+            <option value="2차" ${preset.dose==='2차'?'selected':''}>2차</option>
+            <option value="보강" ${preset.dose==='보강'?'selected':''}>보강</option>
+          </select></div>
+        <div class="field"><label>접종일</label>
+          <input type="date" id="f_vac_date" value="${preset.date||todayStr()}"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveVaccine">저장</button>
+      </div>
+    </div>`);
+}
+function actionSaveVaccine(){
+  const id = (document.getElementById('f_vac_animal').value||'').trim();
+  if(!id){ toast('개체번호를 입력해주세요.'); return; }
+  ensureAnimalExists(UI.owner, id);
+  DATA.vaccineLogs.push({
+    id: uid(UI.owner+'-vac'),
+    owner: UI.owner,
+    animalId: id,
+    vaccine: document.getElementById('f_vac_type').value,
+    dose: document.getElementById('f_vac_dose').value,
+    date: document.getElementById('f_vac_date').value || todayStr()
+  });
+  saveState();
+  closeModal();
+  renderMain();
+  toast('백신 접종을 기록했어요.');
+}
 function ownerAnimalsFor(owner){
   return DATA.animals.filter(a=>a.owner===owner).sort((a,b)=>a.animalId.localeCompare(b.animalId));
 }
@@ -2965,8 +3127,8 @@ function openRecordModal(record, owner, presetAnimalId){
           <label>수정간격</label>
           <input type="text" id="f_aiInterval" value="${esc(r.aiInterval)}">
         </div>
-        ${dateOnlyField('다음발정일','nextEstrusDate', r.nextEstrusDate || (r.estrusDate ? addDays(dateOnly(r.estrusDate), 21) : (r.aiDate ? addDays(dateOnly(r.aiDate), 21) : null)))}
-        ${dateOnlyField('예상분만일','expectedCalving', r.expectedCalving || (r.aiDate ? addDays(dateOnly(r.aiDate), 285) : null))}
+        ${dateOnlyField('다음발정일','nextEstrusDate', r.nextEstrusDate || (isNew ? (r.estrusDate ? addDays(dateOnly(r.estrusDate), 21) : (r.aiDate ? addDays(dateOnly(r.aiDate), 21) : null)) : null))}
+        ${dateOnlyField('예상분만일','expectedCalving', r.expectedCalving || (isNew ? (r.aiDate ? addDays(dateOnly(r.aiDate), 285) : null) : null))}
         ${textField('예상발정주기','expectedCycle',r.expectedCycle,'예: 21일')}
       </div>
 
@@ -4991,8 +5153,12 @@ function buildSharePayload(owner){
       id: r.aid,
       note: (r.note||'').split(' / ').map(t=>t.trim()).filter(t=>t).join(' / ').replace(/CIDR/gi, '사이더').replace(/\bAI\b/g, '인공수정')
     }))
-    .filter(r => r.note)
-    .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
+    .filter(r => r.note);
+  // 백신 예정일도 함께 표시
+  vaccineItemsForOwner(owner).forEach(it=>{
+    if(it.date >= cutoff) schedule.push({ date: it.date, id: it.animalId, note: `${VAC_LABEL[it.vaccine]} 백신 ${it.dose}` });
+  });
+  schedule.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   return { owner, updatedAt: todayStr(), animals, schedule };
 }
 function shareViewerLink(owner){
@@ -5419,6 +5585,9 @@ const ACTIONS = {
   addScheduleAnimal: ()=>{ if(!isAdmin()) return noAdminToast(); actionAddScheduleAnimal(); },
   removeScheduleAnimal: ds=>{ if(!isAdmin()) return noAdminToast(); actionRemoveScheduleAnimal(ds.id); },
   addAnimalToSchedule: ds=>{ if(!isAdmin()) return noAdminToast(); actionAddAnimalToSchedule(ds.id); },
+  openVaccineLog: ()=>{ if(!isAdmin()) return noAdminToast(); openVaccineLog(); },
+  saveVaccine: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveVaccine(); },
+  logVaccineDose: ds=>{ if(!isAdmin()) return noAdminToast(); openVaccineLog({ animalId:ds.id, vaccine:ds.vac, dose:ds.dose, date:todayStr() }); },
   dismissSchedItem: ds=>{
     if(!isAdmin()) return noAdminToast();
     dismissCell(UI.owner, ds.aid, ds.date);
@@ -5472,7 +5641,7 @@ const ACTIONS = {
     if(wrap) wrap.style.display = on?'':'none';
     if(btn){ btn.classList.toggle('on', on); btn.innerHTML = (on?svgIcon('checkbox',14):svgIcon('checkboxEmpty',14)) + ' 연수정 (한 발정 2회 연속)'; }
   },
-  toggleSchedSort: ()=>{ DATA.scheduleSortDir = (DATA.scheduleSortDir||'asc')==='asc' ? 'desc' : 'asc'; saveState(); renderMain(); },
+  toggleSchedSort: ()=>{ DATA.scheduleSortMode = (DATA.scheduleSortMode||'date')==='date' ? 'num' : 'date'; saveState(); renderMain(); },
   addSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(null, null); },
   editSchedItem: ds=>{ if(!isAdmin()) return noAdminToast(); openSchedItemModal(ds.aid, ds.date); },
   saveSchedItem: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSchedItem(); },
@@ -5624,6 +5793,7 @@ function applyTheme(){
 // 명백한 오류 날짜 정리 (2000년 이전 예상분만일 → 빈값). 멱등.
 function sanitizeData(){
   let changed = false;
+  if(!Array.isArray(DATA.vaccineLogs)){ DATA.vaccineLogs = []; changed = true; }
   (DATA.records||[]).forEach(r=>{
     const v = (r.expectedCalving||'');
     if(v && /^\d{4}-/.test(v) && parseInt(v.slice(0,4),10) < 2000){
