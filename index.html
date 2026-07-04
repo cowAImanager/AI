@@ -3003,7 +3003,7 @@ function renderVaccineView(){
       <span class="disease-tags"><span class="disease-tag ${vcls}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span>
       <span style="font-size:12.5px;color:var(--ink-soft);margin-left:auto;">${fmtShort(it.date)}</span>
       <span style="font-size:13.5px;font-weight:800;color:${ddColor};min-width:52px;text-align:right;">${ddText}</span>
-      ${isAdmin()?`<button class="btn secondary small" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종함</button>`:''}
+      ${isAdmin()?`<button class="btn secondary small" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종 기록</button>`:''}
     </div>`;
   }).join('') || `<div class="empty-state">예정된 백신이 없어요. 호흡기 1차는 아래 버튼으로 시작하세요.</div>`;
   return `
