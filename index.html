@@ -6028,133 +6028,112 @@ window.KPN_DATA={"COEF":[[1.654,435.08],[1.583,91.84],[0.953,13.06],[1.043,5.75]
   var NAMES=['도체중','등심단면적','등지방두께','근내지방도'];
   var UNITS=['kg','cm²','mm','점'];
   var R2=[0.768,0.676,0.426,0.636];
-  var RESID=[14,3.4,1.0,0.4];
+  var BETTER=[1,1,0,1]; // 1=높을수록 좋음, 0=낮을수록 좋음(등지방)
   var GCOL={A:'var(--primary)',B:'var(--tag-yellow)',C:'var(--ink-soft)'};
-  function gradeOf(i,v){
-    var c=window.KPN_DATA.CUT[i]; if(c==null||isNaN(v))return null;
-    if(c[2]===1){ return v>=c[0]?'A':(v>=c[1]?'B':'C'); }
-    return v<=c[0]?'A':(v<=c[1]?'B':'C');
-  }
-  function gbadge(g){ if(!g)return ''; return '<span style="display:inline-block;min-width:16px;text-align:center;padding:1px 5px;border-radius:5px;font-size:11px;font-weight:800;color:#fff;background:'+GCOL[g]+';">'+g+'</span>'; }
-  function lookup(kpn){
-    var D=window.KPN_DATA, r=D.DB[kpn];
-    return r? {epd:[r[0],r[1],r[2],r[3]], n:r[4], fa:r[5], mg:r[6]} : null;
-  }
-  function compute(epd, fa, mg){
-    var D=window.KPN_DATA, out=[];
-    for(var i=0;i<4;i++){
-      var b=D.COEF[i][0], a=D.COEF[i][1], base=a+b*epd[i], adj=0;
-      if(fa!=null && D.FA[fa]){ var t=D.FA[fa], w=t[5]/(t[5]+400); adj+=0.6*w*t[i]; }
-      if(mg!=null && D.MG[mg]){ var u=D.MG[mg], w2=u[5]/(u[5]+400); adj+=0.4*w2*u[i]; }
-      out.push({name:NAMES[i],unit:UNITS[i],base:base,adj:adj,pred:base+adj,r2:R2[i],resid:RESID[i]});
-    }
-    return out;
-  }
-  function f(x,d){ return (x==null||isNaN(x))?'—':Number(x).toFixed(d==null?1:d); }
+  function gradeOf(i,v){var c=window.KPN_DATA.CUT[i];if(c==null||isNaN(v))return null;
+    if(c[2]===1)return v>=c[0]?'A':(v>=c[1]?'B':'C');return v<=c[0]?'A':(v<=c[1]?'B':'C');}
+  function gbadge(g){if(!g)return '<span style="color:var(--ink-soft);">-</span>';
+    return '<span style="display:inline-block;min-width:15px;text-align:center;padding:0 4px;border-radius:4px;font-size:11px;font-weight:800;color:#fff;background:'+GCOL[g]+';">'+g+'</span>';}
+  function lookup(kpn){var r=window.KPN_DATA.DB[kpn];return r?{epd:[r[0],r[1],r[2],r[3]],n:r[4],fa:r[5],mg:r[6],grd:r[7]}:null;}
+  function compute(epd,fa,mg){var D=window.KPN_DATA,out=[];
+    for(var i=0;i<4;i++){var b=D.COEF[i][0],a=D.COEF[i][1],base=a+b*epd[i],adj=0;
+      if(fa!=null&&D.FA[fa]){var t=D.FA[fa],w=t[5]/(t[5]+400);adj+=0.6*w*t[i];}
+      if(mg!=null&&D.MG[mg]){var u=D.MG[mg],w2=u[5]/(u[5]+400);adj+=0.4*w2*u[i];}
+      out.push({base:base,adj:adj,pred:base+adj});}
+    return out;}
+  function f(x,d){return (x==null||isNaN(x))?'—':Number(x).toFixed(d==null?1:d);}
 
   window.__kpnPredictHtml=function(){
+    var boxes='';
+    for(var s=0;s<3;s++){
+      boxes+='<div style="flex:1;min-width:96px;">'
+        +'<label style="display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:3px;">정액 '+(s+1)+'</label>'
+        +'<input class="kpnIn" data-s="'+s+'" inputmode="numeric" placeholder="KPN" style="width:100%;padding:9px 8px;border:2px solid var(--primary);border-radius:8px;font-size:15px;font-weight:800;color:var(--primary-dark);background:var(--surface);text-align:center;"></div>';
+    }
     return ''
-    +'<div style="max-width:720px;margin:0 auto;padding:4px 2px;">'
-    +'<h2 style="font-size:19px;font-weight:800;color:var(--primary-dark);margin:6px 0 2px;">KPN 후대 도체성적 예측</h2>'
-    +'<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;">KPN 번호를 넣으면 EPD를 조회해 후대(거세) 도체성적을 예측합니다. 회귀식(전국 실측 190두) + 부·외조부 계통보정. 값은 직접 수정해도 됩니다(신규 씨수소).</p>'
-    +'<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;">'
-    +'  <div><label style="display:block;font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:3px;">KPN 번호</label>'
-    +'  <input id="kpnIn" inputmode="numeric" placeholder="예: 1508" style="width:120px;padding:9px 10px;border:2px solid var(--primary);border-radius:8px;font-size:16px;font-weight:800;color:var(--primary-dark);background:var(--surface);"></div>'
-    +'  <div id="kpnMeta" style="font-size:12px;color:var(--ink-soft);padding-bottom:9px;"></div>'
-    +'</div>'
-    +'<div id="kpnEpdRow" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:6px;"></div>'
-    +'<div id="kpnLinRow" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>'
-    +'<div id="kpnGrade" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 14px;padding:8px 10px;background:var(--surface-alt);border-radius:8px;font-size:12px;"></div>'
-    +'<div id="kpnResult"></div>'
+    +'<div style="max-width:760px;margin:0 auto;padding:4px 2px;">'
+    +'<h2 style="font-size:19px;font-weight:800;color:var(--primary-dark);margin:6px 0 2px;">KPN 후대예측 · 정액 비교</h2>'
+    +'<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;">정액번호(KPN) 최대 3개를 넣으면 후대(거세) 도체성적을 예측·비교합니다. 회귀식 + 부·외조부 계통보정. 형질별 최고값은 <b style="color:var(--primary-dark);">굵게</b> 표시.</p>'
+    +'<div style="display:flex;gap:8px;margin-bottom:14px;">'+boxes+'</div>'
+    +'<div id="kpnCmp"></div>'
     +'<div style="margin-top:14px;font-size:11px;color:var(--ink-soft);line-height:1.6;background:var(--surface-alt);border-radius:8px;padding:10px 12px;">'
-    +'※ 신뢰도(R²): 도체중 0.76 · 등심단면적 0.65 · 근내지방도 0.64 · <b>등지방두께 0.44(낮음, 참고만)</b>.<br>'
-    +'※ 예측은 기대값이며 개체·씨수소별로 잔차(±)만큼 흩어집니다. 후대 적은 신규 씨수소는 EPD 자체가 부정확해 예측 불확실성이 더 큽니다.<br>'
-    +'※ 계통보정 = 부·외조부 계열이 EPD보다 잘/못 나온 평균편차. 조회 안 되는 계열은 0.'
+    +'※ 신뢰도(R²): 도체중 0.77 · 단면적 0.68 · 근내 0.64 · <b>등지방 0.43(낮음, 참고만)</b>.<br>'
+    +'※ 후대 적은 소(두수 낮음)는 EPD·예측 불확실성이 큽니다. 계통보정은 부·외조부 계열이 EPD보다 잘/못 나온 편차(조회 안 되면 0).'
     +'</div></div>';
   };
 
-  function epdField(i,val,labels){
-    return '<div><label style="display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:2px;">'+labels[i]+' EPD</label>'
-      +'<input class="kpnEpd" data-i="'+i+'" value="'+(val==null?'':val)+'" style="width:88px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:14px;background:var(--surface);color:var(--ink);"></div>';
-  }
+  function cell(html,best,align){return '<td style="padding:8px 6px;text-align:'+(align||'center')+';'+(best?'background:var(--green-soft);':'')+'">'+html+'</td>';}
 
   function render(box){
-    var D=window.KPN_DATA;
-    var kpn=parseInt(box.querySelector('#kpnIn').value,10);
-    var meta=box.querySelector('#kpnMeta');
-    var epdRow=box.querySelector('#kpnEpdRow'), linRow=box.querySelector('#kpnLinRow'), res=box.querySelector('#kpnResult');
-    var elab=['냉도체중','등심단면적','등지방두께','근내지방도'];
-    var rec=isNaN(kpn)?null:lookup(kpn);
-    // build EPD + lineage inputs (autofill if found, keep editable)
-    if(!epdRow.dataset.built || epdRow.dataset.kpn!=String(kpn)){
-      var e=rec?rec.epd:[ '', '', '', '' ];
-      epdRow.innerHTML=elab.map(function(_,i){return epdField(i,e[i],elab);}).join('');
-      var fa=rec&&rec.fa!=null?rec.fa:'', mg=rec&&rec.mg!=null?rec.mg:'';
-      linRow.innerHTML=''
-        +'<div><label style="display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:2px;">부 KPN(계통보정)</label>'
-        +'<input id="kpnFa" value="'+fa+'" style="width:88px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:14px;background:var(--surface);color:var(--ink);"></div>'
-        +'<div><label style="display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:2px;">외조부 KPN(계통보정)</label>'
-        +'<input id="kpnMg" value="'+mg+'" style="width:88px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:14px;background:var(--surface);color:var(--ink);"></div>';
-      epdRow.dataset.built='1'; epdRow.dataset.kpn=String(kpn);
-      epdRow.style.display='flex'; linRow.style.display='flex';
-      epdRow.querySelectorAll('.kpnEpd').forEach(function(el){el.addEventListener('input',function(){calc(box);});});
-      box.querySelector('#kpnFa').addEventListener('input',function(){calc(box);});
-      box.querySelector('#kpnMg').addEventListener('input',function(){calc(box);});
+    var cmp=box.querySelector('#kpnCmp');
+    var kpns=[],cols=[];
+    box.querySelectorAll('.kpnIn').forEach(function(el){kpns.push(parseInt(el.value,10));});
+    kpns.forEach(function(k){
+      if(isNaN(k)){cols.push(null);return;}
+      var rec=lookup(k);
+      if(!rec){cols.push({kpn:k,missing:true});return;}
+      var out=compute(rec.epd,rec.fa,rec.mg);
+      var grd=[];
+      for(var i=0;i<4;i++){grd.push((rec.grd&&rec.grd[i]&&rec.grd[i]!=='-')?rec.grd[i]:gradeOf(i,rec.epd[i]));}
+      cols.push({kpn:k,rec:rec,out:out,grd:grd,official:!!rec.grd});
+    });
+    var active=cols.filter(function(c){return c&&!c.missing;});
+    if(active.length===0){cmp.innerHTML='<div style="font-size:13px;color:var(--ink-soft);padding:10px 2px;">위에 정액번호(KPN)를 입력하세요. 예: 1614, 1655, 1642</div>';return;}
+    // best index per trait
+    var bestIdx=[];
+    for(var i=0;i<4;i++){
+      var bi=-1,bv=null;
+      cols.forEach(function(c,ci){if(!c||c.missing)return;var v=c.out[i].pred;
+        if(bv==null||(BETTER[i]===1?v>bv:v<bv)){bv=v;bi=ci;}});
+      bestIdx.push(bi);
     }
-    meta.innerHTML = rec
-      ? '조회됨 · 후대 '+rec.n.toLocaleString()+'두'+(rec.n<300?' <span style="color:var(--notpregnant-bg);font-weight:700;">(표본 적음, 참고만)</span>':'')
-      : (isNaN(kpn)?'':'<span style="color:var(--accent);">DB에 없음 — EPD 직접 입력 시 예측</span>');
-    calc(box);
-  }
-
-  function calc(box){
-    var res=box.querySelector('#kpnResult');
-    var epds=[], ok=true;
-    box.querySelectorAll('.kpnEpd').forEach(function(el){ var v=parseFloat(el.value); if(isNaN(v))ok=false; epds.push(v); });
-    if(!ok || epds.length<4){ res.innerHTML='<div style="font-size:13px;color:var(--ink-soft);padding:8px 2px;">EPD 4개를 모두 입력하세요.</div>'; return; }
-    var fa=parseInt(box.querySelector('#kpnFa').value,10); if(isNaN(fa))fa=null;
-    var mg=parseInt(box.querySelector('#kpnMg').value,10); if(isNaN(mg))mg=null;
-    var out=compute(epds,fa,mg);
-    var gel=box.querySelector('#kpnGrade');
-    if(gel){
-      var elab2=['냉도','단면적','등지방','근내'];
-      var kpn2=parseInt(box.querySelector('#kpnIn').value,10);
-      var offg=(window.KPN_DATA.DB[kpn2]||[])[7];
-      var gh='<b style="color:var(--ink-soft);">EPD 등급</b> ';
-      for(var gi=0;gi<4;gi++){
-        var g = (offg && offg[gi] && offg[gi]!=='-') ? offg[gi] : gradeOf(gi,epds[gi]);
-        gh+='<span style="margin-left:3px;white-space:nowrap;">'+elab2[gi]+' '+gbadge(g)+'</span>';
-      }
-      gh+= offg ? '<span style="margin-left:6px;color:var(--ink-soft);font-size:11px;">공식</span>' : '<span style="margin-left:6px;color:var(--accent);font-size:11px;">추정</span>';
-      gel.innerHTML=gh; gel.style.display='flex';
+    var H='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);font-size:13px;">';
+    // header: KPN
+    H+='<thead><tr style="background:var(--primary);color:#fff;"><th style="padding:9px 6px;text-align:left;font-size:11.5px;">항목</th>';
+    cols.forEach(function(c){H+='<th style="padding:9px 6px;font-size:14px;">'+(c?('KPN'+c.kpn):'—')+'</th>';});
+    H+='</tr></thead><tbody>';
+    // 후대두수
+    H+='<tr style="border-bottom:1px solid var(--line);"><td style="padding:7px 6px;font-weight:700;color:var(--ink-soft);font-size:12px;">후대두수</td>';
+    cols.forEach(function(c){var t=(!c)?'':(c.missing?'<span style="color:var(--accent);">DB없음</span>':(c.rec.n?c.rec.n.toLocaleString()+'두'+(c.rec.n<300?'<span style="color:var(--notpregnant-bg);font-size:10px;">*</span>':''):'<span style="color:var(--accent);">신규0두</span>'));H+=cell(t);});
+    H+='</tr>';
+    // 4 traits
+    for(var i=0;i<4;i++){
+      H+='<tr style="border-bottom:1px solid var(--line);'+(BETTER[i]===0?'':'')+'">';
+      H+='<td style="padding:9px 6px;font-weight:700;">'+NAMES[i]+(R2[i]<0.5?' <span style="font-size:9px;color:var(--notpregnant-bg);">R²'+R2[i].toFixed(2)+'</span>':'')+'<div style="font-size:9.5px;color:var(--ink-soft);font-weight:500;">'+UNITS[i]+'</div></td>';
+      cols.forEach(function(c,ci){
+        if(!c||c.missing){H+=cell('');return;}
+        var o=c.out[i];var isBest=(bestIdx[i]===ci);
+        var adjtxt=Math.abs(o.adj)>=0.05?('<div style="font-size:9.5px;color:'+(o.adj>=0?'var(--primary-dark)':'var(--notpregnant-bg)')+';">계통 '+(o.adj>=0?'+':'')+f(o.adj,1)+'</div>'):'';
+        var main='<div style="font-weight:'+(isBest?'800':'600')+';font-size:16px;color:'+(isBest?'var(--primary-dark)':'var(--ink)')+';">'+f(o.pred,1)+'</div>';
+        H+=cell(main+adjtxt,isBest);
+      });
+      H+='</tr>';
     }
-    var rowsHtml=out.map(function(o){
-      var weak=o.r2<0.5;
-      return '<tr style="border-bottom:1px solid var(--line);">'
-        +'<td style="padding:9px 8px;font-weight:700;">'+o.name+(weak?' <span style="font-size:10px;color:var(--notpregnant-bg);">R²'+o.r2.toFixed(2)+'</span>':'')+'</td>'
-        +'<td style="padding:9px 8px;text-align:right;color:var(--ink-soft);">'+f(o.base,1)+'</td>'
-        +'<td style="padding:9px 8px;text-align:right;color:'+(o.adj>=0?'var(--primary-dark)':'var(--notpregnant-bg)')+';">'+(o.adj>=0?'+':'')+f(o.adj,2)+'</td>'
-        +'<td style="padding:9px 8px;text-align:right;font-weight:800;font-size:16px;color:var(--primary-dark);">'+f(o.pred,1)+' <span style="font-size:11px;font-weight:600;color:var(--ink-soft);">'+o.unit+'</span></td>'
-        +'<td style="padding:9px 8px;text-align:right;font-size:11px;color:var(--ink-soft);">±'+o.resid+'</td>'
-        +'</tr>';
-    }).join('');
-    res.innerHTML='<table style="width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);">'
-      +'<thead><tr style="background:var(--primary);color:#fff;font-size:11.5px;">'
-      +'<th style="padding:8px;text-align:left;">형질</th><th style="padding:8px;text-align:right;">EPD예측</th><th style="padding:8px;text-align:right;">계통보정</th><th style="padding:8px;text-align:right;">최종 예측</th><th style="padding:8px;text-align:right;">잔차</th></tr></thead>'
-      +'<tbody>'+rowsHtml+'</tbody></table>';
+    // EPD 등급
+    H+='<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 6px;font-weight:700;color:var(--ink-soft);font-size:12px;">EPD 등급</td>';
+    cols.forEach(function(c){if(!c||c.missing){H+=cell('');return;}
+      var gg='';for(var i=0;i<4;i++){gg+=gbadge(c.grd[i]);}
+      H+=cell('<div style="display:flex;gap:2px;justify-content:center;">'+gg+'</div><div style="font-size:9px;color:'+(c.official?'var(--ink-soft)':'var(--accent)')+';margin-top:2px;">'+(c.official?'공식':'추정')+'</div>');});
+    H+='</tr>';
+    // 계통(부/외조부)
+    H+='<tr><td style="padding:8px 6px;font-weight:700;color:var(--ink-soft);font-size:12px;">부/외조부</td>';
+    cols.forEach(function(c){if(!c||c.missing){H+=cell('');return;}
+      var fa=c.rec.fa,mg=c.rec.mg;var faIn=fa!=null&&window.KPN_DATA.FA[fa];var mgIn=mg!=null&&window.KPN_DATA.MG[mg];
+      var t='<span style="'+(faIn?'color:var(--primary-dark);font-weight:700;':'color:var(--ink-soft);')+'">'+(fa||'?')+'</span> / <span style="'+(mgIn?'color:var(--primary-dark);font-weight:700;':'color:var(--ink-soft);')+'">'+(mg||'?')+'</span>';
+      H+=cell('<span style="font-size:12px;">'+t+'</span>');});
+    H+='</tr>';
+    H+='</tbody></table></div>';
+    H+='<div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;">초록 칸 = 형질별 최고 · <b style="color:var(--primary-dark);">진한 부/외조부</b> = 계통보정 적용됨 · * 후대 300두 미만(참고)</div>';
+    cmp.innerHTML=H;
   }
 
   window.__kpnBindKpn=function(box){
-    var inp=box.querySelector('#kpnIn');
-    if(!inp) return;
-    inp.addEventListener('input',function(){
-      var ep=box.querySelector('#kpnEpdRow'); if(ep){ep.dataset.built='';}
-      render(box);
-    });
-    inp.focus();
+    var ins=box.querySelectorAll('.kpnIn');
+    ins.forEach(function(el){el.addEventListener('input',function(){render(box);});});
+    render(box);
+    if(ins[0])ins[0].focus();
   };
 })();
-
 </script>
 </body>
 </html>
