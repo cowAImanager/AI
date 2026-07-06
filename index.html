@@ -1494,7 +1494,7 @@ function renderOwnerTabs(){
 
 function renderSubnav(){
   const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['vaccine','백신관리'],['schedule','스케줄']];
-  if(isAdmin()) tabs.unshift(['owner','축사정보']);
+  if(isAdmin()) tabs.unshift(['owner','농장정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
   `).join('');
@@ -2025,7 +2025,6 @@ function renderRecordCard(r){
         ${kv('송아지 성별', r.calfSex)}
         ${kv('수정횟수', r.aiCount)}
         ${kv('내수정횟수', r.inHouseAiCount)}
-        ${kv('농가수정횟수', r.farmAiCount)}
         ${r.kpn
           ? `<span class="kv"><b>KPN</b> ${esc(r.kpn)}${r.doubleAi?` <span class="dbl-badge">연수정</span>`:''}</span>`
           : (r.doubleAi ? `<span class="kv"><b>수정</b> <span class="dbl-badge">연수정</span></span>` : '')}
@@ -2648,6 +2647,13 @@ const KV_CATS = [
 /* ============================================================
    축주 정보 보기
 ============================================================ */
+function inhouseAiCountForOwner(owner){
+  return DATA.records.filter(r=>{
+    if(r.owner!==owner || !r.aiDate) return false;
+    const v = (r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'');
+    return (parseInt(String(v).trim(),10)||0) >= 1;
+  }).length;
+}
 function renderOwnerInfoView(){
   ensureOwnerMeta(UI.owner);
   const p = DATA.ownerProfiles[UI.owner] || defaultOwnerProfile();
@@ -2684,6 +2690,9 @@ function renderOwnerInfoView(){
               ${p.phone ? `<a class="btn ghost small" style="margin-left:8px;" href="tel:${esc(p.phone.replace(/[^0-9+]/g,''))}">전화하기</a>` : ''}
             </div>
           </div>
+        </div>
+        <div class="info-row cols2">
+          <div class="field"><label>이 농장 누적 수정 <span style="font-weight:400;color:var(--ink-soft);">(내가 수정한 횟수)</span></label><div class="val"><b>${inhouseAiCountForOwner(UI.owner)}</b>회</div></div>
         </div>
       </div>
       ${kvBlock('feeds','사료')}
@@ -3229,7 +3238,6 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="form-grid">
         ${textField('수정횟수','aiCount',r.aiCount)}
         ${textField('내수정횟수','inHouseAiCount',r.inHouseAiCount)}
-        ${textField('농가수정횟수','farmAiCount',r.farmAiCount)}
         ${textField('KPN','kpn',r.kpn)}
       </div>
 
@@ -3305,7 +3313,6 @@ function actionSaveRecord(){
     recordParity: modalCtx.legacy.recordParity,
     aiCount: g('f_aiCount').value.trim(),
     inHouseAiCount: g('f_inHouseAiCount').value.trim(),
-    farmAiCount: g('f_farmAiCount').value.trim(),
     kpn: g('f_kpn').value.trim(),
     aiOrder: modalCtx.legacy.aiOrder,
     inHouseAi: modalCtx.legacy.inHouseAi,
@@ -5918,7 +5925,7 @@ function exportExcel(){
     '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
     '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
     '자궁질환','난소질환',
-    '호르몬처치','수정횟수','내수정횟수','농가수정횟수','KPN','진료메모',
+    '호르몬처치','수정횟수','내수정횟수','KPN','진료메모',
     '동기화1','동기화1날짜','동기화2','동기화2날짜','동기화3','동기화3날짜',
     '동기화4','동기화4날짜','동기화5','동기화5날짜','동기화6','동기화6날짜',
     '동기화7','동기화7날짜',
@@ -5937,7 +5944,7 @@ function exportExcel(){
       r.ultraUterus || '', r.ultraOvaryL || '', r.ultraOvaryR || '',
       r.uterineDisease || '', r.ovarianDisease || '',
       r.hormoneTreatment || '', r.aiCount || '', r.inHouseAiCount || '',
-      r.farmAiCount || '', r.kpn || '', r.notes || '',
+      r.kpn || '', r.notes || '',
     ];
     for(let i=1;i<=7;i++){
       row.push(r['sync'+i+'Type']||'');
