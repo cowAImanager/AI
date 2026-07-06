@@ -6093,7 +6093,7 @@ window.KPN_DATA={"COEF":[[1.674,435.01],[1.615,91.8],[0.951,13.06],[1.049,5.75]]
       var grd=[];for(var i=0;i<4;i++){grd.push((rec.grd&&rec.grd[i]&&rec.grd[i]!=='-')?rec.grd[i]:gradeOf(i,rec.epd[i]));}
       var sig=signalOf(rec,out);
       var warn=(nA(grd)>=3 && sig!=null && sig.v===-1 && rec.n>=15);
-      cols.push({kpn:k,rec:rec,out:out,grd:grd,official:!!rec.grd,sig:sig,warn:warn});
+      cols.push({kpn:k,rec:rec,out:out,grd:grd,sig:sig,warn:warn});
     });
     var active=cols.filter(function(c){return c&&!c.missing;});
     if(active.length===0){cmp.innerHTML='<div style="font-size:13px;color:var(--ink-soft);padding:10px 2px;">위에 정액번호(KPN)를 입력하세요. 예: 1614, 1655, 1642</div>';return;}
