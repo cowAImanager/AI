@@ -2397,17 +2397,23 @@ function renderPregCheckView(){
 
   let totalServices = 0, svcSuccess = 0;   // 분모: 내가 수정한 라운드의 감정 수 / 분자: 그중 O
   let fsSuccess = 0, fsTotal = 0;          // 첫수정 수태율
+  let concCows = 0, concRounds = 0;        // 수태당 수정횟수: 수태 소가 임신까지 걸린 수정(라운드) 합/수
   Object.values(allByAnimal).forEach(list => {
     list.sort((a,b)=> dkeyP(a).localeCompare(dkeyP(b)));
     // 수정횟수대비 수태율 — 각 감정(O/X)을 직전 수정의 내수정 여부와 연결
     let lastAiMine = null;   // 가장 최근 수정(aiDate)을 내가 했는지
+    let roundToConc = 0;     // 이번 임신까지 누적 내수정 라운드(O 나오면 확정·리셋)
     list.forEach(r => {
       if(r.aiDate) lastAiMine = inhN(r) >= 1;
       const p = pregOf(r);
       if(p==='O' || p==='X'){
         let mine = lastAiMine;
         if(mine===null) mine = inhN(r) >= 1;   // 직전 수정이 없으면 감정 기록 자체의 내수정 사용
-        if(mine){ totalServices++; if(p==='O') svcSuccess++; }
+        if(mine){
+          totalServices++; if(p==='O') svcSuccess++;
+          roundToConc++;
+          if(p==='O'){ concCows++; concRounds += roundToConc; roundToConc = 0; }  // 임신 성립 → 그 소가 걸린 수정 횟수 확정
+        }
       }
     });
     // 첫수정 수태율 — '내수정 1' 실제수정이 분모(결과 난 사이클만), 재수정 없이 O면 성공
@@ -2425,7 +2431,7 @@ function renderPregCheckView(){
     });
   });
   const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
-  const avgServices = svcSuccess ? (totalServices / svcSuccess).toFixed(1) : '—';
+  const avgServices = concCows ? (concRounds / concCows).toFixed(1) : '—';
   const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
 
   const pf = UI.pregFilter || 'all';   // all | active | pregnant
@@ -2434,7 +2440,7 @@ function renderPregCheckView(){
 
   return `
     <div class="panel">
-      <div class="preg-summary five preg-five">
+      <div class="preg-summary">
         <div class="preg-stat clickable ${pf==='active'?'sel':''}" data-action="setPregFilter" data-filter="active">
           <div class="preg-stat-num">${active.length}</div>
           <div class="preg-stat-label">임신감정 대상</div>
@@ -2443,17 +2449,13 @@ function renderPregCheckView(){
           <div class="preg-stat-num">${pregnant.length}</div>
           <div class="preg-stat-label">임신중</div>
         </div>
-        <div class="preg-stat ratecol2">
-          <div class="preg-stat-num">${rateSvc}%</div>
-          <div class="preg-stat-label">수정횟수대비 수태율 <span class="preg-stat-sub">수태 ${svcSuccess} / 수정 ${totalServices}</span></div>
-        </div>
         <div class="preg-stat ratecol">
           <div class="preg-stat-num">${rateFirst}%</div>
           <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">수태 ${fsSuccess} / 첫수정 ${fsTotal}</span></div>
         </div>
         <div class="preg-stat">
           <div class="preg-stat-num">${avgServices}<span style="font-size:14px;font-weight:700;">회</span></div>
-          <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${totalServices} / 수태 ${svcSuccess}</span></div>
+          <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${concRounds} / 수태 ${concCows}</span></div>
         </div>
       </div>
       ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':'임신중'}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
