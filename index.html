@@ -6094,7 +6094,11 @@ window.KPN_DATA={"COEF":[[1.5356,435.725],[1.4478,92.1],[0.8448,13.043],[0.9956,
     +'<div style="max-width:760px;margin:0 auto;padding:4px 2px;">'
     +'<h2 style="font-size:19px;font-weight:800;color:var(--primary-dark);margin:6px 0 2px;">KPN 후대예측 · 정액 비교</h2>'
     +'<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;">정액번호(KPN) 최대 3개 비교. 예측 + 실측 + <b style="color:var(--primary-dark);">저평가 신호</b>(실측이 EPD를 앞서면 EPD가 오를 소). 형질별 최고값 <b style="color:var(--primary-dark);">굵게</b>.</p>'
-    +'<div style="display:flex;gap:8px;margin-bottom:14px;">'+boxes+'</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:10px;">'+boxes+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">'
+    +'<button id="kpnFavAdd" style="font-size:11.5px;font-weight:800;color:#fff;background:var(--primary);border:none;border-radius:8px;padding:7px 11px;cursor:pointer;white-space:nowrap;">★ 현재 입력 저장</button>'
+    +'<span style="font-size:11px;color:var(--ink-soft);">관심 KPN을 저장해두고 눌러서 불러오세요</span></div>'
+    +'<div id="kpnFavBar" style="margin-bottom:14px;"></div>'
     +'<div id="kpnCmp"></div>'
     +'<div style="margin-top:12px;"><button id="kpnValBtn" style="font-size:12px;font-weight:700;color:var(--primary-dark);background:var(--surface-alt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;">📊 예측 검증 로그 보기 (실측 있는 소 전체)</button></div>'
     +'<div id="kpnVal" style="display:none;margin-top:10px;"></div>'
@@ -6208,8 +6212,64 @@ window.KPN_DATA={"COEF":[[1.5356,435.725],[1.4478,92.1],[0.8448,13.043],[0.9956,
       +'<div style="font-size:10.5px;color:var(--ink-soft);margin-top:8px;">※ 임계: 도체중 15kg·단면적 5·등지방 1.5·근내 0.5. 두수 적은 소는 실측이 흔들립니다.</div></div>';
   }
 
+  // ===== 즐겨찾기(관심 KPN) =====
+  function favGet(){ try{ return (typeof DATA!=='undefined' && DATA && Array.isArray(DATA.kpnFav))?DATA.kpnFav:[]; }catch(e){ return []; } }
+  function favSet(arr){ try{ if(typeof DATA!=='undefined' && DATA){ DATA.kpnFav=arr; if(typeof saveState==='function') saveState(); } }catch(e){} }
+  function favStat(k){ // 근내(실측 우선, 없으면 예측) + 등급
+    var rec=lookup(k); if(!rec) return {mar:null,grd:null,act:false};
+    var out=compute(rec.epd,rec.fa,rec.mg);
+    var mar = rec.act? rec.act[3] : out[3].pred;
+    var grd = (rec.grd&&rec.grd[3]&&rec.grd[3]!=='D')?rec.grd : (rec.grd||'');
+    return {mar:mar, grd:rec.grd||'', act:!!rec.act};
+  }
+  function renderFavBar(box){
+    var bar=box.querySelector('#kpnFavBar'); if(!bar)return;
+    var favs=favGet();
+    if(!favs.length){ bar.innerHTML='<div style="font-size:11px;color:var(--ink-soft);padding:2px;">저장된 관심 KPN이 없어요. 위에 번호를 넣고 <b>★ 현재 입력 저장</b>을 눌러보세요.</div>'; return; }
+    var chips=favs.map(function(k){
+      var s=favStat(k); var gr=s.grd||'????';
+      var gcol=(gr==='AAAA')?'var(--primary)':'var(--ink-soft)';
+      var marTxt=(s.mar!=null)?('근내 '+s.mar.toFixed(1)+(s.act?'':'˚')):'';
+      return '<span data-kpn="'+k+'" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface-alt);border:1px solid var(--line);border-radius:20px;padding:5px 6px 5px 11px;margin:0 6px 6px 0;font-size:12px;">'
+        +'<b data-act="load" data-kpn="'+k+'" style="cursor:pointer;color:var(--primary-dark);">KPN'+k+'</b>'
+        +'<span style="font-size:10px;font-weight:800;color:'+gcol+';">'+gr+'</span>'
+        +(marTxt?'<span style="font-size:10.5px;color:var(--ink-soft);">'+marTxt+'</span>':'')
+        +'<span data-act="del" data-kpn="'+k+'" style="cursor:pointer;color:var(--ink-soft);font-weight:800;padding:0 2px;">×</span></span>';
+    }).join('');
+    bar.innerHTML='<div style="display:flex;flex-wrap:wrap;align-items:center;">'
+      +'<span style="font-size:11px;font-weight:800;color:var(--primary-dark);margin:0 8px 6px 0;">⭐ 즐겨찾기</span>'+chips+'</div>'
+      +'<div style="font-size:10px;color:var(--ink-soft);margin-top:-2px;">칩을 누르면 빈 칸에 불러와요 · ˚=실측없어 예측값 · × 삭제</div>';
+  }
+  function favAddCurrent(box){
+    var favs=favGet().slice(); var added=0;
+    box.querySelectorAll('.kpnIn').forEach(function(el){
+      var k=parseInt(el.value,10); if(isNaN(k))return;
+      var ks=String(k);
+      if(!lookup(ks))return;                 // DB에 없는 번호는 저장 안 함
+      if(favs.indexOf(ks)<0){ favs.push(ks); added++; }
+    });
+    if(added){ favSet(favs); renderFavBar(box); if(typeof toast==='function') toast(added+'개 즐겨찾기에 저장했어요'); }
+    else if(typeof toast==='function') toast('저장할 유효한 KPN이 없어요');
+  }
+  function favLoad(box,k){
+    var ins=box.querySelectorAll('.kpnIn'); var slot=null;
+    for(var i=0;i<ins.length;i++){ if(!ins[i].value.trim()){ slot=ins[i]; break; } }
+    if(!slot) slot=ins[ins.length-1];       // 다 차면 마지막 칸 교체
+    slot.value=k; render(box);
+  }
+  function favDel(box,k){ var favs=favGet().filter(function(x){return x!==String(k);}); favSet(favs); renderFavBar(box); }
+
   window.__kpnBindKpn=function(box){
     box.querySelectorAll('.kpnIn').forEach(function(el){el.addEventListener('input',function(){render(box);});});
+    var addBtn=box.querySelector('#kpnFavAdd'); if(addBtn) addBtn.addEventListener('click',function(){favAddCurrent(box);});
+    var favBar=box.querySelector('#kpnFavBar');
+    if(favBar) favBar.addEventListener('click',function(e){
+      var t=e.target.closest('[data-act]'); if(!t)return;
+      var k=t.getAttribute('data-kpn'); if(!k)return;
+      if(t.getAttribute('data-act')==='load') favLoad(box,k);
+      else if(t.getAttribute('data-act')==='del') favDel(box,k);
+    });
+    renderFavBar(box);
     var vb=box.querySelector('#kpnValBtn');
     if(vb)vb.addEventListener('click',function(){var v=box.querySelector('#kpnVal');
       if(v.style.display==='none'){renderVal(box);v.style.display='block';vb.textContent='📊 예측 검증 로그 닫기';}
