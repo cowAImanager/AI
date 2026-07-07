@@ -2318,8 +2318,17 @@ function renderPregCheckView(){
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
   rows.sort((x,y)=> effDays(y) - effDays(x) || (y.calvDate||'').localeCompare(x.calvDate||''));
 
-  const pregnant = rows.filter(r => r.isPreg);
-  const active   = rows.filter(r => !r.isPreg);
+  const isXof = r => (r.preg1||'').trim().toUpperCase()==='X' && !r.isPreg && !r.calved;
+  const groupOf = r => {
+    if(r.fattening) return 'fatten';       // 비육전환 (최우선 분리)
+    if(r.isPreg)    return 'pregnant';      // 임신중
+    if(r.calved || isXof(r)) return 'waiting'; // 분만완료 + 감정X → 수정대기
+    return 'active';                        // 임신감정 대상 (감정 대기·필요)
+  };
+  const pregnant = rows.filter(r => groupOf(r)==='pregnant');
+  const active   = rows.filter(r => groupOf(r)==='active');
+  const waiting  = rows.filter(r => groupOf(r)==='waiting');
+  const fatten   = rows.filter(r => groupOf(r)==='fatten');
 
   const renderRow = row => {
     const p1 = (row.preg1||'').trim().toUpperCase();
@@ -2385,6 +2394,8 @@ function renderPregCheckView(){
 
   const activeHtml = active.map(renderRow).join('') || `<div class="empty-state">해당 개체가 없어요.</div>`;
   const pregnantHtml = pregnant.map(renderRow).join('') || `<div class="empty-state">임신 확인된 개체가 없어요.</div>`;
+  const waitingHtml = waiting.map(renderRow).join('');
+  const fattenHtml  = fatten.map(renderRow).join('');
 
   // 수태율: 임신감정(O/X)이 난 라운드 중 '그 라운드의 수정을 내가 한 것'만 집계.
   //   (감정은 감정한 날, 내수정횟수는 수정한 날에 적힐 수 있으므로 — 같은 줄이 아니어도
@@ -2462,6 +2473,10 @@ function renderPregCheckView(){
       ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':'임신중'}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
       ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
       <div class="pregcheck-list">${activeHtml}</div>`:''}
+      ${(pf==='all' && waiting.length)?`<div class="section-title" style="margin-top:26px;"><span>수정대기 (${waiting.length}두)</span></div>
+      <div class="pregcheck-list">${waitingHtml}</div>`:''}
+      ${(pf==='all' && fatten.length)?`<div class="section-title" style="margin-top:26px;"><span>비육전환 (${fatten.length}두)</span></div>
+      <div class="pregcheck-list">${fattenHtml}</div>`:''}
       ${showPreg?`<div class="section-title" ${showActive?'style="margin-top:26px;"':''}><span>🐄 임신중 (${pregnant.length}두)</span></div>
       <div class="pregcheck-list">${pregnantHtml}</div>`:''}
     </div>
