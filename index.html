@@ -2125,7 +2125,8 @@ function buildAutoSchedule(owner){
     for(let i=1;i<=SYNC_STEPS;i++){
       const type = rec['sync'+i+'Type'];
       const date = dateOnly(rec['sync'+i+'Date']);
-      if(type && date) add(rec.animalId, date, type);
+      const time = timeOnly(rec['sync'+i+'Date']);
+      if(type && date) add(rec.animalId, date, time ? type+' '+time : type);
     }
   });
 
