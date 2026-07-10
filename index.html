@@ -2491,15 +2491,24 @@ function renderPregCheckView(){
    질환 보기
 ============================================================ */
 /* ===== 공태관리: 미수정 개체의 다음 발정예정일 모음 ===== */
-/* 동기화 프로그램의 예정된 수정(AI)일 — 오늘 이후 가장 이른 것 */
+/* 동기화 프로그램의 예정된 수정(AI)일 — 오늘 이후 가장 이른 것.
+   (1) 수동 스케줄(DATA.schedule)의 'AI'  (2) 진료기록의 동기화 단계 syncNType='AI' 둘 다 확인 */
 function nextScheduledAiDate(owner, animalId){
   const today = todayStr();
-  const cands = (DATA.schedule||[])
-    .filter(s => s.owner===owner && s.animalId===animalId
-      && (s.note||'').includes('AI') && dateOnly(s.date) >= today)
-    .map(s => dateOnly(s.date))
-    .sort();
-  return cands.length ? cands[0] : null;
+  const dates = [];
+  (DATA.schedule||[]).forEach(s => {
+    if(s.owner===owner && s.animalId===animalId && (s.note||'').includes('AI')){
+      const d = dateOnly(s.date); if(d && d>=today) dates.push(d);
+    }
+  });
+  DATA.records.filter(r=>r.owner===owner && r.animalId===animalId).forEach(rec => {
+    for(let i=1;i<=SYNC_STEPS;i++){
+      const type = rec['sync'+i+'Type']; const d = dateOnly(rec['sync'+i+'Date']);
+      if(type && d && String(type).includes('AI') && d>=today) dates.push(d);
+    }
+  });
+  dates.sort();
+  return dates.length ? dates[0] : null;
 }
 function nextEstrusForAnimal(a, recs){
   const cycleLen = parseInt(a.cycleLength,10) || 21;
