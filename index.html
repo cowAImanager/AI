@@ -1781,11 +1781,20 @@ function awaitingPregOutcome(recs){
   if(diag.includes('X')) return false;                              // 1차 X 떴으면 재수정 대상 → 대기 끝
   return true;                                                       // 아직 감정 결과 없음 → 대기
 }
-function cycleDayRange(p){
+/* 기록에 실제 발정징후가 있었는지 (없음/무발정 등 부정표기는 제외) */
+function hasEstrusSign(r){
+  const s = ((r&&r.estrusSign)||'').trim();
+  if(!s) return false;
+  if(/없음|무발정|발정\s*아님/.test(s)) return false;
+  return /MT|ST|점액|빙빙|발정|출혈|bleeding|승가|활동성|부종|재발정|탐지기/i.test(s);
+}
+function cycleDayRange(p, estrus){
   const cl=p.clSize, clM=p.clMentioned, f=p.follMax, dom=p.dom, small=p.smallFoll;
   if(!clM && f!=null && f>=12) return [0,0];
   if((!clM || (cl!=null && cl<=10)) && small) return [1,2];
   if(cl!=null && cl>=20){
+    // 발정징후 듣고 진료 왔는데 큰 황체 + 우성난포가 보이면 → 1난포파 우성난포(주기 중반)
+    if(estrus && ((dom!=null && dom>=8) || (f!=null && f>=8))) return [7,9];
     if((dom!=null && dom>=15) || (f!=null && f>=15)) return [7,9];
     if(small) return [10,12];
     if(f!=null && f>=8) return [13,17];
@@ -1819,7 +1828,7 @@ function estimateCycleToday(animal, recs){
   if(!baseDate) return { undetermined:true, cycleLen };
   const ultra = [ultraRec.ultraOvaryL, ultraRec.ultraOvaryR, ultraRec.ultraUterus, ultraRec.ultrasound].filter(Boolean).join(' ');
   const p = parseUltra(ultra);
-  const rng = cycleDayRange(p);
+  const rng = cycleDayRange(p, hasEstrusSign(ultraRec));
   if(!rng) return { undetermined:true, cycleLen, baseDate };
   const elapsed = daysBetween(baseDate, todayStr());
   let day = (((rng[0]+rng[1])/2)*(cycleLen/21) + elapsed) % cycleLen; if(day<0) day+=cycleLen;
@@ -3315,12 +3324,17 @@ function openRecordModal(record, owner, presetAnimalId){
     </div>
   `);
   refreshPregStage();
+  // 발정일시·수정일시를 입력/변경하면 수정간격 자동 계산
+  ['f_estrusDate_date','f_estrusDate_time','f_aiDate_date','f_aiDate_time'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('change', function(){ actionCalcInterval(true); });
+  });
 }
 
-function actionCalcInterval(){
+function actionCalcInterval(silent){
   const sd = combineDT(document.getElementById('f_estrusDate_date').value, document.getElementById('f_estrusDate_time').value);
   const ad = combineDT(document.getElementById('f_aiDate_date').value, document.getElementById('f_aiDate_time').value);
-  if(!sd || !ad){ toast('발정일시와 수정일시를 먼저 입력해주세요.'); return; }
+  if(!sd || !ad){ if(!silent) toast('발정일시와 수정일시를 먼저 입력해주세요.'); return; }
   const t1 = parseDT(sd), t2 = parseDT(ad);
   let diffMin = Math.round((t2-t1)/60000);
   const neg = diffMin<0; diffMin = Math.abs(diffMin);
