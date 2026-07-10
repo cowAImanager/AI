@@ -1781,12 +1781,17 @@ function awaitingPregOutcome(recs){
   if(diag.includes('X')) return false;                              // 1차 X 떴으면 재수정 대상 → 대기 끝
   return true;                                                       // 아직 감정 결과 없음 → 대기
 }
-/* 기록에 실제 발정징후가 있었는지 (없음/무발정 등 부정표기는 제외) */
+/* 기록에 실제 발정징후가 있었는지 (없음/무발정/발정아님 등 부정표기는 제외) */
 function hasEstrusSign(r){
-  const s = ((r&&r.estrusSign)||'').trim();
-  if(!s) return false;
-  if(/없음|무발정|발정\s*아님/.test(s)) return false;
-  return /MT|ST|점액|빙빙|발정|출혈|bleeding|승가|활동성|부종|재발정|탐지기/i.test(s);
+  if(!r) return false;
+  if(/발정\s*아님/.test(r.notes||'')) return false;              // notes에 '발정 아님' → 발정 아님
+  const s = ((r.estrusSign)||'').trim();
+  if(s){
+    if(/없음|무발정/.test(s)) return false;
+    if(/MT|ST|점액|빙빙|발정|출혈|bleeding|승가|활동성|부종|재발정|탐지기/i.test(s)) return true;
+  }
+  if(dateOnly(r.estrusDate||'')) return true;                    // 발정일시를 기록했으면 발정 들은 것
+  return false;
 }
 function cycleDayRange(p, estrus){
   const cl=p.clSize, clM=p.clMentioned, f=p.follMax, dom=p.dom, small=p.smallFoll;
