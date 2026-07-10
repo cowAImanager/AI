@@ -876,6 +876,9 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .filter-note{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;display:flex;align-items:center;gap:8px;}
 .filter-clear{font-size:12px;font-weight:700;color:var(--primary-dark);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;}
 .open-wrap{padding:4px 2px;}
+.open-divider{margin:18px 2px 0;padding-top:14px;border-top:1px solid var(--line);font-size:14px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.open-divider-n{font-size:12px;font-weight:800;color:#fff;background:var(--notpregnant-bg,#C0392B);border-radius:10px;padding:1px 8px;}
+.open-divider-sub{font-size:12px;color:var(--ink-soft);margin:3px 2px 8px;}
 .open-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
 .open-head h2{font-size:18px;font-weight:800;color:var(--ink);margin:0;}
 .open-count{font-size:13px;font-weight:700;color:#fff;background:var(--primary);border-radius:20px;padding:2px 11px;}
@@ -2516,8 +2519,12 @@ function renderOpenView(){
   const today = todayStr();
   const withDate = [];
   const noInfo = [];
+  const noRecord = [];
   animals.forEach(a => {
     const recs = recordsOf(owner, a.animalId).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+    // 차트 기록도 분만 기록도 하나도 없는 개체 → '기록 없음'으로 분리 (비육 제외)
+    const hasCalvingRec = !!dateOnly(a.lastCalving||'') || (parseInt(a.parity,10) > 0);
+    if(!a.fattening && recs.length===0 && !hasCalvingRec){ noRecord.push({ a }); return; }
     const st = shareAnimalStatus(owner, a).status;
     // 공태(빈 자궁) 대상: 미수정 + 비임신(재수정 대기). 임신중/비육전환/감정대기 제외
     if(st!=='미수정' && st!=='비임신') return;
@@ -2533,8 +2540,9 @@ function renderOpenView(){
   });
   withDate.sort((x,y)=> x.date.localeCompare(y.date));
   noInfo.sort((x,y)=> animalNumKey(x.a.animalId)-animalNumKey(y.a.animalId));
+  noRecord.sort((x,y)=> animalNumKey(x.a.animalId)-animalNumKey(y.a.animalId));
 
-  const total = withDate.length + noInfo.length;
+  const total = withDate.length + noInfo.length + noRecord.length;
   if(total===0){
     return `<div class="open-wrap"><div class="open-head"><h2>공태관리</h2></div>
       <div class="empty-msg">미수정 상태인 개체가 없어요.</div></div>`;
@@ -2559,10 +2567,27 @@ function renderOpenView(){
       <div class="open-chev">›</div>
     </div>`).join('');
 
+  const noRecordHtml = noRecord.map(({a}) => `
+    <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+      <div class="open-id">${esc(a.animalId)}</div>
+      <div class="open-name">${esc(animalShortName(a))}</div>
+      <div class="open-due muted">기록 없음</div>
+      <div class="open-chev">›</div>
+    </div>`).join('');
+
+  const noRecordSection = noRecord.length ? `
+    <div class="open-divider">기록 없음 <span class="open-divider-n">${noRecord.length}마리</span></div>
+    <div class="open-divider-sub">차트·분만 기록이 하나도 없는 개체예요. 줄을 눌러 첫 기록을 남겨보세요.</div>
+    <div class="open-list">${noRecordHtml}</div>` : '';
+
+  const mainList = (withDate.length + noInfo.length) ? `<div class="open-list">${rowsHtml}${noInfoHtml}</div>`
+    : `<div class="empty-msg" style="margin:6px 0;">미수정 상태로 관리할 개체가 없어요.</div>`;
+
   return `<div class="open-wrap">
     <div class="open-head"><h2>공태관리</h2><span class="open-count">${total}마리</span></div>
     <div class="open-sub">미수정 개체의 다음 발정예정일이에요. 줄을 누르면 개체 상세로 이동해요.</div>
-    <div class="open-list">${rowsHtml}${noInfoHtml}</div>
+    ${mainList}
+    ${noRecordSection}
   </div>`;
 }
 /* 개체번호에서 정렬용 숫자 키 (마지막 숫자그룹) */
