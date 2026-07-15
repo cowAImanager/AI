@@ -1505,7 +1505,7 @@ function renderSubnav(){
 }
 
 /* ============================================================
-   전체 검색 (개체번호·비고·소견·질환·호르몬·축주 등 모든 텍스트)
+   전체 검색 (개체번호·비고·소견·질환·약물·축주 등 모든 텍스트)
 ============================================================ */
 function gsHighlight(text, q){
   const e = esc(String(text));
@@ -1563,7 +1563,7 @@ function renderSearchResults(){
   });
   const list = Object.values(groups);
   if(!list.length){
-    return `<div class="panel"><div class="empty-state">'${esc(q)}' 검색 결과가 없어요.<br><span style="font-size:13px;color:var(--ink-soft);">개체번호·비고·소견·질환·호르몬·혈통 등에서 찾아요.</span></div></div>`;
+    return `<div class="panel"><div class="empty-state">'${esc(q)}' 검색 결과가 없어요.<br><span style="font-size:13px;color:var(--ink-soft);">개체번호·비고·소견·질환·약물·혈통 등에서 찾아요.</span></div></div>`;
   }
   list.sort((a,b) => (b.owner===UI.owner?1:0)-(a.owner===UI.owner?1:0) || a.owner.localeCompare(b.owner) || a.animalId.localeCompare(b.animalId));
   const rows = list.map(g => {
@@ -1767,6 +1767,7 @@ function isCurrentlyPregnant(recs){
   const latestAiTs = aiRecs.length ? Math.max(...aiRecs.map(sortKeyOf)) : -Infinity;
   const diagPool = sorted.filter(r => sortKeyOf(r) >= latestAiTs);   // 최근 수정 이후의 감정만
   if((lastNonEmpty(diagPool,'pregnant')||'').trim().toUpperCase()!=='O') return false; // 최근 수정 후 1차 O 아님
+  if((lastNonEmpty(diagPool,'pregnant2')||'').trim().toUpperCase()==='X') return false; // 2차 감정 X → 임신 아님(유산·오진). 수태율엔 1차 O로 남음
   if(calvedAfterPregnancy(recs)) return false;                                          // 임신 후 분만함
   return true;
 }
@@ -2034,7 +2035,7 @@ function renderRecordCard(r){
         ${kv('초음파', ultraSummary(r))}
         ${(r.uterineDisease||'').trim()?`<span class="kv"><b>자궁질환</b> ${esc(r.uterineDisease.trim())}</span>`:''}
         ${(r.ovarianDisease||'').trim()?`<span class="kv"><b>난소질환</b> ${esc(r.ovarianDisease.trim())}</span>`:''}
-        ${kv('호르몬처치', r.hormoneTreatment)}
+        ${kv('약물처치', r.hormoneTreatment)}
         ${r.doubleAi && r.aiDate2 ? kv('2차 수정일시', fmtShort(r.aiDate2)) : ''}
         ${kv('1차 감정', r.pregnant)}
         ${kv('2차 감정', r.pregnant2)}
@@ -2336,7 +2337,10 @@ function renderPregCheckView(){
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
   rows.sort((x,y)=> effDays(y) - effDays(x) || (y.calvDate||'').localeCompare(x.calvDate||''));
 
-  const isXof = r => (r.preg1||'').trim().toUpperCase()==='X' && !r.isPreg && !r.calved;
+  const isXof = r => {
+    const p1=(r.preg1||'').trim().toUpperCase(), p2=(r.preg2||'').trim().toUpperCase();
+    return (p1==='X' || p2==='X') && !r.isPreg && !r.calved;
+  };
   const groupOf = r => {
     if(r.fattening) return 'fatten';       // 비육전환 (최우선 분리)
     if(r.isPreg)    return 'pregnant';      // 임신중
@@ -3306,9 +3310,9 @@ function openRecordModal(record, owner, presetAnimalId){
         </div>
       </div>
 
-      <div class="fieldset-title">호르몬 처치</div>
+      <div class="fieldset-title">약물 처치</div>
       <div class="form-grid">
-        ${textField('호르몬 처치','hormoneTreatment',r.hormoneTreatment)}
+        ${textField('약물 처치','hormoneTreatment',r.hormoneTreatment)}
       </div>
 
       <div class="fieldset-title">진료 메모</div>
@@ -6010,7 +6014,7 @@ function exportExcel(){
     '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
     '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
     '자궁질환','난소질환',
-    '호르몬처치','수정횟수','내수정횟수','KPN','진료메모',
+    '약물처치','수정횟수','내수정횟수','KPN','진료메모',
     '동기화1','동기화1날짜','동기화2','동기화2날짜','동기화3','동기화3날짜',
     '동기화4','동기화4날짜','동기화5','동기화5날짜','동기화6','동기화6날짜',
     '동기화7','동기화7날짜',
