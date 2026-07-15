@@ -5221,9 +5221,11 @@ function shareAnimalStatus(owner, a){
   const aiTs = sortKeyOf(aiRecs[0]);
   const diag = recs.filter(r=>r.pregnant && sortKeyOf(r)>=aiTs).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
   const preg = diag.length ? (diag[0].pregnant||'').trim().toUpperCase() : '';
+  const diag2 = recs.filter(r=>r.pregnant2 && sortKeyOf(r)>=aiTs).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+  const preg2 = diag2.length ? (diag2[0].pregnant2||'').trim().toUpperCase() : '';
   const aiD = dateOnly(aiRecs[0].aiDate);
   const days = Math.floor((new Date(todayStr()+'T00:00') - new Date(aiD+'T00:00'))/86400000);
-  if(preg==='X'){
+  if(preg==='X' || preg2==='X'){                                             // 1차 X 또는 2차 X → 비임신(재수정 대기)
     const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     const base = calv || aiD;                                                 // 비임신 경과일은 마지막 분만일 기준(분만 이력 없으면 수정일)
     const openDays = Math.floor((new Date(todayStr()+'T00:00') - new Date(base+'T00:00'))/86400000);
