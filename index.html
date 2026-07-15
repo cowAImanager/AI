@@ -1777,9 +1777,10 @@ function awaitingPregOutcome(recs){
   if(!aiRecs.length) return false;                                   // 수정 안 함 → 대기 아님
   if(calvedAfterPregnancy(recs)) return false;                       // 분만했으면 대기 아님
   const latestAiTs = Math.max(...aiRecs.map(sortKeyOf));
-  const diag = recs.filter(r => sortKeyOf(r) >= latestAiTs)
-                   .map(r => (r.pregnant||'').trim().toUpperCase());
-  if(diag.includes('X')) return false;                              // 1차 X 떴으면 재수정 대상 → 대기 끝
+  const diag = recs.filter(r => sortKeyOf(r) >= latestAiTs);
+  const preg1X = diag.some(r => (r.pregnant||'').trim().toUpperCase()==='X');
+  const preg2X = diag.some(r => (r.pregnant2||'').trim().toUpperCase()==='X');
+  if(preg1X || preg2X) return false;                                // 1차 또는 2차 X → 재수정 대상, 대기 끝
   return true;                                                       // 아직 감정 결과 없음 → 대기
 }
 /* 기록에 실제 발정징후가 있었는지 (없음/무발정/발정아님 등 부정표기는 제외) */
