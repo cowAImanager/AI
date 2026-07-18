@@ -1227,9 +1227,17 @@ function subscribeRemoteIfNeeded(){
     }catch(e){ console.error('동기화 데이터 처리 실패', e); }
   });
 }
+/* 버전 = 이 파일이 마지막으로 수정된 날짜 (자동) */
+function appVersionLabel(){
+  const d = new Date(document.lastModified);
+  if(isNaN(d.getTime())) return 'v-';
+  const p = n => String(n).padStart(2,'0');
+  return `v${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
 function svgIcon(name, size){
   const P = {
     lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>',
+    edit:'<path d="M4 20h4l10-10a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 6.5l3 3"/>',
     lockOpen:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.7-1.6"/>',
     table:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M10 4v16"/>',
     save:'<path d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h6"/><rect x="8" y="13" width="8" height="6"/>',
@@ -1449,7 +1457,7 @@ function render(){
   app.innerHTML = `
     <header class="topbar">
       <div class="title-row">
-        <h1><span class="home-link" data-action="goHome" style="cursor:pointer;" title="홈으로 (메인 화면)"><span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></span>번식진료기록부</span> <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">${vet?'수의학':'Reproduction Manager'}</span>${vet?'':`<span class="app-version" title="이 파일의 버전 날짜">v2026-06-30</span>`}</h1>
+        <h1><span class="home-link" data-action="goHome" style="cursor:pointer;" title="홈으로 (메인 화면)"><span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></span>번식진료기록부</span> <span style="font-size:12px;font-weight:600;color:var(--ink-soft);letter-spacing:0;margin-left:4px;">${vet?'수의학':'Reproduction Manager'}</span>${vet?'':`<span class="app-version" title="이 파일의 버전 날짜(파일 수정일 자동)">${appVersionLabel()}</span>`}</h1>
         <div class="header-actions">
           ${vet ? `<button class="btn secondary small" data-action="goHome">← <span class="btn-label">진료기록부</span></button>` : `
           <div class="global-search-bar">
@@ -5137,12 +5145,53 @@ function ownerRowManage(o){
         <span class="ownmg-sub">개체 ${animN}</span>
       </div>
       <div class="ownmg-actions">
+        <button class="iconbtn" title="이름 변경" data-action="renameOwner" data-owner="${esc(o)}">${svgIcon('edit',14)}</button>
         ${arch ? '' : `<button class="iconbtn" title="즐겨찾기" data-action="toggleOwnerFavorite" data-owner="${esc(o)}">${fav?`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"currentColor\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`:`<svg viewBox=\"0 0 24 24\" width=\"13\" height=\"13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linejoin=\"round\"><path d=\"M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/></svg>`}</button>
         <button class="iconbtn" title="위로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="-1">↑</button>
         <button class="iconbtn" title="아래로" data-action="moveOwner" data-owner="${esc(o)}" data-dir="1">↓</button>`}
         <button class="iconbtn ${arch?'restore':'archive'}" data-action="toggleOwnerArchive" data-owner="${esc(o)}">${arch?`${svgIcon('undo',14)} 복원`:`${svgIcon('archive',14)} 보관`}</button>
       </div>
     </div>`;
+}
+/* 축주 이름 변경 — 이름이 키로 쓰이는 모든 곳을 함께 이전 */
+function renameOwnerTo(oldName, newName){
+  newName = (newName||'').trim();
+  if(!newName){ toast('이름을 입력해주세요.'); return false; }
+  if(newName===oldName) return false;
+  if(DATA.owners.includes(newName)){ toast('이미 있는 축주 이름이에요.'); return false; }
+  const i = DATA.owners.indexOf(oldName);
+  if(i<0){ toast('축주를 찾지 못했어요.'); return false; }
+  DATA.owners[i] = newName;                                        // 1) 축주 목록
+  ['animals','records','schedule','vaccineLogs'].forEach(k=>{      // 2) owner 필드를 가진 자료
+    (DATA[k]||[]).forEach(x=>{ if(x.owner===oldName) x.owner = newName; });
+  });
+  ['scheduleAnimals','scheduleRange','ownerProfiles','ownerFlags','shareTokens'].forEach(k=>{ // 3) 이름을 키로 쓰는 맵
+    const m = DATA[k]; if(!m || !(oldName in m)) return;
+    m[newName] = m[oldName]; delete m[oldName];
+  });
+  ['completedCells','skippedCells','dismissedCells'].forEach(k=>{  // 4) '축주|개체|날짜' 셀 키
+    const m = DATA[k]; if(!m) return;
+    Object.keys(m).forEach(key=>{
+      if(key.indexOf(oldName+'|')===0){ m[newName+key.slice(oldName.length)] = m[key]; delete m[key]; }
+    });
+  });
+  if(UI.owner===oldName) UI.owner = newName;                       // 5) 보고 있던 축주
+  ensureOwnerMeta(newName);
+  saveState();
+  return true;
+}
+function openOwnerRename(oldName){
+  openModal(`
+    <div class="modal" style="max-width:380px;">
+      <h2>축주 이름 변경</h2>
+      <div class="modal-sub" style="margin-bottom:12px;">이름만 바뀌고 개체·진료기록·일정·백신기록은 그대로 따라가요.</div>
+      <div class="field"><label>새 이름</label><input type="text" id="f_owner_rename" value="${esc(oldName)}"></div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="doRenameOwner" data-owner="${esc(oldName)}">변경</button>
+      </div>
+    </div>`);
+  setTimeout(()=>{ const el=document.getElementById('f_owner_rename'); if(el){ el.focus(); el.select(); } }, 30);
 }
 function openOwnerManage(){
   const active = DATA.owners.filter(o=>!ownerArch(o));
@@ -5588,6 +5637,16 @@ const ACTIONS = {
   setOwner: ds=>{ UI.owner=ds.owner; UI.selectedAnimal=null; ensureOwnerMeta(UI.owner); render(); },
   addOwner: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerModal(); },
   openOwnerManage: ()=>{ if(!isAdmin()) return noAdminToast(); openOwnerManage(); },
+  renameOwner: ds=>{ if(!isAdmin()) return noAdminToast(); openOwnerRename(ds.owner); },
+  doRenameOwner: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const el = document.getElementById('f_owner_rename');
+    const nv = el ? el.value : '';
+    if(renameOwnerTo(ds.owner, nv)){
+      toast(`${ds.owner} → ${nv.trim()} 로 바꿨어요.`);
+      closeModal(); render(); openOwnerManage();
+    }
+  },
   toggleOwnerFavorite: ds=>{
     if(!isAdmin()) return noAdminToast();
     ensureOwnerMeta(ds.owner);
