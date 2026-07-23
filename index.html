@@ -2330,8 +2330,9 @@ function renderPregCheckView(){
     const preg1 = (lastNonEmpty(diagPool,'pregnant')||'').trim();
     const preg2 = (lastNonEmpty(diagPool,'pregnant2')||'').trim();
     const fsex  = (lastNonEmpty(diagPool,'fetalSex')||'').trim();
-    // 수정기록도 없고 감정 표기도 전혀 없으면 제외
-    if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs)) return;
+    const syncAi = nextScheduledAiDate(UI.owner, a.animalId);   // 동기화 프로그램의 예정 수정일
+    // 수정기록도, 감정 표기도, 분만이력도, 동기화 예정도 전혀 없으면 제외
+    if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs) && !syncAi) return;
     const aiRec = aiRecs[0] || null;
     const aiD = aiRec ? dateOnly(aiRec.aiDate) : '';
     const days = aiD ? Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000) : null;
@@ -2344,7 +2345,7 @@ function renderPregCheckView(){
     const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate)) || aiRec || sorted[0];
     const lastCalv = [latestCalvingDate(allRecs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
-      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening });
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening, syncAi });
   });
   // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
@@ -2378,9 +2379,8 @@ function renderPregCheckView(){
 
     const tags = [];
     // 동기화 프로그램의 예정 수정(AI)일이 있으면 표시 — 임신중·분만완료가 아닌 소만 의미 있음
-    if(!row.isPreg && !row.calved){
-      const syncAi = nextScheduledAiDate(UI.owner, row.animalId);
-      if(syncAi) tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(syncAi)}</span>`);
+    if(!row.isPreg && !row.calved && row.syncAi){
+      tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(row.syncAi)}</span>`);
     }
     if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
