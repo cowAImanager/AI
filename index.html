@@ -373,6 +373,7 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.sex{background:var(--estrus-soft);color:var(--estrus-text);}
 .preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
+.preg-tag.sync{background:var(--primary);color:#fff;display:inline-flex;align-items:center;gap:3px;}
 .preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
 .fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
 .fatten-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;gap:2px;letter-spacing:-.02em;}
@@ -2376,6 +2377,11 @@ function renderPregCheckView(){
     else if(needsCheck) rowClass='overdue';
 
     const tags = [];
+    // 동기화 프로그램의 예정 수정(AI)일이 있으면 표시 — 임신중·분만완료가 아닌 소만 의미 있음
+    if(!row.isPreg && !row.calved){
+      const syncAi = nextScheduledAiDate(UI.owner, row.animalId);
+      if(syncAi) tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(syncAi)}</span>`);
+    }
     if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
       if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
@@ -2421,7 +2427,7 @@ function renderPregCheckView(){
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end">${badge}${subTag}</span>
-      <button class="iconbtn sched-add-btn" data-action="addAnimalToSchedule" data-id="${esc(row.animalId)}" data-stop="1" title="스케줄에 추가">${svgIcon('calendar',14)}</button>
+      <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>
     </div>
   `;
   };
