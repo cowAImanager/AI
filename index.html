@@ -2419,7 +2419,7 @@ function renderPregCheckView(){
     else if(isNotPregnant) subTag = `<span class="pc-badge rebreed">재수정 대기</span>`;
 
     return `
-    <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="editRecord" data-id="${esc(row.record.id)}">
+    <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
