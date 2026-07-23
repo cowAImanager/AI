@@ -341,6 +341,9 @@ main{flex:1;padding:18px 20px 70px;}
   .preg-summary.disease-three .preg-stat-label{font-size:10px;line-height:1.2;letter-spacing:-.02em;}
 }
 .preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
+.calv-title{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.calv-year-nav{display:inline-flex;align-items:center;gap:4px;}
+.calv-year-nav .iconbtn{font-size:12px;font-weight:800;padding:3px 8px;min-width:auto;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
 .preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
 .preg-stat-sub{display:block;margin-top:3px;font-weight:700;font-size:10px;color:var(--primary-dark);white-space:nowrap;}
@@ -2477,13 +2480,16 @@ function renderPregCheckView(){
   const avgServices = concCows ? (concRounds / concCows).toFixed(1) : '—';
   const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
 
-  const pf = UI.pregFilter || 'all';   // all | active | pregnant
+  const pf = UI.pregFilter || 'all';   // all | active | pregnant | calvings
   const showActive = (pf==='all' || pf==='active');
   const showPreg   = (pf==='all' || pf==='pregnant');
+  const showCalv   = (pf==='all' || pf==='calvings');
 
-  // 올해 출산 — 현재 상태(임신중/공태 등)와 무관하게, 올해 분만한 모든 개체를 모음
+  // 올해 출산 — 현재 상태(임신중/공태 등)와 무관하게, 선택 연도에 분만한 모든 개체를 모음 (연도 이동 가능)
   // 분만은 진료기록(calvingDate)에도, 개체정보(lastCalving)에도 남을 수 있어 둘 다 확인
-  const yearNow = today.slice(0,4);
+  const thisYear = today.slice(0,4);
+  const calvYear = UI.calvYear || thisYear;
+  const yearNow = calvYear;
   const yearCalvings = [];
   animals.forEach(a => {
     const recCalvs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId
@@ -2491,7 +2497,7 @@ function renderPregCheckView(){
     if(recCalvs.length){
       recCalvs.forEach(r => yearCalvings.push({ animalId:a.animalId, recordId:r.id, calvDate: dateOnly(r.calvingDate), calfSex: r.calfSex||'' }));
     } else if(dateOnly(a.lastCalving||'').slice(0,4)===yearNow && dateOnly(a.lastCalving)<=today){
-      // 진료기록엔 없지만 개체정보의 최근분만일이 올해인 경우 (수기 입력분)
+      // 진료기록엔 없지만 개체정보의 최근분만일이 해당 연도인 경우 (수기 입력분)
       yearCalvings.push({ animalId:a.animalId, recordId:null, calvDate: dateOnly(a.lastCalving), calfSex:'' });
     }
   });
@@ -2526,12 +2532,12 @@ function renderPregCheckView(){
           <div class="preg-stat-num">${avgServices}<span style="font-size:14px;font-weight:700;">회</span></div>
           <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${concRounds} / 수태 ${concCows}</span></div>
         </div>
-        <div class="preg-stat">
+        <div class="preg-stat clickable ${pf==='calvings'?'sel':''}" data-action="setPregFilter" data-filter="calvings">
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
           <div class="preg-stat-label">${yearNow}년 출산</div>
         </div>
       </div>
-      ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':'임신중'}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
+      ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
       ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
       <div class="pregcheck-list">${activeHtml}</div>`:''}
       ${(pf==='all' && waiting.length)?`<div class="section-title" style="margin-top:26px;"><span>수정대기 (${waiting.length}두)</span></div>
@@ -2540,7 +2546,14 @@ function renderPregCheckView(){
       <div class="pregcheck-list">${fattenHtml}</div>`:''}
       ${showPreg?`<div class="section-title" ${showActive?'style="margin-top:26px;"':''}><span>🐄 임신중 (${pregnant.length}두)</span></div>
       <div class="pregcheck-list">${pregnantHtml}</div>`:''}
-      ${pf==='all'?`<div class="section-title" style="margin-top:26px;"><span>🐣 ${yearNow}년 출산 (${yearCalvings.length}두)</span></div>
+      ${showCalv?`<div class="section-title calv-title" style="margin-top:26px;">
+        <span>🐣 ${yearNow}년 출산 (${yearCalvings.length}두)</span>
+        <span class="calv-year-nav">
+          <button class="iconbtn" data-action="shiftCalvYear" data-dir="-1" title="이전 해">‹</button>
+          ${yearNow!==thisYear?`<button class="iconbtn" data-action="shiftCalvYear" data-dir="0" title="올해로">${thisYear}</button>`:''}
+          <button class="iconbtn" data-action="shiftCalvYear" data-dir="1" title="다음 해" ${yearNow>=thisYear?'disabled':''}>›</button>
+        </span>
+      </div>
       <div class="pregcheck-list">${yearCalvingsHtml}</div>`:''}
     </div>
   `;
@@ -5726,6 +5739,13 @@ const ACTIONS = {
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
   setPregFilter: ds=>{ UI.pregFilter = (UI.pregFilter===ds.filter)?'all':ds.filter; renderMain(); },
+  shiftCalvYear: ds=>{
+    const dir = parseInt(ds.dir,10);
+    const thisYear = todayStr().slice(0,4);
+    const cur = parseInt(UI.calvYear || thisYear, 10);
+    UI.calvYear = dir===0 ? thisYear : String(cur + dir);
+    renderMain();
+  },
   setDiseaseFilter: ds=>{ UI.diseaseFilter = (UI.diseaseFilter===ds.filter)?'all':ds.filter; renderMain(); },
   backToList: ()=>{ UI.selectedAnimal=null; renderMain(); },
   addAnimal: ()=>openAnimalModal(null),
