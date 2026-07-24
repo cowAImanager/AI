@@ -2378,8 +2378,8 @@ function renderPregCheckView(){
     else if(needsCheck) rowClass='overdue';
 
     const tags = [];
-    // 동기화 프로그램의 예정 수정(AI)일이 있으면 표시 — 임신중·분만완료가 아닌 소만 의미 있음
-    if(!row.isPreg && !row.calved && row.syncAi){
+    // 동기화 프로그램의 예정 수정(AI)일이 있으면 표시 — 임신중이 아니면(수정대기·분만후 포함) 다 의미 있음
+    if(!row.isPreg && row.syncAi){
       tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(row.syncAi)}</span>`);
     }
     if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
@@ -2392,10 +2392,11 @@ function renderPregCheckView(){
     if(row.calved){
       const pp = daysBetween(row.calvDate, todayStr());
       const vwp = row.fattening ? '' : (pp < VWP_DAYS ? `재수정 대기 D-${VWP_DAYS-pp}` : '재수정 가능');
-      tags.length = 0; // 분만완료 행은 분만 정보 위주로
+      tags.length = 0; // 분만완료 행은 분만 정보 위주로 (단, 동기화 예정은 계속 보여줌)
       tags.push(`<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
       if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
       if(vwp) tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
+      if(row.syncAi) tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(row.syncAi)}</span>`);
       badge = `<span class="pc-badge done">분만완료</span>`;
     } else if(row.isPreg){
       if(row.expCalv){
