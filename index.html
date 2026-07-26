@@ -2726,9 +2726,17 @@ function renderDiseaseView(){
   };
   const recs = allDiseaseRecs.filter(r => !isImprovedRec(r));
 
-  const uterineCount = recs.filter(r => (r.uterineDisease||'').trim()).length;
-  const ovaryCount   = recs.filter(r => (r.ovarianDisease||'').trim() || recHasCyst(r)).length;
-  const animalsSet   = new Set(recs.map(r=>r.animalId));
+  // 같은 개체는 최신 기록 1건만 (allDiseaseRecs가 이미 최신순 정렬이라 첫 등장분만 유지)
+  const seenAnimal = new Set();
+  const latestOnlyRecs = recs.filter(r => {
+    if(seenAnimal.has(r.animalId)) return false;
+    seenAnimal.add(r.animalId);
+    return true;
+  });
+
+  const uterineCount = latestOnlyRecs.filter(r => (r.uterineDisease||'').trim()).length;
+  const ovaryCount   = latestOnlyRecs.filter(r => (r.ovarianDisease||'').trim() || recHasCyst(r)).length;
+  const animalsSet   = new Set(latestOnlyRecs.map(r=>r.animalId));
 
   const df = UI.diseaseFilter || 'all';   // all | uterine | ovary
   const matchFilter = r => {
@@ -2738,7 +2746,7 @@ function renderDiseaseView(){
     if(df==='ovary') return (r.ovarianDisease||'').trim() || recHasCyst(r);
     return true;
   };
-  const filteredRecs = recs.filter(matchFilter);
+  const filteredRecs = latestOnlyRecs.filter(matchFilter);
 
   const rows = filteredRecs.map(r => {
     const d = dkey(r);
