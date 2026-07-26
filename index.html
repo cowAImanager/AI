@@ -373,7 +373,6 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.sex{background:var(--estrus-soft);color:var(--estrus-text);}
 .preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
-.preg-tag.sync{background:var(--primary);color:#fff;display:inline-flex;align-items:center;gap:3px;}
 .preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
 .fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
 .fatten-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;gap:2px;letter-spacing:-.02em;}
@@ -424,6 +423,7 @@ main{flex:1;padding:18px 20px 70px;}
 .pc-badge.rebreed{background:var(--notpregnant-soft);color:var(--notpregnant-bg);}
 .pc-badge.fatten{background:var(--fatten-soft);color:var(--fatten-ink);}
 .pc-badge.unknown{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--line);}
+.pc-badge.sync{background:var(--accent-soft);color:var(--ai-text,var(--primary-dark));gap:3px;}
 .preg-subtag.red{background:var(--notpregnant-soft);color:var(--notpregnant-bg);}
 .preg-subtag.brown{background:var(--fatten-soft);color:var(--fatten-ink);}
 .pregcheck-badge.confirmed{background:var(--primary);}
@@ -2359,6 +2359,7 @@ function renderPregCheckView(){
     if(r.fattening) return 'fatten';       // 비육전환 (최우선 분리)
     if(r.isPreg)    return 'pregnant';      // 임신중
     if(r.calved || isXof(r)) return 'waiting'; // 분만완료 + 감정X → 수정대기
+    if(!r.aiDate && r.syncAi) return 'waiting'; // 아직 실제 수정 전, 동기화 진행 중 → 수정대기(감정 대상 아님)
     return 'active';                        // 임신감정 대상 (감정 대기·필요)
   };
   const pregnant = rows.filter(r => groupOf(r)==='pregnant');
@@ -2378,10 +2379,6 @@ function renderPregCheckView(){
     else if(needsCheck) rowClass='overdue';
 
     const tags = [];
-    // 동기화 프로그램의 예정 수정(AI)일이 있으면 표시 — 임신중이 아니면(수정대기·분만후 포함) 다 의미 있음
-    if(!row.isPreg && row.syncAi){
-      tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(row.syncAi)}</span>`);
-    }
     if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
       if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
@@ -2392,12 +2389,10 @@ function renderPregCheckView(){
     if(row.calved){
       const pp = daysBetween(row.calvDate, todayStr());
       const vwp = row.fattening ? '' : (pp < VWP_DAYS ? `재수정 대기 D-${VWP_DAYS-pp}` : '재수정 가능');
-      tags.length = 0; // 분만완료 행은 분만 정보 위주로 (단, 동기화 예정은 계속 보여줌)
+      tags.length = 0; // 분만완료 행은 분만 정보 위주로
       tags.push(`<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
       if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
       if(vwp) tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
-      if(row.syncAi) tags.push(`<span class="preg-tag sync">${svgIcon('calendar',11)} 동기화 수정 ${fmtShort(row.syncAi)}</span>`);
-      badge = `<span class="pc-badge done">분만완료</span>`;
     } else if(row.isPreg){
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
@@ -2419,6 +2414,10 @@ function renderPregCheckView(){
     if(row.fattening) subTag = `<span class="pc-badge fatten">비육전환</span>`;
     else if(isNotPregnant) subTag = `<span class="pc-badge rebreed">재수정 대기</span>`;
 
+    // 동기화 프로그램의 예정 수정(AI)일 — 오른쪽 배지 영역에 표시(모바일에서도 잘리지 않음)
+    let syncTag = '';
+    if(!row.isPreg && row.syncAi) syncTag = `<span class="pc-badge sync">${svgIcon('calendar',11)} 동기화 ${fmtShort(row.syncAi)}</span>`;
+
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
@@ -2427,7 +2426,7 @@ function renderPregCheckView(){
         ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
-      <span class="pregcheck-end">${badge}${subTag}</span>
+      <span class="pregcheck-end">${syncTag}${badge}${subTag}</span>
       <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>
     </div>
   `;
@@ -2457,15 +2456,17 @@ function renderPregCheckView(){
     let lastAiMine = null;   // 가장 최근 수정(aiDate)을 내가 했는지
     let roundToConc = 0;     // 이번 임신까지 누적 내수정 라운드(O 나오면 확정·리셋)
     list.forEach(r => {
-      if(r.aiDate) lastAiMine = inhN(r) >= 1;
+      if(r.aiDate){
+        lastAiMine = inhN(r) >= 1;
+        if(lastAiMine) roundToConc++;    // 실제 수정(AI)이 발생할 때마다 라운드 카운트 (진단 유무와 무관)
+      }
       const p = pregOf(r);
       if(p==='O' || p==='X'){
         let mine = lastAiMine;
         if(mine===null) mine = inhN(r) >= 1;   // 직전 수정이 없으면 감정 기록 자체의 내수정 사용
         if(mine){
           totalServices++; if(p==='O') svcSuccess++;
-          roundToConc++;
-          if(p==='O'){ concCows++; concRounds += roundToConc; roundToConc = 0; }  // 임신 성립 → 그 소가 걸린 수정 횟수 확정
+          if(p==='O'){ concCows++; concRounds += (roundToConc||1); roundToConc = 0; }  // 임신 성립 → 그 소가 걸린 수정 횟수 확정
         }
       }
     });
@@ -2517,7 +2518,6 @@ function renderPregCheckView(){
         <span class="pregcheck-days">${daysBetween(calvDate, today)}일 경과</span>
         <span class="preg-tags">${calfSex?`<span class="preg-tag sex">송아지 ${esc(calfSex)}</span>`:''}</span>
       </span>
-      <span class="pregcheck-end"><span class="pc-badge done">분만완료</span></span>
     </div>`).join('') || `<div class="empty-state">${yearNow}년 출산 기록이 없어요.</div>`;
 
   return `
