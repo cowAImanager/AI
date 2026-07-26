@@ -2370,7 +2370,8 @@ function renderPregCheckView(){
   const renderRow = row => {
     const p1 = (row.preg1||'').trim().toUpperCase();
     const p2 = (row.preg2||'').trim().toUpperCase();
-    const isNotPregnant = p1==='X' && !row.isPreg && !row.calved;
+    const isMiscarry = p1==='O' && p2==='X' && !row.isPreg && !row.calved;   // 1차 O였다가 2차 X → 사산(유산)
+    const isNotPregnant = (p1==='X' || isMiscarry) && !row.isPreg && !row.calved;
     const needsCheck = !row.fattening && !row.preg1 && !row.calved && row.days!=null && row.days>=30;
     let rowClass = '';
     if(row.calved) rowClass='confirmed';
@@ -2409,9 +2410,10 @@ function renderPregCheckView(){
       badge = `<span class="pc-badge check">임신감정 필요</span>`;
     }
 
-    // 보조 상태 (비육전환 / 재수정 대기) — 메인 배지와 같은 모양·크기
+    // 보조 상태 (비육전환 / 사산 / 재수정 대기) — 메인 배지와 같은 모양·크기
     let subTag = '';
     if(row.fattening) subTag = `<span class="pc-badge fatten">비육전환</span>`;
+    else if(isMiscarry) subTag = `<span class="pc-badge warn">사산</span>`;
     else if(isNotPregnant) subTag = `<span class="pc-badge rebreed">재수정 대기</span>`;
 
     // 동기화 프로그램의 예정 수정(AI)일 — 오른쪽 배지 영역에 표시(모바일에서도 잘리지 않음)
