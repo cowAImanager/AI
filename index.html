@@ -423,6 +423,7 @@ main{flex:1;padding:18px 20px 70px;}
 .pc-badge.rebreed{background:var(--notpregnant-soft);color:var(--notpregnant-bg);}
 .pc-badge.fatten{background:var(--fatten-soft);color:var(--fatten-ink);}
 .pc-badge.unknown{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--line);}
+.pc-badge.diagsum{display:none;}   /* 임신중 D-day 대체용 — 모바일에서만 표시 */
 .pc-badge.sync{background:var(--accent-soft);color:var(--ai-text,var(--primary-dark));gap:3px;}
 .preg-subtag.red{background:var(--notpregnant-soft);color:var(--notpregnant-bg);}
 .preg-subtag.brown{background:var(--fatten-soft);color:var(--fatten-ink);}
@@ -743,6 +744,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-mid .preg-tags .preg-tag.rechk,
   .pregcheck-mid .preg-tags .preg-tag.sex,
   .pregcheck-mid .preg-tags .preg-tag.calf{display:none;}
+  .pc-badge.pdday{display:none;}                                      /* 임신중 행: 분만 D-day 배지는 모바일에서 숨김 */
+  .pc-badge.diagsum{display:inline-flex;}                              /* 임신중 행: 그 자리에 1·2차 감정 결과 표시 */
   .pregcheck-badge,.pregcheck-row .fatten-badge{flex:0 0 auto;margin-left:auto;}
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant,.pregcheck-badge.unknown{font-size:10px;padding:3px 7px;}
@@ -2398,13 +2401,13 @@ function renderPregCheckView(){
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
         if(dd >= 0){
-          badge = `<span class="pc-badge preg">${fmtShort(row.expCalv)} 분만 D-${dd}</span>`;
+          badge = `<span class="pc-badge preg pdday">${fmtShort(row.expCalv)} 분만 D-${dd}</span>`;
         } else {
           rowClass='overdue';
-          badge = `<span class="pc-badge warn">${fmtShort(row.expCalv)} 분만 확인</span>`;
+          badge = `<span class="pc-badge warn pdday">${fmtShort(row.expCalv)} 분만 확인</span>`;
         }
       } else {
-        badge = `<span class="pc-badge unknown">임신중</span>`;
+        badge = `<span class="pc-badge unknown pdday">임신중</span>`;
       }
     } else if(needsCheck){
       badge = `<span class="pc-badge check">임신감정 필요</span>`;
@@ -2415,6 +2418,16 @@ function renderPregCheckView(){
     if(row.fattening) subTag = `<span class="pc-badge fatten">비육전환</span>`;
     else if(isMiscarry) subTag = `<span class="pc-badge warn">사산</span>`;
     else if(isNotPregnant) subTag = `<span class="pc-badge rebreed">재수정 대기</span>`;
+
+    // 임신중 행의 모바일 전용 요약 — 분만 D-day 대신 1·2차 감정 결과 (데스크톱에선 숨김, 모바일에서만 표시)
+    let diagSum = '';
+    if(row.isPreg){
+      const dparts = [];
+      if(row.preg1) dparts.push('1차 '+esc(row.preg1));
+      if(row.preg2) dparts.push('2차 '+esc(row.preg2));
+      if(row.fsex)  dparts.push('성 '+esc(row.fsex));
+      if(dparts.length) diagSum = `<span class="pc-badge unknown diagsum">${dparts.join(' · ')}</span>`;
+    }
 
     // 동기화 프로그램의 예정 수정(AI)일 — 오른쪽 배지 영역에 표시(모바일에서도 잘리지 않음)
     let syncTag = '';
@@ -2428,7 +2441,7 @@ function renderPregCheckView(){
         ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
-      <span class="pregcheck-end">${syncTag}${badge}${subTag}</span>
+      <span class="pregcheck-end">${syncTag}${badge}${diagSum}${subTag}</span>
       <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>
     </div>
   `;
