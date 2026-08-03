@@ -1380,12 +1380,21 @@ function combineDT(dateVal, timeVal){
   if(!dateVal) return null;
   return timeVal ? (dateVal+' '+timeVal) : dateVal;
 }
+function ampmTime(hhmm){
+  if(!hhmm) return '';
+  const [h,m] = hhmm.split(':').map(Number);
+  if(isNaN(h)) return hhmm;
+  const period = h < 12 ? '오전' : '오후';
+  let h12 = h % 12;
+  if(h12===0) h12 = 12;
+  return `${period} ${h12}:${String(m).padStart(2,'0')}`;
+}
 function fmtShort(str){
   if(!str) return '—';
   const date = str.slice(0,10);
   const time = str.length>10 ? str.slice(11,16) : '';
   const [y,m,d] = date.split('-');
-  return `${m}/${d}` + (time ? ' '+time : '');
+  return `${m}/${d}` + (time ? ' '+ampmTime(time) : '');
 }
 function fmtFull(str){ return str || '—'; }
 function fmtYmd(str){
@@ -1393,7 +1402,7 @@ function fmtYmd(str){
   const date = str.slice(0,10);
   const time = str.length>10 ? str.slice(11,16) : '';
   const [y,m,d] = date.split('-');
-  return `${y}/${m}/${d}` + (time ? ' '+time : '');
+  return `${y}/${m}/${d}` + (time ? ' '+ampmTime(time) : '');
 }
 function ageMonths(birth){
   if(!birth) return '—';
