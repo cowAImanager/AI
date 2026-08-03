@@ -2170,7 +2170,7 @@ function buildAutoSchedule(owner){
       const type = rec['sync'+i+'Type'];
       const date = dateOnly(rec['sync'+i+'Date']);
       const time = timeOnly(rec['sync'+i+'Date']);
-      if(type && date) add(rec.animalId, date, time ? type+' '+time : type);
+      if(type && date) add(rec.animalId, date, time ? type+' '+ampmTime(time) : type);
     }
   });
 
