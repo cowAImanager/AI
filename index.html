@@ -5350,6 +5350,11 @@ function shareAnimalStatus(owner, a){
   const recs = recordsOf(owner, a.animalId);
   if(isCurrentlyPregnant(recs)) return { status:'임신중', days:null };
   if(a.fattening) return { status:'비육전환', days:null };
+  if(calvedAfterPregnancy(recs)){                       // 분만 후 아직 재수정(새 AI) 전 → 임신감정 대상 아님(재수정 대기)
+    const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
+    const openDays = calv ? Math.floor((new Date(todayStr()+'T00:00') - new Date(calv+'T00:00'))/86400000) : null;
+    return { status:'비임신', days: openDays };
+  }
   const aiRecs = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
   if(!aiRecs.length) return { status:'미수정', days:null };
   const aiTs = sortKeyOf(aiRecs[0]);
