@@ -74,6 +74,13 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-today-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;}
 .v-today-note{margin-left:auto;font-size:14px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:7px;}
 
+/* 내일 할 일 배너 (오늘 배너의 톤다운 버전) */
+.v-tomorrow{background:var(--surface);border:1.5px dashed var(--primary);color:var(--ink);border-radius:13px;padding:14px 16px;margin:4px 0 6px;}
+.v-tomorrow .v-today-h{color:var(--primary-dark);}
+.v-tomorrow .v-today-row{border-top:1px solid var(--line);}
+.v-tomorrow .v-today-id{color:var(--ink);}
+.v-tomorrow .v-today-note{background:var(--surface-alt);color:var(--primary-dark);}
+
 /* 처치 일정 — 날짜 그룹 */
 .v-sgroup{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .v-sgroup.today{border-color:var(--primary);background:var(--green-soft);}
@@ -301,6 +308,15 @@ function renderApp(data){
       ${todayItems.map(s=>`<div class="v-today-row"><span class="v-today-id">${esc(s.id)}</span><span class="v-today-note">${esc(s.note||'')}</span></div>`).join('')}
     </div>` : '';
 
+  // 내일 할 일 미리보기 배너 (하루 전날 미리 보여줌)
+  const tomorrowItems = sched.filter(s=>dday(s.date)===1)
+    .sort((a,b)=> (a.note||'').localeCompare(b.note||'') || (a.id||'').localeCompare(b.id||''));
+  const tomorrowBanner = tomorrowItems.length ? `
+    <div class="v-today v-tomorrow">
+      <div class="v-today-h">${svgIcon("clipboard",16)} 내일 할 일</div>
+      ${tomorrowItems.map(s=>`<div class="v-today-row"><span class="v-today-id">${esc(s.id)}</span><span class="v-today-note">${esc(s.note||'')}</span></div>`).join('')}
+    </div>` : '';
+
   document.getElementById('app').innerHTML = `
     <div class="v-head">
       <div>
@@ -317,6 +333,7 @@ function renderApp(data){
     </div>
 
     ${todayBanner}
+    ${tomorrowBanner}
 
     <div class="v-tabs">
       <button class="v-tab on" data-tab="sched">${svgIcon("calendar",15)} 처치 일정</button>
@@ -419,6 +436,21 @@ async function openToken(token){
   catch(e){ renderLock('데이터를 불러오지 못했어요.'); return; }
   if(!data){ renderLock('농장 정보를 찾을 수 없어요.'); return; }
   renderApp(data);
+  scheduleMidnightRefresh(data);
+}
+
+// 자정이 지나면 '오늘 할 일'/'내일 할 일'이 자동으로 갱신되도록 예약.
+// 매번 화면을 새로 그린 뒤, 다음 자정까지 남은 시간을 계산해 그 시점에 다시 렌더 -> 스스로 재예약.
+let _midnightTimer=null;
+function scheduleMidnightRefresh(data){
+  if(_midnightTimer) clearTimeout(_midnightTimer);
+  const now=new Date();
+  const nextMidnight=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,5); // 자정+5초 여유
+  const ms=nextMidnight-now;
+  _midnightTimer=setTimeout(()=>{
+    renderApp(data);
+    scheduleMidnightRefresh(data); // 다음 날 자정도 계속 예약
+  }, ms);
 }
 
 async function init(){
