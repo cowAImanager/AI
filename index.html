@@ -488,6 +488,19 @@ main{flex:1;padding:18px 20px 70px;}
 
 /* ---------- schedule ---------- */
 .sched-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+/* 스케줄 화면 2단 레이아웃: 왼쪽 스케줄, 오른쪽 처치별 수태율 배너 */
+.sched-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+@media (max-width:900px){ .sched-layout{grid-template-columns:1fr;} }
+.cstat-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+.cstat-title{font-size:13.5px;font-weight:800;color:var(--primary-dark);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.cstat-sub{font-size:11px;color:var(--ink-soft);margin-bottom:12px;line-height:1.5;}
+.cstat-rows{display:flex;flex-direction:column;gap:8px;}
+.cstat-row{display:flex;align-items:center;gap:8px;}
+.cstat-name{font-size:12px;font-weight:700;min-width:0;flex:0 0 auto;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
+.cstat-bar{flex:1;height:8px;background:var(--surface-alt);border-radius:4px;overflow:hidden;}
+.cstat-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));border-radius:4px;}
+.cstat-n{font-size:11px;color:var(--ink-soft);white-space:nowrap;flex:0 0 auto;}
+.cstat-n b{color:var(--primary-dark);font-size:12.5px;}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
 .quick-chip{background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;font-weight:700;color:var(--ink);}
 .quick-chip:hover{background:var(--tag-yellow);border-color:var(--tag-yellow);color:var(--tag-ink);}
@@ -2181,6 +2194,76 @@ function isMobileWidth(){
   return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:768px)').matches;
 }
 
+/* ============================================================
+   처치별 수태율: 현재 임신중인 소가 마지막(임신을 만든) 수정 전에
+   어떤 호르몬 처치를 받았는지 집계. 처치 기록이 없으면 '자연발정'.
+   - 임신을 만든 수정일: isCurrentlyPregnant와 동일한 기준(가장 최근 aiDate)
+   - 처치 근거: DATA.schedule의 해당 개체 항목 + 진료기록(records)의 hormoneTreatment 필드
+   - 그 수정일 기준 직전 WINDOW일 이내에 있는 처치만 인정, 여러 개면 합쳐서 표기
+============================================================ */
+const CONCEPTION_WINDOW_DAYS = 12;
+function conceptionAiDateFor(recs){
+  const aiRecs = (recs||[]).filter(r=>r.aiDate);
+  if(!aiRecs.length) return null;
+  aiRecs.sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
+  return aiRecs[aiRecs.length-1].aiDate;
+}
+function conceptionMethodFor(owner, animalId, recs){
+  const aiRaw = conceptionAiDateFor(recs);
+  if(!aiRaw) return null;
+  const aiDate = new Date(dateOnly(aiRaw)+'T00:00:00');
+  if(isNaN(aiDate)) return null;
+  const notes = [];
+  (DATA.schedule||[]).forEach(s=>{
+    if(s.owner!==owner || s.animalId!==animalId) return;
+    const note = (s.note||'').trim(); if(!note) return;
+    if(note.toUpperCase().includes('AI')) return;
+    const d = new Date(dateOnly(s.date)+'T00:00:00'); if(isNaN(d)) return;
+    const diff = Math.round((aiDate-d)/86400000);
+    if(diff>=0 && diff<=CONCEPTION_WINDOW_DAYS) notes.push(note);
+  });
+  (recs||[]).forEach(r=>{
+    const note = (r.hormoneTreatment||'').trim(); if(!note) return;
+    if(/^임신감정/.test(note)) return; // 임신감정 결과 메모는 처치가 아님
+    const dRaw = r.examDate || r.aiDate || r.estrusDate; if(!dRaw) return;
+    const d = new Date(dateOnly(dRaw)+'T00:00:00'); if(isNaN(d)) return;
+    const diff = Math.round((aiDate-d)/86400000);
+    if(diff>=0 && diff<=CONCEPTION_WINDOW_DAYS) notes.push(note);
+  });
+  const uniq = [...new Set(notes)];
+  if(!uniq.length) return '자연발정';
+  return uniq.join(' + ');
+}
+function conceptionStatsForOwner(owner){
+  const byAnimal = {};
+  (DATA.records||[]).filter(r=>r.owner===owner).forEach(r=>{ (byAnimal[r.animalId]=byAnimal[r.animalId]||[]).push(r); });
+  const counts = {}; let total = 0;
+  Object.keys(byAnimal).forEach(aid=>{
+    const recs = byAnimal[aid];
+    if(!isCurrentlyPregnant(recs)) return;
+    const m = conceptionMethodFor(owner, aid, recs) || '기록없음';
+    counts[m] = (counts[m]||0)+1; total++;
+  });
+  return { total, rows: Object.keys(counts).map(k=>({method:k, n:counts[k], pct: total?Math.round(counts[k]/total*100):0})).sort((a,b)=>b.n-a.n) };
+}
+function renderConceptionStatsCard(owner){
+  const { total, rows } = conceptionStatsForOwner(owner);
+  const body = !rows.length
+    ? `<div class="empty-state" style="padding:16px;font-size:12px;">임신중인 소가 없어서<br>통계를 낼 수 없어요.</div>`
+    : `<div class="cstat-rows">${rows.map(r=>`
+        <div class="cstat-row">
+          <span class="cstat-name" title="${esc(r.method)}">${esc(r.method)}</span>
+          <div class="cstat-bar"><div class="cstat-fill" style="width:${r.pct}%"></div></div>
+          <span class="cstat-n">${r.n}두 <b>${r.pct}%</b></span>
+        </div>`).join('')}</div>`;
+  return `
+    <div class="cstat-card">
+      <div class="cstat-title">${svgIcon('calendar',15)} 처치별 수태율</div>
+      <div class="cstat-sub">임신중인 소 ${total}두가 마지막 수정 전 어떤 처치를 받았는지예요. 처치 기록이 없으면 자연발정으로 분류돼요.</div>
+      ${body}
+    </div>`;
+}
+
 function renderScheduleView(){
   ensureOwnerMeta(UI.owner);
   const mode = UI.schedMode || (isMobileWidth() ? 'list' : 'grid');
@@ -2192,7 +2275,8 @@ function renderScheduleView(){
     </div>
     <button class="btn secondary small" data-action="toggleSchedSort" title="정렬 방식 전환">${(DATA.scheduleSortMode||'date')==='date'?'📅 일정순':'🔢 번호순'}</button>
   </div>`;
-  return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
+  const body = toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
+  return `<div class="sched-layout"><div>${body}</div><div>${renderConceptionStatsCard(UI.owner)}</div></div>`;
 }
 
 /* 한 축주의 스케줄 항목들을 날짜순으로 모음 (표/목록 공통 데이터) */
