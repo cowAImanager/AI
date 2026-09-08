@@ -2193,62 +2193,47 @@ function isMobileWidth(){
 }
 
 /* ============================================================
-   처치별 수태율: 현재 임신중인 소가 마지막(임신을 만든) 수정 전에
-   어떤 방식으로 수정했는지 집계.
-   - 임신을 만든 수정일: isCurrentlyPregnant와 동일한 기준(가장 최근 aiDate)
-   - 그 수정일 기준 직전 WINDOW일 이내의 처치 근거를 모음: DATA.schedule의 해당 개체 항목
-     + 진료기록(records)의 hormoneTreatment 필드
-   - 모인 처치들을 CIDR·GnRH·PG(PGF2α) 사용 패턴으로 보고 SYNC_PROTOCOLS(GPPG/Ovsynch ±CIDR)와
-     매칭해서 프로토콜명으로 분류. 처치 근거가 전혀 없으면 자연발정.
+   처치별 수태율: 현재 임신중인 소가 마지막(임신을 만든) 수정 때
+   동기화(sync1Type~sync7Type) 처치를 했는지 집계.
+   - 임신을 만든 수정 기록: isCurrentlyPregnant와 동일한 기준(가장 최근 aiDate를 가진 기록)
+   - 그 기록에 동기화 단계(sync1Type..)가 하나라도 있으면 CIDR·PG·GnRH 조합을 보고
+     GPPG/Ovsynch(±CIDR)로 분류. 동기화 단계가 전혀 없으면(발정 관찰 후 수정) 자연발정.
+   - 단순 약물처치(hormoneTreatment, 예: 리셉탈)는 동기화가 아니라 자연발정 수정 시 보조로
+     주는 경우가 많아 분류에 쓰지 않음.
 ============================================================ */
-const CONCEPTION_WINDOW_DAYS = 12;
-function conceptionAiDateFor(recs){
+function conceptionRecordFor(recs){
   const aiRecs = (recs||[]).filter(r=>r.aiDate);
   if(!aiRecs.length) return null;
   aiRecs.sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
-  return aiRecs[aiRecs.length-1].aiDate;
+  return aiRecs[aiRecs.length-1];
 }
-function treatmentNotesBeforeAi(owner, animalId, recs, aiDate){
-  const items = [];
-  (DATA.schedule||[]).forEach(s=>{
-    if(s.owner!==owner || s.animalId!==animalId) return;
-    const note = (s.note||'').trim(); if(!note) return;
-    if(note.toUpperCase().includes('AI')) return;
-    const d = new Date(dateOnly(s.date)+'T00:00:00'); if(isNaN(d)) return;
-    const diff = Math.round((aiDate-d)/86400000);
-    if(diff>=0 && diff<=CONCEPTION_WINDOW_DAYS) items.push(note);
-  });
-  (recs||[]).forEach(r=>{
-    const note = (r.hormoneTreatment||'').trim(); if(!note) return;
-    if(/^임신감정/.test(note)) return; // 임신감정 결과 메모는 처치가 아님
-    const dRaw = r.examDate || r.aiDate || r.estrusDate; if(!dRaw) return;
-    const d = new Date(dateOnly(dRaw)+'T00:00:00'); if(isNaN(d)) return;
-    const diff = Math.round((aiDate-d)/86400000);
-    if(diff>=0 && diff<=CONCEPTION_WINDOW_DAYS) items.push(note);
-  });
-  return items; // 개수 판정에 쓰이므로 중복 제거하지 않음(PG가 2번이면 GPPG 판정에 필요)
+function syncStepsOf(r){
+  const steps = [];
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const type = (r['sync'+i+'Type']||'').trim();
+    if(type) steps.push(type);
+  }
+  return steps;
 }
-// 모인 처치 문구들을 CIDR/GnRH/PG 사용 패턴으로 보고 알려진 동기화 프로토콜명으로 분류
-function classifyProtocol(notes){
-  if(!notes.length) return '자연발정';
-  const joined = notes.join(' ');
+// 동기화 단계(AI 제외)를 CIDR/PG/GnRH 조합으로 보고 알려진 프로토콜명으로 분류
+function classifyProtocolFromRecord(r){
+  const steps = syncStepsOf(r).filter(s=>!/AI/i.test(s));
+  if(!steps.length) return '자연발정';
+  const joined = steps.join(' ');
   const hasCIDR = /CIDR/i.test(joined);
-  const pgCount = notes.filter(n=>/PG|PGF/i.test(n)).length;
-  const gnrhCount = notes.filter(n=>/GnRH|고나돈/i.test(n)).length;
+  const pgCount = steps.filter(s=>/PG|PGF/i.test(s)).length;
+  const gnrhCount = steps.filter(s=>/GnRH/i.test(s)).length;
   if(hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG+CIDR';
   if(hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch+CIDR';
   if(!hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG';
   if(!hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch';
-  // 알려진 프로토콜 패턴과 안 맞는 나머지 처치(단일 호르몬 등)는 원문 그대로 묶어서 표시(중복 제거)
-  return [...new Set(notes)].join(' + ');
+  // 알려진 프로토콜 패턴과 안 맞으면 실제 동기화 단계 그대로 표시
+  return steps.join(' + ');
 }
 function conceptionMethodFor(owner, animalId, recs){
-  const aiRaw = conceptionAiDateFor(recs);
-  if(!aiRaw) return null;
-  const aiDate = new Date(dateOnly(aiRaw)+'T00:00:00');
-  if(isNaN(aiDate)) return null;
-  const notes = treatmentNotesBeforeAi(owner, animalId, recs, aiDate);
-  return classifyProtocol(notes);
+  const rec = conceptionRecordFor(recs);
+  if(!rec) return null;
+  return classifyProtocolFromRecord(rec);
 }
 function conceptionStatsForOwner(owner){
   const byAnimal = {};
