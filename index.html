@@ -2196,8 +2196,9 @@ function isMobileWidth(){
    처치별 수태율: 현재 임신중인 소가 마지막(임신을 만든) 수정 때
    동기화(sync1Type~sync7Type) 처치를 했는지 집계.
    - 임신을 만든 수정 기록: isCurrentlyPregnant와 동일한 기준(가장 최근 aiDate를 가진 기록)
-   - 그 기록에 동기화 단계(sync1Type..)가 하나라도 있으면 CIDR·PG·GnRH 조합을 보고
-     GPPG/Ovsynch(±CIDR)로 분류. 동기화 단계가 전혀 없으면(발정 관찰 후 수정) 자연발정.
+   - 그 수정이 본인 내수정(inHouseAi>=1)이 아니면 통계에서 제외 (다른 수정사가 수정한 건 제외)
+   - 기존 앱에 이미 정의된 SYNC_PROTOCOLS(Ovsynch/GPPG ±CIDR) 스텝과 정확히 대조해서 분류.
+     동기화 단계가 전혀 없으면(발정 관찰 후 수정) 자연발정.
    - 단순 약물처치(hormoneTreatment, 예: 리셉탈)는 동기화가 아니라 자연발정 수정 시 보조로
      주는 경우가 많아 분류에 쓰지 않음.
 ============================================================ */
@@ -2207,6 +2208,11 @@ function conceptionRecordFor(recs){
   aiRecs.sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
   return aiRecs[aiRecs.length-1];
 }
+function inHouseCountOf(r){
+  const s = String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
+  const n = parseInt(s,10);
+  return isNaN(n) ? 0 : n;
+}
 function syncStepsOf(r){
   const steps = [];
   for(let i=1;i<=SYNC_STEPS;i++){
@@ -2215,25 +2221,35 @@ function syncStepsOf(r){
   }
   return steps;
 }
-// 동기화 단계(AI 제외)를 CIDR/PG/GnRH 조합으로 보고 알려진 프로토콜명으로 분류
+function stepSig(s){
+  return { cidr:/CIDR/i.test(s), gnrh:/GnRH|고나돈/i.test(s), pg:/PGF|PG\b/i.test(s) };
+}
+function sigEqual(a,b){ return a.cidr===b.cidr && a.gnrh===b.gnrh && a.pg===b.pg; }
+function matchesProtocolTemplate(steps, template){
+  const tmplSteps = template.steps.filter(s=>!/^AI$/i.test(s));
+  if(steps.length !== tmplSteps.length) return false;
+  for(let i=0;i<steps.length;i++){ if(!sigEqual(stepSig(steps[i]), stepSig(tmplSteps[i]))) return false; }
+  return true;
+}
+// 실제 동기화 단계(sync1Type..)를 SYNC_PROTOCOLS(코드에 이미 정의된 4종)와 정확히 대조해서 분류
 function classifyProtocolFromRecord(r){
-  const steps = syncStepsOf(r).filter(s=>!/AI/i.test(s));
+  const steps = syncStepsOf(r).filter(s=>!/^AI$/i.test(s));
   if(!steps.length) return '자연발정';
+  // 더 구체적인(±CIDR) 쪽부터 확인
+  const order = ['GPPG+CIDR','Ovsynch+CIDR','GPPG','Ovsynch'];
+  for(const name of order){
+    if(SYNC_PROTOCOLS[name] && matchesProtocolTemplate(steps, SYNC_PROTOCOLS[name])) return name;
+  }
+  // 정확히 안 맞으면 CIDR/PG 개수로 근사 분류
   const joined = steps.join(' ');
   const hasCIDR = /CIDR/i.test(joined);
-  const pgCount = steps.filter(s=>/PG|PGF/i.test(s)).length;
-  const gnrhCount = steps.filter(s=>/GnRH/i.test(s)).length;
+  const pgCount = steps.filter(s=>/PGF|PG\b/i.test(s)).length;
+  const gnrhCount = steps.filter(s=>/GnRH|고나돈/i.test(s)).length;
   if(hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG+CIDR';
   if(hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch+CIDR';
   if(!hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG';
   if(!hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch';
-  // 알려진 프로토콜 패턴과 안 맞으면 실제 동기화 단계 그대로 표시
   return steps.join(' + ');
-}
-function conceptionMethodFor(owner, animalId, recs){
-  const rec = conceptionRecordFor(recs);
-  if(!rec) return null;
-  return classifyProtocolFromRecord(rec);
 }
 function conceptionStatsForOwner(owner){
   const byAnimal = {};
@@ -2242,7 +2258,10 @@ function conceptionStatsForOwner(owner){
   Object.keys(byAnimal).forEach(aid=>{
     const recs = byAnimal[aid];
     if(!isCurrentlyPregnant(recs)) return;
-    const m = conceptionMethodFor(owner, aid, recs) || '기록없음';
+    const rec = conceptionRecordFor(recs);
+    if(!rec) return;
+    if(inHouseCountOf(rec) < 1) return; // 본인(내수정) 아니면 통계에서 제외
+    const m = classifyProtocolFromRecord(rec) || '기록없음';
     counts[m] = (counts[m]||0)+1; total++;
   });
   return { total, rows: Object.keys(counts).map(k=>({method:k, n:counts[k], pct: total?Math.round(counts[k]/total*100):0})).sort((a,b)=>b.n-a.n) };
