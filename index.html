@@ -488,16 +488,6 @@ main{flex:1;padding:18px 20px 70px;}
 
 /* ---------- schedule ---------- */
 .sched-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
-/* 처치별 수태율 모달 */
-.cstat-owner-block{margin-top:4px;}
-.cstat-owner-h{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px;}
-.cstat-rows{display:flex;flex-direction:column;gap:8px;}
-.cstat-row{display:flex;align-items:center;gap:8px;}
-.cstat-name{font-size:12px;font-weight:700;min-width:0;flex:0 0 auto;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
-.cstat-bar{flex:1;height:8px;background:var(--surface-alt);border-radius:4px;overflow:hidden;}
-.cstat-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));border-radius:4px;}
-.cstat-n{font-size:11px;color:var(--ink-soft);white-space:nowrap;flex:0 0 auto;}
-.cstat-n b{color:var(--primary-dark);font-size:12.5px;}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
 .quick-chip{background:var(--surface-alt);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;font-weight:700;color:var(--ink);}
 .quick-chip:hover{background:var(--tag-yellow);border-color:var(--tag-yellow);color:var(--tag-ink);}
@@ -1514,7 +1504,6 @@ function renderOwnerTabs(){
   DATA.owners.forEach(ensureOwnerMeta);
   let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">${svgIcon('calendar',14)}<span>분만예정일</span></div>`;
   html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">${svgIcon('clipboard',14)}<span>전체스케줄</span></div>`;
-  html += `<div class="owner-tab calc-tab allsched-tab" data-action="openConceptionStats">${svgIcon('checkCircle',14)}<span>처치별 수태율</span></div>`;
   html += `<div class="tab-break" aria-hidden="true"></div>`;
   // 현재 보고 있는 축주가 보관됨이면 임시로 보여줌
   if(ownerArch(UI.owner)){
@@ -2190,110 +2179,6 @@ function buildAutoSchedule(owner){
 
 function isMobileWidth(){
   return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:768px)').matches;
-}
-
-/* ============================================================
-   처치별 수태율: 현재 임신중인 소가 마지막(임신을 만든) 수정 때
-   동기화(sync1Type~sync7Type) 처치를 했는지 집계.
-   - 임신을 만든 수정 기록: isCurrentlyPregnant와 동일한 기준(가장 최근 aiDate를 가진 기록)
-   - 그 수정이 본인 내수정(inHouseAi>=1)이 아니면 통계에서 제외 (다른 수정사가 수정한 건 제외)
-   - 기존 앱에 이미 정의된 SYNC_PROTOCOLS(Ovsynch/GPPG ±CIDR) 스텝과 정확히 대조해서 분류.
-     동기화 단계가 전혀 없으면(발정 관찰 후 수정) 자연발정.
-   - 단순 약물처치(hormoneTreatment, 예: 리셉탈)는 동기화가 아니라 자연발정 수정 시 보조로
-     주는 경우가 많아 분류에 쓰지 않음.
-============================================================ */
-function conceptionRecordFor(recs){
-  const aiRecs = (recs||[]).filter(r=>r.aiDate);
-  if(!aiRecs.length) return null;
-  aiRecs.sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
-  return aiRecs[aiRecs.length-1];
-}
-function inHouseCountOf(r){
-  const s = String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
-  const n = parseInt(s,10);
-  return isNaN(n) ? 0 : n;
-}
-function syncStepsOf(r){
-  const steps = [];
-  for(let i=1;i<=SYNC_STEPS;i++){
-    const type = (r['sync'+i+'Type']||'').trim();
-    if(type) steps.push(type);
-  }
-  return steps;
-}
-function stepSig(s){
-  return { cidr:/CIDR/i.test(s), gnrh:/GnRH|고나돈/i.test(s), pg:/PGF|PG\b/i.test(s) };
-}
-function sigEqual(a,b){ return a.cidr===b.cidr && a.gnrh===b.gnrh && a.pg===b.pg; }
-function matchesProtocolTemplate(steps, template){
-  const tmplSteps = template.steps.filter(s=>!/^AI$/i.test(s));
-  if(steps.length !== tmplSteps.length) return false;
-  for(let i=0;i<steps.length;i++){ if(!sigEqual(stepSig(steps[i]), stepSig(tmplSteps[i]))) return false; }
-  return true;
-}
-// 실제 동기화 단계(sync1Type..)를 SYNC_PROTOCOLS(코드에 이미 정의된 4종)와 정확히 대조해서 분류
-function classifyProtocolFromRecord(r){
-  const steps = syncStepsOf(r).filter(s=>!/^AI$/i.test(s));
-  if(!steps.length) return '자연발정';
-  // 더 구체적인(±CIDR) 쪽부터 확인
-  const order = ['GPPG+CIDR','Ovsynch+CIDR','GPPG','Ovsynch'];
-  for(const name of order){
-    if(SYNC_PROTOCOLS[name] && matchesProtocolTemplate(steps, SYNC_PROTOCOLS[name])) return name;
-  }
-  // 정확히 안 맞으면 CIDR/PG 개수로 근사 분류
-  const joined = steps.join(' ');
-  const hasCIDR = /CIDR/i.test(joined);
-  const pgCount = steps.filter(s=>/PGF|PG\b/i.test(s)).length;
-  const gnrhCount = steps.filter(s=>/GnRH|고나돈/i.test(s)).length;
-  if(hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG+CIDR';
-  if(hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch+CIDR';
-  if(!hasCIDR && pgCount>=2 && gnrhCount>=1) return 'GPPG';
-  if(!hasCIDR && pgCount===1 && gnrhCount>=1) return 'Ovsynch';
-  return steps.join(' + ');
-}
-function conceptionStatsForOwner(owner){
-  const byAnimal = {};
-  (DATA.records||[]).filter(r=>r.owner===owner).forEach(r=>{ (byAnimal[r.animalId]=byAnimal[r.animalId]||[]).push(r); });
-  const counts = {}; let total = 0;
-  Object.keys(byAnimal).forEach(aid=>{
-    const recs = byAnimal[aid];
-    if(!isCurrentlyPregnant(recs)) return;
-    const rec = conceptionRecordFor(recs);
-    if(!rec) return;
-    if(inHouseCountOf(rec) < 1) return; // 본인(내수정) 아니면 통계에서 제외
-    const m = classifyProtocolFromRecord(rec) || '기록없음';
-    counts[m] = (counts[m]||0)+1; total++;
-  });
-  return { total, rows: Object.keys(counts).map(k=>({method:k, n:counts[k], pct: total?Math.round(counts[k]/total*100):0})).sort((a,b)=>b.n-a.n) };
-}
-function conceptionStatsRowsHtml(owner){
-  const { total, rows } = conceptionStatsForOwner(owner);
-  if(!rows.length) return { total, html: `<div class="empty-state">임신중인 소가 없어요.</div>` };
-  const html = `<div class="cstat-rows">${rows.map(r=>`
-      <div class="cstat-row">
-        <span class="cstat-name" title="${esc(r.method)}">${esc(r.method)}</span>
-        <div class="cstat-bar"><div class="cstat-fill" style="width:${r.pct}%"></div></div>
-        <span class="cstat-n">${r.n}두 <b>${r.pct}%</b></span>
-      </div>`).join('')}</div>`;
-  return { total, html };
-}
-function openConceptionStats(){
-  const owners = DATA.owners;
-  const sections = owners.map(o=>{
-    const { total, html } = conceptionStatsRowsHtml(o);
-    return `<div class="cstat-owner-block">
-      <div class="cstat-owner-h">${esc(o)} <span style="font-weight:500;color:var(--ink-soft);">· 임신중 ${total}두</span></div>
-      ${html}
-    </div>`;
-  }).join('<div class="tab-break" style="margin:14px 0;"></div>');
-  openModal(`
-    <div class="modal" style="max-width:520px;">
-      <h2>${svgIcon('checkCircle',20)} 처치별 수태율</h2>
-      <div class="modal-sub">임신중인 소가 마지막 수정 전에 어떤 방식으로 수정했는지예요. 처치 기록이 없으면 자연발정으로 분류돼요.</div>
-      ${sections}
-      <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
-    </div>
-  `);
 }
 
 function renderScheduleView(){
@@ -5893,7 +5778,6 @@ const ACTIONS = {
   openVet: ()=>{ UI.vetMode=true; UI.vetTab='grass'; render(); vetEditsEnsure(); },
   setVetTab: ds=>{ UI.vetTab=ds.vettab; render(); },
   openAllSchedule: ()=>openAllSchedule(),
-  openConceptionStats: ()=>openConceptionStats(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
