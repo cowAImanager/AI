@@ -2209,7 +2209,11 @@ function scheduleRowsForOwner(owner){
       const autoEntries = (auto[aid]||{})[d] || [];
       // 자동 일정인데 사용자가 숨긴 칸이면 제외 (수동 일정은 유지)
       if(!manual && autoEntries.length && isCellDismissed(owner, aid, d)) return;
-      const note = manual ? manual.note : autoEntries.join(' / ');
+      // 수동 일정(예: 감정)과 자동 일정(예: 동기화 단계)이 같은 날 겹치면 둘 다 보여줌 (한쪽이 다른 쪽을 가리지 않게)
+      const parts = [];
+      if(manual && manual.note) parts.push(manual.note);
+      autoEntries.forEach(e => { if(!parts.includes(e)) parts.push(e); });
+      const note = parts.join(' / ');
       if(!note) return;
       rows.push({ aid, date:d, note, done:isCellDone(owner,aid,d), skipped:isCellSkipped(owner,aid,d), isAuto: !manual && !!autoEntries.length, manual: !!manual });
     });
@@ -2276,7 +2280,11 @@ function renderScheduleGrid(){
       let autoEntries = (auto[aid]||{})[d] || [];
       if(!manual && autoEntries.length && isCellDismissed(UI.owner, aid, d)) autoEntries = [];  // 숨긴 자동 일정
       const autoText = autoEntries.join(' / ');
-      const displayVal = manual ? manual.note : autoText;
+      // 수동 일정과 자동 일정이 같은 날 겹치면 둘 다 보여줌 (한쪽이 다른 쪽을 가리지 않게)
+      const displayParts = [];
+      if(manual && manual.note) displayParts.push(manual.note);
+      autoEntries.forEach(e => { if(!displayParts.includes(e)) displayParts.push(e); });
+      const displayVal = displayParts.join(' / ');
       const isAuto = !manual && !!autoText;
       const done = isCellDone(UI.owner, aid, d);
       const skipped = isCellSkipped(UI.owner, aid, d);
