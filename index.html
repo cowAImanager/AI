@@ -443,6 +443,7 @@ main{flex:1;padding:18px 20px 70px;}
 .date-pill.estrus{background:var(--estrus-soft);color:var(--estrus-text);}
 .date-pill.ai{background:var(--accent-soft);color:var(--ai-text);}
 .date-pill.sync{background:var(--sync-bg);color:var(--sync-text);}
+.date-pill.stillbirth{background:var(--notpregnant-bg);color:#fff;}
 .record-body{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.5;display:flex;flex-direction:column;gap:7px;}
 .record-body .kv{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--bg);padding-bottom:6px;font-size:13px;}
 .record-body .kv:last-child{border-bottom:none;padding-bottom:0;}
@@ -1652,7 +1653,7 @@ function animalRecords(animalId){
 }
 // 기록의 대표 날짜 = 진료일 우선, 없으면 발정→수정→분만→동기화 순. (동기화 미래일정이 진료일을 덮지 않음)
 function recordSortKey(r){
-  const d = r.examDate || r.estrusDate || r.aiDate || r.calvingDate || firstSyncDate(r);
+  const d = r.examDate || r.estrusDate || r.aiDate || r.calvingDate || r.stillbirthDate || firstSyncDate(r);
   if(!d) return -1;
   return new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime();
 }
@@ -2049,6 +2050,7 @@ function renderRecordCard(r){
           ${r.estrusDate?`<span class="date-pill estrus">발정 ${fmtShort(r.estrusDate)}</span>`:''}
           ${r.aiDate?`<span class="date-pill ai">수정 ${fmtShort(r.aiDate)}</span>`:''}
           ${firstSyncDate(r)?`<span class="date-pill sync">동기화 ${fmtShort(firstSyncDate(r))}</span>`:''}
+          ${r.stillbirthDate?`<span class="date-pill stillbirth">사산 ${fmtShort(r.stillbirthDate)}</span>`:''}
         </div>
         <div>
           ${isAdmin()?`<button class="iconbtn" data-action="editRecord" data-id="${esc(r.id)}">수정</button><button class="iconbtn" data-action="deleteRecord" data-id="${esc(r.id)}">삭제</button>`:''}
@@ -2092,6 +2094,7 @@ function dateNoteSummary(r){
   if((r.fetalSex||'').trim())  preg.push('성 '+r.fetalSex.trim());
   if(preg.length) parts.push('감정 '+preg.join('/'));
   if((r.calvingDate||'').trim()) parts.push('분만 '+dateOnly(r.calvingDate)+((r.calfSex||'').trim()?'('+r.calfSex.trim()+')':''));
+  if((r.stillbirthDate||'').trim()) parts.push('사산 '+dateOnly(r.stillbirthDate));
   if((r.uterineDisease||'').trim()) parts.push('자궁: '+r.uterineDisease.trim());
   if((r.ovarianDisease||'').trim()) parts.push('난소: '+r.ovarianDisease.trim());
   // 구조화된 난소질환이 없어도 초음파 텍스트에 낭종이 있으면 우선 표시
