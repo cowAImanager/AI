@@ -3281,7 +3281,7 @@ function openRecordModal(record, owner, presetAnimalId){
       backfat: record?(record.backfat||''):'', marbling: record?(record.marbling||''):'',
       rectalHorn: record?(record.rectalHorn||''):'', ultraHorn: record?(record.ultraHorn||''):'' } };
   const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiDate2:null, doubleAi:false, aiInterval:'',
-    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', estrusSign:'', rectalExam:'',
+    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', stillbirthDate:null, estrusSign:'', rectalExam:'',
     ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
     carcass:'', ribeye:'', backfat:'', marbling:'',
     estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusMT:'', estrusST:'', estrusOther:'',
@@ -3341,36 +3341,6 @@ function openRecordModal(record, owner, presetAnimalId){
         ${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1, r['sync'+(i+1)+'Type'], r['sync'+(i+1)+'Date'])).join('')}
       </div>
 
-      <div class="fieldset-title">임신감정</div>
-      <div class="form-grid ox-grid">
-        <div class="field ox-compact">
-          <label>1차 감정</label>
-          ${segToggle('pregnant', r.pregnant, [['O','O'],['X','X'],['재검필요','재검']], 'refreshPregStage')}
-        </div>
-        <div class="field ox-compact preg-stage2" id="preg-stage2-wrap">
-          <label>2차 감정</label>
-          ${segToggle('pregnant2', r.pregnant2, [['O','O'],['X','X'],['재검필요','재검']])}
-        </div>
-        <div class="field ox-compact preg-stage2" id="preg-stagesex-wrap">
-          <label>성 감정</label>
-          ${segToggle('fetalSex', r.fetalSex, [['수','수'],['암','암'],['불명','불명']])}
-        </div>
-      </div>
-      <div class="sync-proto-hint" id="preg-x-hint" style="display:none;">1차 감정이 X(비임신)예요. 추가 감정 없이 재수정 대기로 넘어가요.</div>
-
-      <div class="fieldset-title">분만</div>
-      <div class="form-grid date-grid">
-        <div class="field">
-          <label>분만일</label>
-          <input type="date" id="f_calvingDate" value="${esc(dateOnly(r.calvingDate||''))}">
-        </div>
-        <div class="field ox-compact">
-          <label>송아지 성별</label>
-          ${segToggle('calfSex', r.calfSex, [['수','수'],['암','암'],['쌍태','쌍태']])}
-        </div>
-      </div>
-      <div class="sync-proto-hint">분만일을 입력하면 임신중에서 빠지고 분만완료로 표시돼요. <b>산차 +1 · 최근분만일</b>도 자동 갱신됩니다.</div>
-
       <div class="fieldset-title">발정증상</div>
       <div class="form-grid ox-grid">
         ${oxToggle('외음부 종창·충혈','estrusVulvar',r.estrusVulvar)}
@@ -3426,6 +3396,44 @@ function openRecordModal(record, owner, presetAnimalId){
         ${textField('KPN','kpn',r.kpn)}
       </div>
 
+      <div class="fieldset-title">임신감정</div>
+      <div class="form-grid ox-grid">
+        <div class="field ox-compact">
+          <label>1차 감정</label>
+          ${segToggle('pregnant', r.pregnant, [['O','O'],['X','X'],['재검필요','재검']], 'refreshPregStage')}
+        </div>
+        <div class="field ox-compact preg-stage2" id="preg-stage2-wrap">
+          <label>2차 감정</label>
+          ${segToggle('pregnant2', r.pregnant2, [['O','O'],['X','X'],['재검필요','재검']])}
+        </div>
+        <div class="field ox-compact preg-stage2" id="preg-stagesex-wrap">
+          <label>성 감정</label>
+          ${segToggle('fetalSex', r.fetalSex, [['수','수'],['암','암'],['불명','불명']])}
+        </div>
+      </div>
+      <div class="sync-proto-hint" id="preg-x-hint" style="display:none;">1차 감정이 X(비임신)예요. 추가 감정 없이 재수정 대기로 넘어가요.</div>
+
+      <div class="fieldset-title">분만</div>
+      <div class="form-grid date-grid">
+        <div class="field">
+          <label>분만일</label>
+          <input type="date" id="f_calvingDate" value="${esc(dateOnly(r.calvingDate||''))}">
+        </div>
+        <div class="field ox-compact">
+          <label>송아지 성별</label>
+          ${segToggle('calfSex', r.calfSex, [['수','수'],['암','암'],['쌍태','쌍태']])}
+        </div>
+      </div>
+      <div class="sync-proto-hint">분만일을 입력하면 임신중에서 빠지고 분만완료로 표시돼요. <b>산차 +1 · 최근분만일</b>도 자동 갱신됩니다.</div>
+
+      <div class="fieldset-title">사산</div>
+      <div class="form-grid date-grid">
+        <div class="field">
+          <label>사산일</label>
+          <input type="date" id="f_stillbirthDate" value="${esc(dateOnly(r.stillbirthDate||''))}">
+        </div>
+      </div>
+
       <div class="modal-actions">
         ${!isNew?'<button class="btn danger left" data-action="deleteRecordInModal">삭제</button>':''}
         <button class="btn secondary" data-action="closeModal">취소</button>
@@ -3478,6 +3486,7 @@ function actionSaveRecord(){
     fetalSex: (g('f_fetalSex')||{value:''}).value.trim(),
     calvingDate: (g('f_calvingDate')||{value:''}).value || null,
     calfSex: (g('f_calfSex')||{value:''}).value.trim(),
+    stillbirthDate: (g('f_stillbirthDate')||{value:''}).value || null,
     estrusVulvar: g('f_estrusVulvar').value.trim(),
     estrusMucus: g('f_estrusMucus').value.trim(),
     estrusContraction: g('f_estrusContraction').value.trim(),
