@@ -2595,9 +2595,14 @@ function renderPregCheckView(){
       && dateOnly(r.calvingDate||'').slice(0,4)===yearNow && dateOnly(r.calvingDate)<=today);
     if(recCalvs.length){
       recCalvs.forEach(r => yearCalvings.push({ animalId:a.animalId, recordId:r.id, calvDate: dateOnly(r.calvingDate), calfSex: r.calfSex||'' }));
-    } else if(dateOnly(a.lastCalving||'').slice(0,4)===yearNow && dateOnly(a.lastCalving)<=today){
-      // 진료기록엔 없지만 개체정보의 최근분만일이 해당 연도인 경우 (수기 입력분)
-      yearCalvings.push({ animalId:a.animalId, recordId:null, calvDate: dateOnly(a.lastCalving), calfSex:'' });
+    } else {
+      const lastCalv = dateOnly(a.lastCalving||'');
+      const animalRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
+      const stillMatches = lastCalv && lastCalv === latestStillbirthDate(animalRecs); // 최근분만일이 실은 사산일과 같으면 출산 아님
+      if(lastCalv && lastCalv.slice(0,4)===yearNow && lastCalv<=today && !stillMatches){
+        // 진료기록엔 없지만 개체정보의 최근분만일이 해당 연도인 경우 (수기 입력분)
+        yearCalvings.push({ animalId:a.animalId, recordId:null, calvDate: lastCalv, calfSex:'' });
+      }
     }
   });
   yearCalvings.sort((x,y)=> y.calvDate.localeCompare(x.calvDate));
