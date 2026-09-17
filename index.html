@@ -1774,14 +1774,31 @@ function latestCalvingRec(recs){
     .sort((x,y)=> dateOnly(y.calvingDate).localeCompare(dateOnly(x.calvingDate)));
   return cs[0] || null;
 }
-// 직전 임신(1차 O) 이후 분만했는지
-function calvedAfterPregnancy(recs){
+function latestStillbirthDate(recs){
+  const ds = recs.filter(r => dateOnly(r.stillbirthDate||'')).map(r => dateOnly(r.stillbirthDate)).sort();
+  return ds.length ? ds[ds.length-1] : '';
+}
+function latestStillbirthRec(recs){
+  const cs = recs.filter(r => dateOnly(r.stillbirthDate||''))
+    .sort((x,y)=> dateOnly(y.stillbirthDate).localeCompare(dateOnly(x.stillbirthDate)));
+  return cs[0] || null;
+}
+// 번식주기를 끝낸(분만 또는 사산) 가장 최근 날짜와 그 종류
+function latestReproEnd(recs){
   const calv = latestCalvingDate(recs);
-  if(!calv) return false;                                                    // 분만일 없으면 분만완료 아님
-  // 분만일 이후에 새 수정(AI)이나 임신(O) 감정이 있으면 새 번식주기 시작 → 분만완료 아님
+  const still = latestStillbirthDate(recs);
+  if(!calv && !still) return null;
+  const isStill = still && (!calv || still > calv);
+  return { date: isStill ? still : calv, stillbirth: !!isStill };
+}
+// 직전 임신(1차 O) 이후 분만 또는 사산했는지 (번식주기 종료 여부)
+function calvedAfterPregnancy(recs){
+  const end = latestReproEnd(recs);
+  if(!end) return false;                                                    // 분만·사산 없으면 종료 아님
+  // 종료일 이후에 새 수정(AI)이나 임신(O) 감정이 있으면 새 번식주기 시작 → 종료 아님
   const bredAgain = recs.some(r =>
-    (r.aiDate && dateOnly(r.aiDate) > calv) ||
-    ((r.pregnant||'').trim().toUpperCase()==='O' && recDate(r) > calv)
+    (r.aiDate && dateOnly(r.aiDate) > end.date) ||
+    ((r.pregnant||'').trim().toUpperCase()==='O' && recDate(r) > end.date)
   );
   return !bredAgain;
 }
@@ -2355,20 +2372,22 @@ function renderPregCheckView(){
     const fsex  = (lastNonEmpty(diagPool,'fetalSex')||'').trim();
     const syncAi = nextScheduledAiDate(UI.owner, a.animalId);   // 동기화 프로그램의 예정 수정일
     // 수정기록도, 감정 표기도, 분만이력도, 동기화 예정도 전혀 없으면 제외
-    if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs) && !syncAi) return;
+    if(!aiRecs.length && !preg1 && !preg2 && !fsex && !latestCalvingDate(allRecs) && !latestStillbirthDate(allRecs) && !syncAi) return;
     const aiRec = aiRecs[0] || null;
     const aiD = aiRec ? dateOnly(aiRec.aiDate) : '';
     const days = aiD ? Math.floor((new Date(today+'T00:00') - new Date(aiD+'T00:00')) / 86400000) : null;
     const isPreg = isCurrentlyPregnant(allRecs);
     const calved = calvedAfterPregnancy(allRecs);
-    const calvRec = latestCalvingRec(allRecs);
-    const calvDate = calvRec ? dateOnly(calvRec.calvingDate) : '';
-    const calfSex = calvRec ? (calvRec.calfSex||'') : '';
+    const reproEnd = calved ? latestReproEnd(allRecs) : null;
+    const isStillbirthEnd = !!(reproEnd && reproEnd.stillbirth);
+    const calvRec = isStillbirthEnd ? latestStillbirthRec(allRecs) : latestCalvingRec(allRecs);
+    const calvDate = calvRec ? dateOnly(isStillbirthEnd ? calvRec.stillbirthDate : calvRec.calvingDate) : '';
+    const calfSex = (!isStillbirthEnd && calvRec) ? (calvRec.calfSex||'') : '';
     const expCalv = dateOnly(lastNonEmpty(sorted,'expectedCalving')||'');
-    const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate)) || aiRec || sorted[0];
+    const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate||r.stillbirthDate)) || aiRec || sorted[0];
     const lastCalv = [latestCalvingDate(allRecs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
-      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening, syncAi });
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, isStillbirthEnd, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening, syncAi });
   });
   // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
@@ -2413,8 +2432,10 @@ function renderPregCheckView(){
     if(row.calved){
       const pp = daysBetween(row.calvDate, todayStr());
       const vwp = row.fattening ? '' : (pp < VWP_DAYS ? `재수정 대기 D-${VWP_DAYS-pp}` : '재수정 가능');
-      tags.length = 0; // 분만완료 행은 분만 정보 위주로
-      tags.push(`<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
+      tags.length = 0; // 분만·사산 완료 행은 해당 정보 위주로
+      tags.push(row.isStillbirthEnd
+        ? `<span class="preg-tag neg">사산 ${fmtShort(row.calvDate)}</span>`
+        : `<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
       if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
       if(vwp) tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
     } else if(row.isPreg){
@@ -2458,7 +2479,7 @@ function renderPregCheckView(){
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
-        ${row.calved && row.calvDate?`<span class="pregcheck-days">분만 ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
+        ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end">${syncTag}${badge}${diagSum}${subTag}</span>
