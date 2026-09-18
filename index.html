@@ -572,16 +572,28 @@ html[data-theme="dark"] .stat-price.p5{background:#3A0A00;color:#FF9070;}
 .gst-sub{font-size:11px;font-weight:600;color:var(--ink-soft);line-height:1.3;}
 html[data-theme="dark"] .stat-tdn{background:#4A3A10;color:#FFD870;}
 html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
-.allsched-list{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
-.allsched-date{font-size:11.5px;font-weight:800;color:var(--ink-soft);padding:8px 0 3px;border-bottom:1px solid var(--line);}
-.allsched-date.allsched-today{color:var(--primary-dark);font-size:13px;}
-.allsched-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--surface);}
-.allsched-item.done{opacity:.5;}
-.allsched-item.done .allsched-note{text-decoration:line-through;}
+.allsched-list{max-height:62vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 2px 2px 0;}
+.allsched-date{position:sticky;top:-1px;z-index:2;background:var(--surface);font-size:13px;font-weight:800;color:var(--ink-soft);padding:10px 2px 7px;margin-top:4px;border-bottom:1px solid var(--line);}
+.allsched-date.allsched-today{color:var(--primary-dark);font-size:12.5px;}
+.allsched-date.allsched-today::after{content:'오늘';margin-left:6px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;vertical-align:1px;}
+.allsched-item{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;background:var(--surface);border:1px solid var(--line);}
+.allsched-item.done{background:var(--green-soft);border-color:transparent;}
+.allsched-item.skipped{background:var(--notpregnant-row-bg);border-color:transparent;}
+.allsched-item.done .allsched-note,.allsched-item.skipped .allsched-note{text-decoration:line-through;opacity:.65;}
 .allsched-item.auto .allsched-note{font-style:italic;color:var(--primary);}
-.allsched-owner{font-size:11px;color:var(--ink-soft);font-weight:600;}
-.allsched-aids{font-size:11.5px;font-weight:700;color:var(--primary-dark);}
-.allsched-note{flex:1;font-size:13px;font-weight:600;}
+.as-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;}
+.as-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.allsched-owner{font-size:11px;font-weight:800;color:#fff;background:var(--primary-dark);padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.allsched-aids{font-size:12px;color:var(--ink-soft);font-weight:700;}
+.allsched-note{flex:1;font-size:14.5px;font-weight:800;color:var(--ink);}
+.as-actions{display:flex;gap:6px;flex-shrink:0;}
+.as-actions .done-btn,.as-actions .skip-btn{width:32px;height:32px;border-radius:9px;font-size:14px;}
+@media (max-width:768px){
+  .allsched-list{max-height:68vh;gap:7px;}
+  .allsched-item{padding:10px 11px;gap:8px;}
+  .allsched-note{font-size:13.5px;}
+  .as-actions .done-btn,.as-actions .skip-btn{width:34px;height:34px;}
+}
 @media (max-width:768px){
   /* 모바일: 풀정보 모달 1열 + 카드 안 정보(TDN/CP/가격)도 전부 세로로 쌓기 */
   .modal-overlay{padding:8px;}
@@ -1355,40 +1367,6 @@ function refreshSchedToggleBtns(e, owner, aid, date){
   if(!cell) return;
   const doneOn = isCellDone(owner, aid, date);
   const skipOn = isCellSkipped(owner, aid, date);
-  const dB = cell.querySelector('.done-btn');
-  const sB = cell.querySelector('.skip-btn');
-  if(dB) dB.classList.toggle('is-done', doneOn);
-  if(sB) sB.classList.toggle('is-skip', skipOn);
-  cell.classList.toggle('done', doneOn);
-  cell.classList.toggle('skipped', skipOn);
-}
-// 전체스케줄에서 같은 날짜·할일로 묶인 여러 개체를 한 번에 완료/취소
-function toggleCellDoneGroup(owner, aids, date){
-  const allDone = aids.every(aid => isCellDone(owner, aid, date));
-  if(!DATA.completedCells) DATA.completedCells = {};
-  aids.forEach(aid => {
-    const k = cellKey(owner, aid, date);
-    if(allDone) delete DATA.completedCells[k];
-    else { DATA.completedCells[k] = true; if(DATA.skippedCells) delete DATA.skippedCells[k]; }
-  });
-  saveState();
-}
-function toggleCellSkipGroup(owner, aids, date){
-  const allSkip = aids.every(aid => isCellSkipped(owner, aid, date));
-  if(!DATA.skippedCells) DATA.skippedCells = {};
-  aids.forEach(aid => {
-    const k = cellKey(owner, aid, date);
-    if(allSkip) delete DATA.skippedCells[k];
-    else { DATA.skippedCells[k] = true; if(DATA.completedCells) delete DATA.completedCells[k]; }
-  });
-  saveState();
-}
-function refreshSchedToggleBtnsGroup(e, owner, aids, date){
-  const btn = e && e.target ? e.target.closest('button') : null;
-  const cell = btn ? btn.closest('.allsched-item') : null;
-  if(!cell) return;
-  const doneOn = aids.every(aid=>isCellDone(owner, aid, date));
-  const skipOn = aids.every(aid=>isCellSkipped(owner, aid, date));
   const dB = cell.querySelector('.done-btn');
   const sB = cell.querySelector('.skip-btn');
   if(dB) dB.classList.toggle('is-done', doneOn);
@@ -4977,15 +4955,21 @@ function allOwnersScheduleHtml(){
     }
     const done = g.aids.every(aid => isCellDone(g.owner, aid, g.date));
     const skipped = g.aids.every(aid => isCellSkipped(g.owner, aid, g.date));
-    const aidText = g.aids.length > MAX_AID
-      ? g.aids.slice(0, MAX_AID).join(', ') + ` 외 ${g.aids.length-MAX_AID}두`
-      : g.aids.join(', ');
+    const aidLabels = g.aids.map(aid => {
+      const p = (aid||'').trim().split(/\s+/);
+      return p.length>=4 ? p[2]+' '+p[3] : aid;
+    });
+    const aidText = aidLabels.length > MAX_AID
+      ? aidLabels.slice(0, MAX_AID).join(', ') + ` 외 ${aidLabels.length-MAX_AID}두`
+      : aidLabels.join(', ');
     html += `<div class="allsched-item ${done?'done':''} ${skipped?'skipped':''} ${g.isAuto?'auto':''}">
-      <span class="allsched-owner">${esc(g.owner)}</span>
-      <span class="allsched-aids" title="${esc(g.aids.join(', '))}">${esc(aidText)}</span>
-      <span class="allsched-note">${esc(g.note)}</span>
-      <button class="done-btn ${done?'is-done':''}" data-action="toggleCellDoneAll" data-owner="${esc(g.owner)}" data-aids="${esc(g.aids.join(','))}" data-date="${g.date}" title="함(완료)">${svgIcon('check',14)}</button>
-      <button class="skip-btn ${skipped?'is-skip':''}" data-action="toggleCellSkipAll" data-owner="${esc(g.owner)}" data-aids="${esc(g.aids.join(','))}" data-date="${g.date}" title="안 함">${svgIcon('x',14)}</button>
+      <div class="as-main">
+        <div class="as-top">
+          <span class="allsched-owner">${esc(g.owner)}</span>
+          <span class="allsched-note">${esc(g.note)}${g.isAuto?' <span style="font-size:10px;font-weight:600;opacity:.7;">(자동)</span>':''}</span>
+        </div>
+        <span class="allsched-aids" title="${esc(g.aids.join(', '))}">🐄 ${esc(aidText)}</span>
+      </div>
     </div>`;
   });
   return html;
@@ -5967,8 +5951,6 @@ const ACTIONS = {
     toggleCellSkip(UI.owner, ds.aid, ds.date);
     refreshSchedToggleBtns(e, UI.owner, ds.aid, ds.date);
   },
-  toggleCellDoneAll: (ds, e)=>{ if(!isAdmin()) return noAdminToast(); const aids=(ds.aids||ds.aid||'').split(',').filter(Boolean); toggleCellDoneGroup(ds.owner, aids, ds.date); refreshSchedToggleBtnsGroup(e, ds.owner, aids, ds.date); },
-  toggleCellSkipAll: (ds, e)=>{ if(!isAdmin()) return noAdminToast(); const aids=(ds.aids||ds.aid||'').split(',').filter(Boolean); toggleCellSkipGroup(ds.owner, aids, ds.date); refreshSchedToggleBtnsGroup(e, ds.owner, aids, ds.date); },
   cancelSchedAll: ds=>{
     if(!isAdmin()) return noAdminToast();
     if(ds.manual){
