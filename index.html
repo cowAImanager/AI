@@ -621,6 +621,25 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .sched-agenda{display:flex;flex-direction:column;gap:4px;}
 .sched-agenda .allsched-item{border:1px solid var(--line);}
 .sched-agenda .allsched-date{padding:12px 2px 4px;}
+.sched-layout{display:flex;align-items:flex-start;gap:16px;}
+.sched-main{flex:1;min-width:0;}
+.sched-side{width:270px;flex-shrink:0;}
+.aiplan-panel{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:14px 15px;position:sticky;top:8px;}
+.aiplan-title{font-size:13.5px;font-weight:800;color:var(--primary-dark);margin-bottom:2px;}
+.aiplan-sub{font-size:11px;color:var(--ink-soft);margin-bottom:12px;line-height:1.4;}
+.aiplan-list{display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow-y:auto;}
+.aiplan-item{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:9px;background:var(--surface-alt);}
+.aiplan-item.past{opacity:.55;}
+.aiplan-info{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.aiplan-date{font-size:11.5px;font-weight:800;color:var(--ink);}
+.aiplan-kpn{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px 9px;font-size:13px;font-weight:700;background:var(--surface);color:var(--ink);}
+.empty-state.small{padding:16px 10px;font-size:12px;}
+@media (max-width:900px){
+  .sched-layout{flex-direction:column;}
+  .sched-side{width:100%;}
+  .aiplan-panel{position:static;}
+  .aiplan-list{max-height:none;}
+}
 
 /* 모바일: 스케줄 표 모드 압축 + 빠른코드 가로 스크롤 + 목록 줄바꿈 */
 @media (max-width:768px){
@@ -1342,6 +1361,15 @@ function cellKey(owner, aid, date){ return `${owner}|${aid}|${date}`; }
 function isCellDone(owner, aid, date){ return !!(DATA.completedCells||{})[cellKey(owner,aid,date)]; }
 function isCellSkipped(owner, aid, date){ return !!(DATA.skippedCells||{})[cellKey(owner,aid,date)]; }
 function isCellDismissed(owner, aid, date){ return !!(DATA.dismissedCells||{})[cellKey(owner,aid,date)]; }
+function getAiPlanKpn(owner, aid, date){ return (DATA.aiPlanKpn||{})[cellKey(owner,aid,date)] || ''; }
+function updateAiPlanKpn(owner, aid, date, value){
+  value = (value||'').trim();
+  if(!DATA.aiPlanKpn) DATA.aiPlanKpn = {};
+  const k = cellKey(owner,aid,date);
+  if(value==='') delete DATA.aiPlanKpn[k];
+  else DATA.aiPlanKpn[k] = value;
+  saveState();
+}
 function dismissCell(owner, aid, date){
   if(!DATA.dismissedCells) DATA.dismissedCells = {};
   DATA.dismissedCells[cellKey(owner,aid,date)] = true;
@@ -2225,7 +2253,36 @@ function renderScheduleView(){
     </div>
     <button class="btn secondary small" data-action="toggleSchedSort" title="정렬 방식 전환">${(DATA.scheduleSortMode||'date')==='date'?'📅 일정순':'🔢 번호순'}</button>
   </div>`;
-  return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
+  const body = toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
+  return `<div class="sched-layout">
+    <div class="sched-main">${body}</div>
+    <div class="sched-side">${renderAiPlanPanel(UI.owner)}</div>
+  </div>`;
+}
+
+/* 오른쪽 수정 계획 패널 — 스케줄상 'AI' 표시된 개체·날짜를 모아 KPN을 미리 기입해둘 수 있게 */
+function renderAiPlanPanel(owner){
+  const rows = scheduleRowsForOwner(owner).filter(r => (r.note||'').includes('AI'));
+  rows.sort((a,b)=>a.date.localeCompare(b.date)||a.aid.localeCompare(b.aid));
+  const today = todayStr();
+  let body = '';
+  if(!rows.length){
+    body = `<div class="empty-state small">예정된 AI(수정)가 없어요.</div>`;
+  } else {
+    body = rows.map(r => `<div class="aiplan-item ${r.date<today?'past':''}">
+        <div class="aiplan-info">
+          <span class="aiplan-date">${fmtShort(r.date)}</span>
+          <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
+        </div>
+        <input type="text" class="aiplan-kpn" placeholder="KPN" value="${esc(getAiPlanKpn(owner, r.aid, r.date))}"
+          data-owner="${esc(owner)}" data-aid="${esc(r.aid)}" data-date="${r.date}">
+      </div>`).join('');
+  }
+  return `<div class="aiplan-panel">
+    <div class="aiplan-title">🧬 수정 계획</div>
+    <div class="aiplan-sub">예정된 AI에 쓸 정액 KPN을 미리 적어두세요</div>
+    <div class="aiplan-list">${body}</div>
+  </div>`;
 }
 
 /* 한 축주의 스케줄 항목들을 날짜순으로 모음 (표/목록 공통 데이터) */
@@ -5331,7 +5388,7 @@ function renameOwnerTo(oldName, newName){
     const m = DATA[k]; if(!m || !(oldName in m)) return;
     m[newName] = m[oldName]; delete m[oldName];
   });
-  ['completedCells','skippedCells','dismissedCells'].forEach(k=>{  // 4) '축주|개체|날짜' 셀 키
+  ['completedCells','skippedCells','dismissedCells','aiPlanKpn'].forEach(k=>{  // 4) '축주|개체|날짜' 셀 키
     const m = DATA[k]; if(!m) return;
     Object.keys(m).forEach(key=>{
       if(key.indexOf(oldName+'|')===0){ m[newName+key.slice(oldName.length)] = m[key]; delete m[key]; }
@@ -6086,6 +6143,7 @@ function initEvents(){
   document.addEventListener('change', e=>{
     const t = e.target;
     if(t.matches && t.matches('.sched-cell input')){ if(!isAdmin()){ t.value = DATA.schedule.find(s=>s.owner===UI.owner&&s.animalId===t.dataset.aid&&s.date===t.dataset.date)?.note||''; return noAdminToast(); } updateScheduleCell(t.dataset.aid, t.dataset.date, t.value); }
+    else if(t.matches && t.matches('.aiplan-kpn')){ if(!isAdmin()){ t.value = getAiPlanKpn(t.dataset.owner, t.dataset.aid, t.dataset.date); return noAdminToast(); } updateAiPlanKpn(t.dataset.owner, t.dataset.aid, t.dataset.date, t.value); }
     else if(t.id==='dateFromInput'){ UI.dateFrom=t.value; renderMain(); }
     else if(t.id==='dateToInput'){ UI.dateTo=t.value; renderMain(); }
     else if(t.id==='calc_aiDate'){ actionCalcDateChange(t.value); }
