@@ -621,24 +621,18 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .sched-agenda{display:flex;flex-direction:column;gap:4px;}
 .sched-agenda .allsched-item{border:1px solid var(--line);}
 .sched-agenda .allsched-date{padding:12px 2px 4px;}
-.sched-layout{display:flex;align-items:flex-start;gap:16px;}
-.sched-main{flex:1;min-width:0;}
-.sched-side{width:270px;flex-shrink:0;}
-.aiplan-panel{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:14px 15px;position:sticky;top:8px;}
-.aiplan-title{font-size:13.5px;font-weight:800;color:var(--primary-dark);margin-bottom:2px;}
-.aiplan-sub{font-size:11px;color:var(--ink-soft);margin-bottom:12px;line-height:1.4;}
-.aiplan-list{display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow-y:auto;}
-.aiplan-item{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:9px;background:var(--surface-alt);}
+.aiplan-panel{max-width:640px;}
+.aiplan-title{font-size:16px;font-weight:800;color:var(--primary-dark);margin-bottom:2px;}
+.aiplan-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;line-height:1.4;}
+.aiplan-list{display:flex;flex-direction:column;gap:8px;}
+.aiplan-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border-radius:11px;background:var(--surface-alt);border:1px solid var(--line);}
 .aiplan-item.past{opacity:.55;}
-.aiplan-info{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-.aiplan-date{font-size:11.5px;font-weight:800;color:var(--ink);}
-.aiplan-kpn{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px 9px;font-size:13px;font-weight:700;background:var(--surface);color:var(--ink);}
-.empty-state.small{padding:16px 10px;font-size:12px;}
-@media (max-width:900px){
-  .sched-layout{flex-direction:column;}
-  .sched-side{width:100%;}
-  .aiplan-panel{position:static;}
-  .aiplan-list{max-height:none;}
+.aiplan-info{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.aiplan-date{font-size:12.5px;font-weight:800;color:var(--ink);}
+.aiplan-kpn{width:120px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:13.5px;font-weight:700;background:var(--surface);color:var(--ink);}
+@media (max-width:520px){
+  .aiplan-item{flex-direction:column;align-items:stretch;}
+  .aiplan-kpn{width:100%;}
 }
 
 /* 모바일: 스케줄 표 모드 압축 + 빠른코드 가로 스크롤 + 목록 줄바꿈 */
@@ -1563,7 +1557,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['vaccine','백신관리'],['schedule','스케줄']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['vaccine','백신관리'],['schedule','스케줄'],['aiplan','수정계획']];
   if(isAdmin()) tabs.unshift(['owner','농장정보']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
@@ -1670,6 +1664,7 @@ function renderMain(){
   else if(UI.view==='open') main.innerHTML = renderOpenView();
   else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
   else if(UI.view==='vaccine') main.innerHTML = renderVaccineView();
+  else if(UI.view==='aiplan') main.innerHTML = renderAiPlanPanel(UI.owner);
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
     const newList = document.getElementById('animalListBox');
@@ -2253,21 +2248,17 @@ function renderScheduleView(){
     </div>
     <button class="btn secondary small" data-action="toggleSchedSort" title="정렬 방식 전환">${(DATA.scheduleSortMode||'date')==='date'?'📅 일정순':'🔢 번호순'}</button>
   </div>`;
-  const body = toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
-  return `<div class="sched-layout">
-    <div class="sched-main">${body}</div>
-    <div class="sched-side">${renderAiPlanPanel(UI.owner)}</div>
-  </div>`;
+  return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
 }
 
-/* 오른쪽 수정 계획 패널 — 스케줄상 'AI' 표시된 개체·날짜를 모아 KPN을 미리 기입해둘 수 있게 */
+/* 수정 계획 탭 — 스케줄상 'AI' 표시된 개체·날짜를 모아 KPN을 미리 기입해둘 수 있게 */
 function renderAiPlanPanel(owner){
   const rows = scheduleRowsForOwner(owner).filter(r => (r.note||'').includes('AI'));
   rows.sort((a,b)=>a.date.localeCompare(b.date)||a.aid.localeCompare(b.aid));
   const today = todayStr();
   let body = '';
   if(!rows.length){
-    body = `<div class="empty-state small">예정된 AI(수정)가 없어요.</div>`;
+    body = `<div class="empty-state">예정된 AI(수정)가 없어요.</div>`;
   } else {
     body = rows.map(r => `<div class="aiplan-item ${r.date<today?'past':''}">
         <div class="aiplan-info">
