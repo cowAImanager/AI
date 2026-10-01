@@ -1059,7 +1059,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .namu-doc .rb-h{font-size:14.5px;font-weight:800;color:var(--ink);margin:17px 0 6px;}
 .namu-doc .rb-list{margin:5px 0 8px;padding-left:21px;}
 .namu-doc .rb-list li{font-size:13.5px;line-height:1.6;margin-bottom:3px;}
-.namu-doc ol.rb-list li{font-size:14.5px;line-height:1.7;margin-bottom:9px;}
+.namu-doc ol.rb-list li{font-size:14.5px;line-height:1.7;margin-bottom:4px;}
+.namu-doc ol.rb-list li.grp{margin-top:16px;}
 .namu-doc .rb-label{font-size:11px;padding:1px 8px;}
 .namu-doc .rb-intro{font-size:14px;line-height:1.78;padding:12px 15px;margin:8px 0 17px;}
 .namu-doc .rb-key{margin:10px 0;}
@@ -1093,6 +1094,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .namu-doc ol.rb-list{list-style:none;padding-left:0;margin:2px 0 8px;counter-reset:mer;}
   .namu-doc ol.rb-list li{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;font-size:15px;line-height:1.6;margin-bottom:15px;padding-left:0;color:var(--ink);letter-spacing:0;word-break:normal;overflow-wrap:break-word;counter-increment:mer;}
   .namu-doc ol.rb-list li::before{content:counter(mer) '. ';color:var(--ink-soft);font-weight:600;}
+  .namu-doc ol.rb-list li{margin-bottom:5px;}
+  .namu-doc ol.rb-list li.grp{margin-top:20px;}
   .namu-doc .rb-key li,.namu-doc .rb-key-concl,.namu-doc .rb-cc-b,.namu-doc .rb-intro{font-size:13px;line-height:1.62;}
   .namu-h2{font-size:16px;margin:18px 0 6px;padding-top:6px;padding-bottom:6px;}
   .namu-h3{font-size:13.5px;margin:14px 0 6px;}
@@ -1289,15 +1292,15 @@ function reproPhysHtml(){
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('dna',16)} 호르몬 — 발정주기·난포파</div>
 <div class="rb-block"><ol class="rb-list">
 <li>번식 호르몬은 화학적으로 세 갈래임. 스테로이드는 에스트라디올(E2)·프로게스테론(P4)·테스토스테론임. 펩티드·단백은 GnRH·LH·FSH·옥시토신·인히빈임. 지방산은 PGF2α임.</li>
-<li>번식은 하나의 되먹임 회로임. 시상하부가 GnRH를 pulse로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비함.</li>
+<li class="grp">번식은 하나의 되먹임 회로임. 시상하부가 GnRH를 pulse로 내보내면 뇌하수체 전엽이 LH와 FSH를 분비함.</li>
 <li>이 둘이 난소로 가서 난포를 키우고 배란시키며 E2와 P4를 만들게 함. 난소가 만든 스테로이드는 다시 위로 올라가 GnRH·LH 분비를 조절함.</li>
 <li>이 고리가 주기 내내 호르몬 농도를 출렁이게 만들고, 그 출렁임이 겉으로 드러난 것이 발정주기임.</li>
 <li>호르몬은 극미량으로 작동하므로 농도, 타이밍, 표적세포의 수용체 상태가 모두 맞아야 효과가 남. 제제를 분명히 줬는데 안 듣는 일이 흔한 이유가 여기 있음. 난포·황체·자궁 상태와 처치 타이밍이 어긋나면 같은 약도 안 들음.</li>
-<li>GnRH pulse를 만드는 pacemaker는 시상하부 궁상핵의 키스펩틴 신경세포임. 키스펩틴·뉴로키닌B·다이노르핀을 같이 내보내서 KNDy 뉴런이라 부름. 영양과 에너지 정보가 이 회로로 들어와 번식의 on/off를 결정함.</li>
+<li class="grp">GnRH pulse를 만드는 pacemaker는 시상하부 궁상핵의 키스펩틴 신경세포임. 키스펩틴·뉴로키닌B·다이노르핀을 같이 내보내서 KNDy 뉴런이라 부름. 영양과 에너지 정보가 이 회로로 들어와 번식의 on/off를 결정함.</li>
 <li>소가 굶으면 다이노르핀이 키스펩틴을 눌러 GnRH pulse가 줄고 번식이 멈춤.</li>
 <li>체지방이 늘면 렙틴이 오르고, 이게 역치를 넘어야 에너지가 충분하다는 신호가 되어 회로가 돎.</li>
 <li>어린 소의 사춘기 시점과 분만우의 발정 재개가 영양 상태에 좌우되는 이유임.</li>
-<li>이제 한 주기를 따라가 봄. 발정 당일이 0일, 평균 21일이고 실제로는 17~24일임.</li>
+<li class="grp">이제 한 주기를 따라가 봄. 발정 당일이 0일, 평균 21일이고 실제로는 17~24일임.</li>
 <li>FSH가 일시적으로 오르면 작은 난포 여러 개가 함께 자라기 시작함. 이것이 난포파의 출현임.</li>
 <li>난포 안에서는 두 세포가 일을 나눔. 바깥의 내협막세포는 LH 자극으로 콜레스테롤에서 안드로겐을 만들고, 안쪽의 과립막세포는 FSH 자극으로 그 안드로겐을 E2로 바꿈. FSH는 난포가 자라면서 과립막세포에 LH 수용체가 생기도록 도움. 그래서 E2를 충분히 만들려면 LH와 FSH가 협력해야 함.</li>
 <li>자라는 난포들이 내는 E2와 인히빈이 FSH를 낮춤. 첫 이틀은 작은 난포들의 인히빈 A가, 그 뒤로는 우성 난포의 E2가 주역임.</li>
@@ -1305,57 +1308,57 @@ function reproPhysHtml(){
 <li>우성 난포는 자라면서 FSH 의존성이 줄고 LH 의존성이 커짐. 8mm 무렵 과립막에 LH 수용체를 갖추는 것이 생존의 열쇠임. LH 수용체를 얻은 우성 난포만 FSH가 낮아져도 LH로 계속 자라며 E2를 분비함.</li>
 <li>우성 난포가 한물갈 무렵 FSH가 다시 올라와 다음 난포파 12~24시간 전에 정점을 침.</li>
 <li>기존 우성 난포를 GnRH로 배란시켜 치우면 12시간 안에 FSH가 튀고 24시간 안에 새 난포파가 나옴. 오브싱크 첫 GnRH의 원리임.</li>
-<li>배란이 끝나면 E2가 뚝 떨어지고, 빈 난포의 세포가 황체로 바뀌어 P4를 만들기 시작함. 배란 8일쯤 뒤 최고에 이름.</li>
+<li class="grp">배란이 끝나면 E2가 뚝 떨어지고, 빈 난포의 세포가 황체로 바뀌어 P4를 만들기 시작함. 배란 8일쯤 뒤 최고에 이름.</li>
 <li>P4는 임신 유지 호르몬이자 주기의 브레이크임.</li>
 <li>중추에서 P4는 LH pulse를 4~6시간에 한 번꼴로 눌러 둠. 평균 LH가 낮게 깔려 우성 난포가 끝까지 성숙하지 못하고 배란도 못 함.</li>
 <li>동시에 E2의 양성 되먹임을 차단하므로 황체기에는 E2가 높아도 LH surge가 안 터짐.</li>
 <li>이 억제는 용량 의존적임. P4가 어중간하게 낮으면 LH 억제가 풀려 우성 난포가 멈추지도 배란하지도 못한 채 계속 자라 낭종이 됨.</li>
-<li>자궁에서 P4는 자궁근 수축을 억제해 임신 내내 자궁을 잠재워 둠. 분만이 다가와 P4가 떨어지면 브레이크가 풀림.</li>
+<li class="grp">자궁에서 P4는 자궁근 수축을 억제해 임신 내내 자궁을 잠재워 둠. 분만이 다가와 P4가 떨어지면 브레이크가 풀림.</li>
 <li>또 자궁내막 분비선을 자극해 자궁유를 내어 착상 전 배아를 먹임. 수정 후 초기 P4가 높을수록 영양막이 잘 자라고 인터페론 타우가 늘어 수태율이 오름.</li>
 <li>소는 약 200일까지 황체가 P4를 책임지므로 초기 임신은 전적으로 황체에 달려 있음.</li>
 <li>혈중 P4는 황체 크기와 잘 비례함. 직장검사·초음파에서 황체 크기로 P4를 가늠하는 근거임.</li>
-<li>주기 16~17일경 자궁내막의 옥시토신 수용체가 늘어남. E2가 이 수용체 수를 미리 늘려 황체용해를 준비시킴.</li>
+<li class="grp">주기 16~17일경 자궁내막의 옥시토신 수용체가 늘어남. E2가 이 수용체 수를 미리 늘려 황체용해를 준비시킴.</li>
 <li>옥시토신이 여기 결합하면 자궁내막에서 PGF2α가 pulse로 터짐.</li>
 <li>PGF2α는 자궁정맥에서 난소동맥으로 직접 넘어가는 국소 역류 경로로 고농도가 되어 황체를 무너뜨림.</li>
 <li>임신이 성립하려면 바로 이 PGF2α 분비를 막아야 함.</li>
-<li>황체용해로 P4가 떨어지면 누르고 있던 뚜껑이 열림. LH pulse가 시간당 한 번 이상으로 잦아짐.</li>
+<li class="grp">황체용해로 P4가 떨어지면 누르고 있던 뚜껑이 열림. LH pulse가 시간당 한 번 이상으로 잦아짐.</li>
 <li>잦아진 pulse가 우성 난포를 성숙시켜 E2를 끌어올림. 이 pulse 빈도의 변화가 발정주기를 굴리는 핵심 스위치임.</li>
 <li>E2가 낮거나 중간일 때는 음성 되먹임으로 GnRH·LH pulse를 눌러 둠. 이 억제는 궁상핵의 KNDy 회로에서 일어남.</li>
 <li>우성 난포가 자라 E2가 역치를 넘고 그 고농도가 반나절 이상 지속되면 되먹임의 부호가 뒤집힘.</li>
-<li>양성 되먹임은 전시각교차전핵(AVPV)의 키스펩틴 뉴런이 활성화되며 일어남. 같은 E2가 작용 부위에 따라 정반대 결과를 냄.</li>
+<li class="grp">양성 되먹임은 전시각교차전핵(AVPV)의 키스펩틴 뉴런이 활성화되며 일어남. 같은 E2가 작용 부위에 따라 정반대 결과를 냄.</li>
 <li>GnRH가 대량 방출되고 LH surge가 터짐. 단, 이 양성 되먹임은 P4가 낮게 깔려 있어야 작동함.</li>
-<li>그런데 P4는 높을 때 surge를 막기만 하는 게 아님. 황체기 동안 P4에 한동안 노출돼 AVPV 회로가 미리 길들여져 있어야, 나중에 P4가 빠졌을 때 비로소 surge가 터짐. 이것이 priming임.</li>
+<li class="grp">그런데 P4는 높을 때 surge를 막기만 하는 게 아님. 황체기 동안 P4에 한동안 노출돼 AVPV 회로가 미리 길들여져 있어야, 나중에 P4가 빠졌을 때 비로소 surge가 터짐. 이것이 priming임.</li>
 <li>즉 surge에는 P4가 깔렸다가 빠지는 두 박자가 필요함.</li>
 <li>사춘기 전 미경산우는 P4를 겪은 적이 없어 priming이 안 됨. E2를 만들어도 자발 배란을 못 함.</li>
 <li>난포낭종은 황체가 안 생겨 P4가 쭉 낮으니 priming이 빠짐. E2가 있어도 surge가 불발되고 난포가 계속 커짐.</li>
 <li>빠진 priming을 질내 P4 제제로 채우는 것이 사춘기 유도와 낭종 치료임.</li>
 <li>동기화는 P4를 넣었다 빼며 이 두 박자를 인위로 재현하는 것임.</li>
-<li>우성 난포의 E2가 발정 행동을 일으키며 발정 개시 시점에 최고조에 이름.</li>
+<li class="grp">우성 난포의 E2가 발정 행동을 일으키며 발정 개시 시점에 최고조에 이름.</li>
 <li>E2가 발정 12~18시간 전에 역치를 넘으면 GnRH surge가 터지고 LH surge가 따라옴. LH surge의 시작은 대개 발정 시작과 맞물림.</li>
 <li>자연발정에서는 발정 시작 24~30시간 후, GnRH로 유도하면 약 30시간 후에 배란함. 인공수정 적기를 따질 때 이 30시간이 기준점임.</li>
 <li>발정우는 저P4·고E2라 자궁의 옥시토신 감수성이 올라가 있음. 직장검사로 만지면 자궁이 꽉 수축하거나 milk let-down이 비치는 반면 황체우는 그렇지 않은 이유임.</li>
 <li>배란이 끝나면 다시 황체기로 돌아감. 임신이 되면 PGF2α가 막혀 황체가 유지되고, 안 되면 16~17일에 다시 황체용해가 옴.</li>
-<li>LH를 한 줄로 정리하면 pulse는 성장, surge는 배란임.</li>
+<li class="grp">LH를 한 줄로 정리하면 pulse는 성장, surge는 배란임.</li>
 <li>pulse 빈도는 P4가 쥐고 있음. P4 하강 → pulse 빈도 상승 → 우성 난포 성숙 → E2 상승 → 시상하부 감지 → surge → 배란.</li>
 <li>거꾸로 황체기엔 P4 상승 → pulse 빈도 저하 → 우성 난포 성숙 차단 → surge 차단.</li>
-<li>결국 P4가 LH pulse 빈도라는 손잡이로 언제 난포를 익히고 언제 배란시킬지를 조절하는 셈임.</li>
+<li class="grp">결국 P4가 LH pulse 빈도라는 손잡이로 언제 난포를 익히고 언제 배란시킬지를 조절하는 셈임.</li>
 <li>21일은 평균값임. 미수정우는 18~24일, 미경산우는 19~20일로 짧고 고산차 경산우는 22~23일로 긴 경향이 있음. 같은 소도 매번 1~2일씩 달라짐.</li>
-<li>현대 고능력 착유우는 평균보다 하루 정도 길어졌을 가능성이 있어 수정우는 25~26일까지 재발정을 확인함.</li>
+<li class="grp">현대 고능력 착유우는 평균보다 하루 정도 길어졌을 가능성이 있어 수정우는 25~26일까지 재발정을 확인함.</li>
 <li>제제는 이 회로의 특정 지점을 건드리는 것임.</li>
 <li>GnRH는 surge를 대신 터뜨림. 투여 24~32시간(평균 28~30시간) 후 배란하고, 동시에 난포 모집이 일어나 평균 2일 후(3~5일 내) 새 난포파가 뜸.</li>
 <li>PGF2α는 황체용해를 앞당김. 투여 12~24시간 후 황체용해, 24시간 후 P4 최저점, 48~72시간 후 발정. 전체적으로 투여 후 3~5일에 발정이 옴.</li>
 <li>질내 P4 제제는 황체기를 인위로 만듦. 넣어 두는 동안 LH pulse를 눌러 발정을 막고 priming을 채우며, 제거 2~4일 후 발정이 옴.</li>
-<li>주기 흐름 바깥에 있는 호르몬 넷을 따로 봄.</li>
+<li class="grp">주기 흐름 바깥에 있는 호르몬 넷을 따로 봄.</li>
 <li>옥시토신은 시상하부 실방핵·시삭상핵에서 만들어져 뇌하수체 후엽에 저장됐다가 유두 자극이나 자궁·자궁경관의 기계적 자극에 반응해 방출됨.</li>
 <li>대표 작용은 평활근 수축임. 유선포를 감싼 근상피세포를 수축시켜 고인 유즙을 짜내는 milk let-down을 일으킴. 생산은 프로락틴, 내보내기는 옥시토신임.</li>
 <li>자궁에서는 분만 진통·태아 만출·태반 배출을 돕고 교배 후 정자의 자궁→난관 수송도 거듦. 자궁 감수성은 E2가 높으면 오르고 P4가 높으면 내림.</li>
-<li>인히빈은 우성 난포의 과립막세포에서 나와 FSH를 억제함. 난포파 초기엔 작은 난포들의 인히빈 A가, 이후엔 우성 난포의 E2가 FSH를 누름.</li>
-<li>AMH는 전포상·초기 포상난포의 과립막세포에서 나오는 TGF-β 계열 호르몬임. 원래는 배아 발생기에 뮬러관 형성을 억제하는 호르몬임.</li>
+<li class="grp">인히빈은 우성 난포의 과립막세포에서 나와 FSH를 억제함. 난포파 초기엔 작은 난포들의 인히빈 A가, 이후엔 우성 난포의 E2가 FSH를 누름.</li>
+<li class="grp">AMH는 전포상·초기 포상난포의 과립막세포에서 나오는 TGF-β 계열 호르몬임. 원래는 배아 발생기에 뮬러관 형성을 억제하는 호르몬임.</li>
 <li>임상에서는 혈중 AMH가 난소의 포상난포 수를 그대로 반영한다는 점을 씀. 주기 단계에 거의 영향이 없어 아무 때나 한 번 채혈해도 난소 예비능을 안정적으로 가늠함.</li>
 <li>AMH가 높을수록 과배란 반응이 좋아 회수 난자·수정란 수가 많음. 채란 시 황체 15개 초과 기대 컷오프가 약 123.5 pg/mL임. 공란우 선발에 씀.</li>
 <li>생후 11~15개월에 AMH가 낮은 소는 초산 이후 도태율이 높고 산유량도 낮은 경향이 있어 선발 지표로도 검토됨.</li>
 <li>다만 너무 높아도 마냥 좋지는 않고 사양·영양·혈통에 따라 반응이 달라 AMH 하나로 단정하긴 어려움.</li>
-<li>프로락틴은 뇌하수체 전엽 락토트로프에서 나오고 도파민이 억제, TRH·VIP가 촉진함.</li>
+<li class="grp">프로락틴은 뇌하수체 전엽 락토트로프에서 나오고 도파민이 억제, TRH·VIP가 촉진함.</li>
 <li>E2·P4·성장호르몬·갑상선·부신피질 호르몬과 협동해 유선을 발육시키고 유즙 생산을 자극함.</li>
 <li>분만을 전후한 하루 동안 혈중 프로락틴이 한 번 크게 솟았다가 내려옴. 이 급등을 막아 버리면 그 뒤 젖이 잘 안 나오기 때문에, 이 급등이 젖 생산을 시작하라는 신호로 여겨짐.</li>
 <li>개, 고양이, 설치류에서는 프로락틴이 황체를 유지해 주지만 소는 다름. 소에서 프로락틴을 억제해 봐도 LH, P4, 황체기 길이, 발정기 E2 어느 것도 변하지 않음. 소의 발정주기에 프로락틴은 관여하지 않는다고 봄.</li>
