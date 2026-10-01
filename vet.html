@@ -2354,6 +2354,15 @@ function namuToggle(h){
   }
 }
 let VETEDITS = {}, _vetLoaded = false, _vetLoading = false;
+/* KPN 후대성적: 기본 데이터(KPN_DATA.DB) 위에 웹에서 고친 값(VETEDITS.__kpn__)을 덮어쓴다 */
+function kpnApplyEdits(){
+  var D=window.KPN_DATA; if(!D||!D.DB) return;
+  if(!window.__KPN_BASE_DB) window.__KPN_BASE_DB=JSON.parse(JSON.stringify(D.DB));
+  var db=JSON.parse(JSON.stringify(window.__KPN_BASE_DB));
+  var ed=(VETEDITS&&VETEDITS.__kpn__&&typeof VETEDITS.__kpn__==='object')?VETEDITS.__kpn__:{};
+  Object.keys(ed).forEach(function(k){ if(ed[k]===null) delete db[k]; else if(Array.isArray(ed[k])&&ed[k].length>=9) db[k]=ed[k]; });
+  D.DB=db;
+}
 async function vetEditsEnsure(){
   if(_vetLoaded || _vetLoading) return;
   if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length) return;
@@ -2363,6 +2372,7 @@ async function vetEditsEnsure(){
     const snap = await db.collection('library').doc('vetEdits').get();
     VETEDITS = (snap.exists && snap.data() && snap.data().data) ? (JSON.parse(snap.data().data)||{}) : {};
     _vetLoaded = true;
+    try{ kpnApplyEdits(); }catch(e){ console.warn('KPN 수정값 적용 실패', e); }
   }catch(e){ console.warn('vetEdits load 실패', e); }
   _vetLoading = false;
   if(typeof UI!=='undefined' && UI.vetMode){ try{ renderVet(); }catch(e){} }
@@ -2837,10 +2847,165 @@ window.KPN_DATA={"COEF":[[1.5356,435.725],[1.4478,92.1],[0.8448,13.043],[0.9956,
     if(vb)vb.addEventListener('click',function(){var v=box.querySelector('#kpnVal');
       if(v.style.display==='none'){renderVal(box);v.style.display='block';vb.textContent='📊 예측 검증 로그 닫기';}
       else{v.style.display='none';vb.textContent='📊 예측 검증 로그 보기 (실측 있는 소 전체)';}});
+    if(window.__kpnEditInit) window.__kpnEditInit(box);
     render(box);
     var f0=box.querySelector('.kpnIn');if(f0)f0.focus();
   };
+  window.__kpnRerender=function(box){
+    render(box); renderFavBar(box);
+    var vv=box.querySelector('#kpnVal'); if(vv&&vv.style.display!=='none') renderVal(box);
+  };
 })();
+/* ===== KPN 후대성적 수정 (주인 로그인 상태에서만) =====
+   기본 데이터 위에 고친 값을 덮어쓰고, 고친 값은 vetEdits 문서의 __kpn__ 항목에 저장한다. */
+(function(){
+  var NM=['도체중','등심단면적','등지방두께','근내지방도'], UN=['kg','cm²','mm','점'];
+  function adm(){ return (typeof isAdmin==='function') && isAdmin(); }
+  function num(s){ s=String(s==null?'':s).trim().replace(/,/g,''); if(s===''||s==='-') return null; var x=Number(s); return isFinite(x)?x:NaN; }
+  function db(){ return window.KPN_DATA.DB; }
+  function base(){ return window.__KPN_BASE_DB||db(); }
+  function eds(create){
+    if(!VETEDITS||typeof VETEDITS!=='object') return {};
+    if(!VETEDITS.__kpn__||typeof VETEDITS.__kpn__!=='object'||Array.isArray(VETEDITS.__kpn__)){ if(!create) return {}; VETEDITS.__kpn__={}; }
+    return VETEDITS.__kpn__;
+  }
+  function gradeOf(i,v){ var c=window.KPN_DATA.CUT[i]; if(c==null||isNaN(v)) return '-';
+    if(c[3]===1) return v>=c[0]?'A':(v>=c[1]?'B':(v>=c[2]?'C':'D')); return v<=c[0]?'A':(v<=c[1]?'B':(v<=c[2]?'C':'D')); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function sameRec(a,b){ return JSON.stringify(a)===JSON.stringify(b); }
+  var INP='width:100%;box-sizing:border-box;padding:8px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;font-family:inherit;';
+  var LBL='display:block;font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:3px;';
+  var BTN='font-family:inherit;font-size:12.5px;font-weight:800;border-radius:8px;padding:9px 13px;cursor:pointer;border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);';
+
+  window.__kpnEditInit=function(box){
+    var wrap=box.firstElementChild; if(!wrap||!adm()) return;
+    var old=box.querySelector('#kpnEd'); if(old) old.remove();
+    function f4(prefix,labels,units){ return [0,1,2,3].map(function(i){ return '<div><label style="'+LBL+'">'+labels[i]+' ('+units[i]+')</label><input id="'+prefix+i+'" inputmode="decimal" style="'+INP+'"></div>'; }).join(''); }
+    wrap.insertAdjacentHTML('beforeend',
+      '<div id="kpnEd" style="margin-top:18px;border-top:1px solid var(--line);padding-top:12px;">'+
+      '<button type="button" id="kedTog" style="'+BTN+'">✏️ 후대성적 수정</button>'+
+      '<div id="kedBody" style="display:none;margin-top:12px;">'+
+        '<div style="font-size:11px;color:var(--ink-soft);line-height:1.6;background:var(--surface-alt);border-radius:8px;padding:9px 11px;margin-bottom:10px;">※ 후대성적을 고치면 <b>실측 표시·저평가 판정·검증 로그</b>에 바로 반영됩니다. 예측값(EPD로 계산하는 큰 숫자)과 부·외조부 계통 보정은 그대로입니다. 계수는 맨 아래 "데이터 내려받기"로 받은 파일을 보내서 다시 맞춥니다.</div>'+
+        '<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;"><div style="flex:1;max-width:180px;"><label style="'+LBL+'">KPN</label><input id="kedK" inputmode="numeric" placeholder="예: 1864" style="'+INP+'font-weight:800;"></div><button type="button" id="kedLoad" style="'+BTN+'">불러오기</button></div>'+
+        '<div id="kedStat" style="font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px;">KPN을 넣고 불러오기를 누르세요. DB에 없는 번호는 새로 추가됩니다.</div>'+
+        '<div style="font-size:11.5px;font-weight:800;color:var(--primary-dark);margin:6px 0;">후대성적</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;"><div><label style="'+LBL+'">후대두수 (두)</label><input id="kedN" inputmode="numeric" style="'+INP+'"></div>'+f4('kedA',NM.map(function(x){return '실측 '+x;}),UN)+'</div>'+
+        '<div style="font-size:10.5px;color:var(--ink-soft);margin:4px 0 8px;">실측 네 칸을 모두 비우면 "후대 없음"으로 저장됩니다. 일부만 채우면 저장되지 않습니다.</div>'+
+        '<details style="margin:6px 0 10px;"><summary style="font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;">EPD·계통 정보 (새 KPN은 EPD 필수)</summary>'+
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:8px;">'+f4('kedE',NM.map(function(x){return 'EPD '+x;}),UN)+
+          '<div><label style="'+LBL+'">부 KPN</label><input id="kedFa" inputmode="numeric" style="'+INP+'"></div><div><label style="'+LBL+'">외조부 KPN</label><input id="kedMg" inputmode="numeric" style="'+INP+'"></div>'+
+          '<div><label style="'+LBL+'">등급 (예: AAAA)</label><input id="kedG" maxlength="4" style="'+INP+'text-transform:uppercase;"></div></div></details>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;"><button type="button" id="kedSave" style="'+BTN+'background:var(--primary);color:#fff;border-color:var(--primary);">저장</button>'+
+          '<button type="button" id="kedRevert" style="'+BTN+'">원본으로 되돌리기</button><button type="button" id="kedDel" style="'+BTN+'color:var(--notpregnant-bg,#C0392B);">삭제</button></div>'+
+        '<div style="font-size:11.5px;font-weight:800;color:var(--primary-dark);margin:16px 0 6px;">일괄 붙여넣기 (후대성적만)</div>'+
+        '<textarea id="kedBulk" rows="5" placeholder="한 줄에 하나: KPN 후대두수 도체중 등심단면적 등지방 근내지방도&#10;예) 1864 30 561.2 105.4 14.8 6.9" style="'+INP+'font-family:inherit;line-height:1.5;"></textarea>'+
+        '<div style="font-size:10.5px;color:var(--ink-soft);margin:4px 0 8px;">엑셀에서 복사해 붙여넣어도 됩니다(탭·쉼표·공백 구분). DB에 있는 KPN만 바뀝니다. 없는 KPN은 위에서 EPD와 함께 추가하세요.</div>'+
+        '<button type="button" id="kedBulkGo" style="'+BTN+'">일괄 반영</button><div id="kedBulkRes" style="font-size:11.5px;line-height:1.6;margin-top:8px;"></div>'+
+        '<div style="font-size:11.5px;font-weight:800;color:var(--primary-dark);margin:18px 0 6px;">데이터 내려받기</div>'+
+        '<button type="button" id="kedExport" style="'+BTN+'">현재 데이터 내려받기 (JSON)</button>'+
+        '<div style="font-size:10.5px;color:var(--ink-soft);margin-top:4px;">웹에서 고친 값이 모두 반영된 전체 데이터입니다. 계수를 다시 맞출 때 이 파일을 보내주세요.</div>'+
+      '</div></div>');
+    var $=function(id){ return box.querySelector('#'+id); };
+    var cur=null;   // 현재 불러온 KPN 문자열
+    function setStat(h){ $('kedStat').innerHTML=h; }
+    function fill(k){
+      var r=db()[k], has=!!r;
+      $('kedN').value=has?r[4]:''; for(var i=0;i<4;i++){ $('kedA'+i).value=(has&&r[8])?r[8][i]:''; $('kedE'+i).value=has?r[i]:''; }
+      $('kedFa').value=(has&&r[5]!=null)?r[5]:''; $('kedMg').value=(has&&r[6]!=null)?r[6]:''; $('kedG').value=has?(r[7]||''):'';
+      var b=base()[k], e=eds()[k], note='';
+      if(!has && b && e===null) note='원본에는 있으나 삭제된 상태입니다. 저장하면 다시 살아납니다.';
+      else if(!has) note='DB에 없는 번호입니다. 새로 추가하려면 EPD(네 칸)까지 채워서 저장하세요.';
+      else if(e!==undefined&&e!==null) note='웹에서 수정한 값입니다.'+(b?' 원본: 후대 '+b[4]+'두'+(b[8]?' · 실측 '+b[8].join(' / '):' · 실측 없음'):' (원본에 없던 새 KPN)');
+      else note='원본 값입니다.';
+      setStat('<b>KPN'+esc(k)+'</b> · '+note);
+    }
+    async function persist(snapshot,doneMsg){
+      if(!_vetLoaded){ toast('저장된 내용을 불러오는 중이에요. 잠시 후 다시 시도해주세요.'); VETEDITS.__kpn__=snapshot; return false; }
+      var ok=await vetEditsSave();
+      if(!ok){ VETEDITS.__kpn__=snapshot; kpnApplyEdits(); if(window.__kpnRerender) window.__kpnRerender(box); return false; }
+      kpnApplyEdits(); if(window.__kpnRerender) window.__kpnRerender(box);
+      if(doneMsg) toast(doneMsg);
+      return true;
+    }
+    function snap(){ var e=VETEDITS.__kpn__; return e?JSON.parse(JSON.stringify(e)):undefined; }
+    $('kedTog').addEventListener('click',function(){ var b=$('kedBody'); b.style.display=(b.style.display==='none')?'block':'none'; });
+    $('kedLoad').addEventListener('click',function(){
+      var k=String(parseInt($('kedK').value,10)); if(k==='NaN'){ toast('KPN 숫자를 넣어주세요.'); return; }
+      cur=k; fill(k);
+    });
+    $('kedK').addEventListener('keydown',function(e){ if(e.key==='Enter') $('kedLoad').click(); });
+    $('kedSave').addEventListener('click',async function(){
+      var k=String(parseInt($('kedK').value,10)); if(k==='NaN'){ toast('KPN 숫자를 넣어주세요.'); return; }
+      var old=db()[k], isNew=!old;
+      var n=num($('kedN').value); if(n===null||isNaN(n)||n<0||Math.floor(n)!==n){ toast('후대두수는 0 이상의 정수로 넣어주세요.'); return; }
+      var a=[0,1,2,3].map(function(i){ return num($('kedA'+i).value); });
+      var aBlank=a.every(function(x){ return x===null; }), aFull=a.every(function(x){ return x!==null&&!isNaN(x); });
+      if(!aBlank&&!aFull){ toast('실측은 네 칸을 모두 채우거나 모두 비워주세요.'); return; }
+      var epd=[0,1,2,3].map(function(i){ return num($('kedE'+i).value); });
+      if(epd.some(function(x){ return x===null||isNaN(x); })){
+        if(isNew){ toast('새 KPN은 EPD 네 칸을 모두 넣어야 해요. (EPD·계통 정보를 펼쳐주세요)'); return; }
+        toast('EPD 칸에 숫자가 아닌 값이 있어요.'); return;
+      }
+      function ik(id){ var s=$(id).value.trim(); if(s==='') return null; var x=parseInt(s,10); return isNaN(x)?undefined:x; }
+      var fa=ik('kedFa'), mg=ik('kedMg'); if(fa===undefined||mg===undefined){ toast('부·외조부 KPN은 숫자로 넣어주세요.'); return; }
+      var g=$('kedG').value.trim().toUpperCase();
+      if(g===''){ g=(old&&old[7]&&sameRec(old.slice(0,4),epd))?old[7]:[0,1,2,3].map(function(i){ return gradeOf(i,epd[i]); }).join(''); }
+      if(!/^[ABCD-]{4}$/.test(g)){ toast('등급은 A·B·C·D 네 글자로 넣어주세요. (예: AAAA)'); return; }
+      var rec=[epd[0],epd[1],epd[2],epd[3],n,fa,mg,g,aFull?a:null];
+      var s0=snap(), e=eds(true), b=base()[k];
+      if(b&&sameRec(b,rec)) delete e[k]; else e[k]=rec;
+      cur=k;
+      if(await persist(s0,'KPN'+k+' 저장했어요.')) fill(k);
+    });
+    $('kedRevert').addEventListener('click',async function(){
+      var k=String(parseInt($('kedK').value,10)); if(k==='NaN'){ toast('KPN 숫자를 넣어주세요.'); return; }
+      var e=eds(); if(e[k]===undefined){ toast('웹에서 수정한 내역이 없어요.'); return; }
+      var s0=snap(); delete eds(true)[k];
+      if(await persist(s0,'KPN'+k+' 원본으로 되돌렸어요.')) fill(k);
+    });
+    $('kedDel').addEventListener('click',async function(){
+      var k=String(parseInt($('kedK').value,10)); if(k==='NaN'){ toast('KPN 숫자를 넣어주세요.'); return; }
+      if(!db()[k]){ toast('DB에 없는 KPN이에요.'); return; }
+      if(!confirm('KPN'+k+'을(를) 목록에서 삭제할까요? (원본으로 되돌리기로 다시 살릴 수 있어요)')) return;
+      var s0=snap(), e=eds(true);
+      if(base()[k]) e[k]=null; else delete e[k];
+      if(await persist(s0,'KPN'+k+' 삭제했어요.')) fill(k);
+    });
+    $('kedExport').addEventListener('click',function(){
+      try{
+        var d=new Date(), p2=function(x){ return ('0'+x).slice(-2); }, ymd=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate());
+        var out={exported:d.toISOString(),edited:Object.keys(eds()).length,
+          format:'DB: KPN -> [EPD도체중, EPD등심단면적, EPD등지방, EPD근내지방도, 후대두수, 부KPN, 외조부KPN, 등급, 실측[도체중,등심단면적,등지방,근내지방도] 또는 null]',DB:db()};
+        var blob=new Blob([JSON.stringify(out)],{type:'application/json'});
+        var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='kpn_db_'+ymd+'.json';
+        document.body.appendChild(a); a.click(); setTimeout(function(){ try{ URL.revokeObjectURL(a.href); }catch(e){} a.remove(); },800);
+        toast('kpn_db_'+ymd+'.json 을 내려받았어요.');
+      }catch(e){ console.warn('내려받기 실패',e); toast('내려받지 못했어요.'); }
+    });
+    $('kedBulkGo').addEventListener('click',async function(){
+      var lines=$('kedBulk').value.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+      if(!lines.length){ toast('붙여넣을 내용이 없어요.'); return; }
+      var s0=snap(), e=eds(true), ok=[], miss=[], bad=[], same=0;
+      lines.forEach(function(line,li){
+        var t=line.split(/[\t, ]+/).filter(function(x){ return x!==''; });
+        if(t.length>0 && isNaN(Number(t[0].replace(/,/g,'')))) { if(li===0) return; }   // 머리글 줄은 건너뜀
+        if(t.length<6){ bad.push(line); return; }
+        var k=String(parseInt(t[0],10)), v=t.slice(1,6).map(num);
+        if(k==='NaN'||v.some(function(x){ return x===null||isNaN(x); })||v[0]<0||Math.floor(v[0])!==v[0]){ bad.push(line); return; }
+        var r=db()[k]; if(!r){ miss.push(k); return; }
+        var rec=r.slice(); rec[4]=v[0]; rec[8]=[v[1],v[2],v[3],v[4]];
+        if(sameRec(r,rec)){ same++; return; }
+        var b=base()[k]; if(b&&sameRec(b,rec)) delete e[k]; else e[k]=rec;
+        ok.push(k);
+      });
+      var res='<b>'+ok.length+'건 반영</b>'+(same?' · 변화 없음 '+same+'건':'')+(miss.length?'<br>DB에 없는 KPN '+miss.length+'건: '+esc(miss.join(', ')):'')+(bad.length?'<br>형식이 맞지 않는 줄 '+bad.length+'건: '+esc(bad.slice(0,5).join(' | '))+(bad.length>5?' …':''):'');
+      if(!ok.length){ $('kedBulkRes').innerHTML=res; return; }
+      if(await persist(s0,ok.length+'건 반영했어요.')){ $('kedBulkRes').innerHTML=res; $('kedBulk').value=''; }
+      else VETEDITS.__kpn__=s0;
+    });
+  };
+})();
+
 </script>
 <script>showEntryGate(init);</script>
 </body></html>
