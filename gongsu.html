@@ -1143,6 +1143,27 @@ html[data-theme="dark"] mark.hl{background:rgba(255,224,102,.22);color:inherit;}
 .fm-note{font-size:13.5px;color:var(--ink-soft);margin:10px 2px 12px;line-height:1.5;}
 .fm-foot{margin:18px 2px 6px;}
 .fm-up{display:inline-block;font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;background:var(--surface);}
+
+/* 방역 동선 */
+.rt-ctl{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px;}
+.rt-ctl label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--ink-soft);}
+.rt-ctl select{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);}
+.rt-day{margin:12px 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
+.rt-dh{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--surface-alt);border-bottom:1px solid var(--line);}
+.rt-dh b{font-size:15px;color:var(--primary-dark);}
+.rt-dh span{font-size:12px;color:var(--ink-soft);}
+.rt-vh{display:flex;align-items:baseline;gap:8px;padding:8px 12px 4px;border-top:1px solid var(--line);}
+.rt-day .rt-dh+.rt-vh{border-top:none;}
+.rt-vh b{font-size:14px;}
+.rt-vh span{font-size:11.5px;color:var(--ink-soft);}
+.rt-vh a{margin-left:auto;font-size:11.5px;color:var(--primary-dark);text-decoration:none;}
+.rt-row{display:flex;gap:9px;padding:7px 12px;align-items:flex-start;}
+.rt-n{flex:0 0 24px;height:24px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--line);font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);margin-top:1px;}
+.rt-main{flex:1;min-width:0;}
+.rt-l1{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:14px;}
+.rt-tel{font-size:13px;color:var(--primary-dark);text-decoration:none;white-space:nowrap;}
+.rt-l2{font-size:12px;color:var(--ink-soft);line-height:1.5;}
+.rt-l2 a{margin-left:8px;color:var(--primary-dark);text-decoration:none;font-weight:700;}
 </style></head>
 <body><div class="app" id="app"></div>
 <script>
@@ -1162,7 +1183,7 @@ let DATA = {"theme": "light", "kpnFav": ["1838", "1657", "1642", "1849", "1523",
 try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)||'null');
   if(saved) DATA = {theme:saved.theme==='dark'?'dark':'light',kpnFav:Array.isArray(saved.kpnFav)?saved.kpnFav:DATA.kpnFav};
 } catch(e) { console.warn('수의학 설정 불러오기 실패',e); }
-const TABS = [['blood','채혈'],['farms','달성군 농장 목록']];
+const TABS = [['blood','채혈'],['farms','달성군 농장 목록'],['route','방역 동선']];
 function currentTab(){ const tab=location.hash.slice(1); return TABS.some(t=>t[0]===tab)?tab:'blood'; }
 const UI = {vetMode:true,vetTab:currentTab()};
 let _isOwner = false;
@@ -1305,7 +1326,7 @@ async function farmsLoad(){
     else _farmsMissing=true;
   }catch(e){ console.warn('농장 목록 불러오기 실패',e); _farmsError=true; }
   _farmsLoading=false;
-  if(UI.vetTab==='farms' && farmsBox()) farmsMount(farmsBox());
+  var _b=farmsBox(); if(_b){ if(UI.vetTab==='farms') farmsMount(_b); else if(UI.vetTab==='route') routeMount(_b); }
 }
 async function farmsImportText(text){
   var rows;
@@ -1376,6 +1397,98 @@ function farmsMount(box){
   box.querySelector('#fmClr').addEventListener('click',function(){ inp.value=''; farmsDraw(box); inp.focus(); });
   farmsBindUpload(box); farmsDraw(box);
 }
+
+/* 방역 동선: 유가읍·현풍읍 농장을 마을(리) 단위 최단 순환 경로 순서로 나열한다. 농장 데이터는 농장 목록과 같은 Firestore 문서를 쓴다.
+   아래 숫자는 마을 중심 사이 직선거리에 1.3을 곱한 추정 km(다음 마을까지)이며 좌표는 담지 않는다. */
+const ROUTE_LOOP=[['유가읍','도의리',4.5],['현풍읍','대리',1.6],['현풍읍','지리',2.6],['현풍읍','오산리',3.1],['현풍읍','원교리',4.8],['유가읍','쌍계리',2.2],['유가읍','초곡리',3.3],['유가읍','양리',3.2],['유가읍','음리',2.0],['유가읍','용리',3.9],['유가읍','유곡리',4.4],['유가읍','본말리',3.7],['유가읍','한정리',2.1]];
+let RT={start:'도의리',n:22};
+function routeLotKey(rest){
+  var m=String(rest||'').match(/(산)?\s*(\d+)(?:-(\d+))?/);
+  if(!m) return [1e9,0];
+  return [(m[1]?100000:0)+parseInt(m[2],10), m[3]?parseInt(m[3],10):0];
+}
+function routeBuild(){
+  var groups={};
+  FARMS.forEach(function(f){
+    var m=f.a.match(/달성군 (유가읍|현풍읍) (\S+리) ?(.*)$/); if(!m) return;
+    var k=m[1]+'|'+m[2]; (groups[k]=groups[k]||[]).push({f:f,key:routeLotKey(m[3])});
+  });
+  var total=0; Object.keys(groups).forEach(function(k){ total+=groups[k].length; });
+  var si=ROUTE_LOOP.findIndex(function(v){ return v[1]===RT.start; }); if(si<0) si=0;
+  var rot=ROUTE_LOOP.slice(si).concat(ROUTE_LOOP.slice(0,si));
+  var vills=[];
+  rot.forEach(function(v,i){
+    var arr=groups[v[0]+'|'+v[1]]; delete groups[v[0]+'|'+v[1]];
+    if(!arr||!arr.length) return;
+    arr.sort(function(a,b){ return a.key[0]-b.key[0]||a.key[1]-b.key[1]; });
+    vills.push({eup:v[0],ri:v[1],pos:i,farms:arr.map(function(x){ return x.f; })});
+  });
+  var extra=[];
+  Object.keys(groups).sort().forEach(function(k){ var p=k.split('|'); groups[k].sort(function(a,b){ return a.key[0]-b.key[0]||a.key[1]-b.key[1]; }); extra.push({eup:p[0],ri:p[1],pos:-1,farms:groups[k].map(function(x){ return x.f; })}); });
+  var days=[],cur=[],cnt=0;
+  vills.forEach(function(v){
+    if(RT.n>0 && cnt>0 && cnt+v.farms.length>RT.n && cnt>=RT.n*0.5){ days.push(cur); cur=[]; cnt=0; }
+    cur.push(v); cnt+=v.farms.length;
+  });
+  if(cur.length) days.push(cur);
+  function legSum(a,b){ var s=0; for(var i=a;i<b;i++) s+=rot[i][2]; return s; }
+  days.forEach(function(d){ var km=0; for(var i=1;i<d.length;i++) km+=legSum(d[i-1].pos,d[i].pos); d.km=km; d.count=d.reduce(function(s,v){ return s+v.farms.length; },0); });
+  return {days:days,extra:extra,total:total};
+}
+function routeKakao(q){ return 'https://map.kakao.com/link/search/'+encodeURIComponent(q); }
+function routeNaver(q){ return 'https://map.naver.com/p/search/'+encodeURIComponent(q); }
+function routeFarmRow(f,n){
+  var ph=f.p?'<a class="rt-tel" href="tel:'+f.p.replace(/-/g,'')+'">'+farmEsc(f.p)+'</a>':'';
+  return '<div class="rt-row"><span class="rt-n">'+n+'</span><div class="rt-main"><div class="rt-l1"><b>'+farmEsc(f.n)+'</b>'+ph+'</div>'+
+    '<div class="rt-l2">'+farmEsc(f.a.replace('대구광역시 달성군 ',''))+' <a href="'+routeKakao(f.a)+'" target="_blank" rel="noopener">카카오</a><a href="'+routeNaver(f.a)+'" target="_blank" rel="noopener">네이버</a></div></div></div>';
+}
+function routeDraw(box){
+  var r=routeBuild(), out=box.querySelector('#rtOut'), n=0, h='';
+  var loopKm=ROUTE_LOOP.reduce(function(s,v){ return s+v[2]; },0);
+  h+='<div class="fm-count">유가읍·현풍읍 농장 '+r.total+'곳 · 마을 한 바퀴(13곳) 약 '+loopKm.toFixed(1)+'km (추정)</div>';
+  r.days.forEach(function(d,di){
+    h+='<div class="rt-day"><div class="rt-dh"><b>'+(di+1)+'일차</b><span>농장 '+d.count+'곳 · 마을 '+d.length+'곳 · 마을 간 이동 약 '+d.km.toFixed(1)+'km</span></div>';
+    d.forEach(function(v){
+      h+='<div class="rt-vh"><b>'+farmEsc(v.ri)+'</b><span>'+v.eup+' · '+v.farms.length+'곳</span><a href="'+routeKakao('대구 달성군 '+v.eup+' '+v.ri)+'" target="_blank" rel="noopener">마을 지도</a></div>';
+      v.farms.forEach(function(f){ n++; h+=routeFarmRow(f,n); });
+    });
+    h+='</div>';
+  });
+  if(r.extra.length){
+    h+='<div class="rt-day"><div class="rt-dh"><b>순서 미정</b><span>경로표에 없는 마을이라 맨 뒤에 둔다</span></div>';
+    r.extra.forEach(function(v){
+      h+='<div class="rt-vh"><b>'+farmEsc(v.ri)+'</b><span>'+v.eup+' · '+v.farms.length+'곳</span></div>';
+      v.farms.forEach(function(f){ n++; h+=routeFarmRow(f,n); });
+    });
+    h+='</div>';
+  }
+  if(!r.total) h='<div class="fm-empty">유가읍·현풍읍 농장이 목록에 없다.</div>';
+  h+='<div class="fm-note" style="margin-top:14px;">이동 거리는 마을 중심 사이 직선거리에 1.3을 곱한 추정값이고, 출발지에서 첫 마을까지와 마지막 마을에서 돌아오는 길은 넣지 않았다. 같은 마을 안에서는 번지 순서로 나열했다. 마을 순서는 13개 마을을 한 바퀴 도는 최단 경로이고, 시작 마을을 바꾸면 같은 바퀴를 그 마을부터 돈다.</div>';
+  out.innerHTML=h;
+}
+function routeMount(box){
+  if(!box) return;
+  if(!isAdmin()){
+    FARMS=null; _farmsMissing=false; _farmsError=false;
+    box.innerHTML='<div class="fm-note">농장주 개인정보라서 주인 계정으로 로그인해야 볼 수 있다.</div><button type="button" class="btn secondary" data-action="openAdminLogin">로그인</button>';
+    return;
+  }
+  if(!FARMS){
+    if(_farmsMissing){ box.innerHTML='<div class="fm-note">저장된 농장 목록이 없다. 달성군 농장 목록 탭에서 목록을 먼저 올려라.</div>'; return; }
+    if(_farmsError){
+      box.innerHTML='<div class="fm-note">농장 목록을 불러오지 못했다. 연결과 접근 규칙을 확인해라.</div><button type="button" class="btn secondary" id="rtRetry">다시 시도</button>';
+      box.querySelector('#rtRetry').addEventListener('click',function(){ _farmsError=false; routeMount(box); });
+      return;
+    }
+    box.innerHTML='<div class="fm-note">불러오는 중…</div>'; farmsLoad(); return;
+  }
+  var so=ROUTE_LOOP.map(function(v){ return '<option value="'+v[1]+'"'+(v[1]===RT.start?' selected':'')+'>'+v[0].charAt(0)+' '+v[1]+'</option>'; }).join('');
+  var no=[[10,'하루 10곳'],[15,'하루 15곳'],[20,'하루 20곳'],[22,'하루 22곳 (3일)'],[30,'하루 30곳'],[0,'하루에 전부']].map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===RT.n?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+  box.innerHTML='<div class="rt-ctl"><label>시작 마을<select id="rtStart">'+so+'</select></label><label>하루 방문<select id="rtN">'+no+'</select></label></div><div id="rtOut"></div>';
+  box.querySelector('#rtStart').addEventListener('change',function(e){ RT.start=e.target.value; routeDraw(box); });
+  box.querySelector('#rtN').addEventListener('change',function(e){ RT.n=parseInt(e.target.value,10); routeDraw(box); });
+  routeDraw(box);
+}
 function reproBloodHtml(){
   return `
 <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">혈액 튜브 종류</span></span></div>
@@ -1400,6 +1513,8 @@ function renderVet(){
     namuify(box, {title:t.title, category:t.category, ibTitle:t.ibTitle, infobox:t.infobox});
   } else if(UI.vetTab==='farms'){
     farmsMount(box);
+  } else if(UI.vetTab==='route'){
+    routeMount(box);
   }
 }
 function namuify(root, doc){
