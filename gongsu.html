@@ -1120,10 +1120,10 @@ html[data-theme="dark"] mark.hl{background:rgba(255,224,102,.22);color:inherit;}
 
 /* 채혈 검사 대상표 */
 .bt-wrap{overflow-x:auto;margin:8px 0;}
-.bt-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--line);text-align:center;}
-.bt-table th,.bt-table td{border:1px solid var(--line);padding:7px 4px;}
+.bt-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--line);text-align:center;}
+.bt-table th,.bt-table td{border:1px solid var(--line);padding:9px 4px;vertical-align:middle;}
 .bt-table thead th{background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:12px;}
-.bt-table td.age{font-weight:700;background:var(--surface-alt);white-space:nowrap;padding:7px 8px;}
+.bt-table td.age{font-weight:700;background:var(--surface-alt);word-break:keep-all;padding:7px 6px;}
 .bt-table td.o{font-weight:800;color:var(--primary-dark);}
 .bt-table td.x{color:var(--ink-soft);opacity:.65;}
 
@@ -1378,10 +1378,10 @@ function farmsMount(box){
 }
 function reproBloodHtml(){
   return `
-<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">채혈관 종류</span></span></div>
+<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">혈액 튜브 종류</span></span></div>
 <div class="rb-block"><ul class="rb-list"><li>결핵: 헤파린</li><li>구제역·브루셀라: 플레인</li></ul></div>
 <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">연령별 검사 대상 (브루셀라·결핵)</span></span></div>
-<div class="rb-block"><div class="bt-wrap"><table class="bt-table"><thead><tr><th rowspan="2" colspan="2"></th><th colspan="2">우시장·이전</th><th colspan="2">도축</th></tr><tr><th>Br</th><th>TB</th><th>Br</th><th>TB</th></tr></thead><tbody><tr><td class="age" rowspan="3">~6개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">6~12개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">12개월 이상</td><td>F</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="o">O</td><td class="x">X</td><td class="x">X</td></tr></tbody></table></div>
+<div class="rb-block"><div class="bt-wrap"><table class="bt-table"><colgroup><col style="width:25%"><col style="width:15%"><col><col><col><col></colgroup><thead><tr><th rowspan="2" colspan="2"></th><th colspan="2">우시장·이전</th><th colspan="2">도축</th></tr><tr><th>Br</th><th>TB</th><th>Br</th><th>TB</th></tr></thead><tbody><tr><td class="age" rowspan="3">~6개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">6~12개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">12개월 이상</td><td>F</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="o">O</td><td class="x">X</td><td class="x">X</td></tr></tbody></table></div>
 <ul class="rb-list"><li>6개월 미만은 어미만 검사한다. 어미가 없으면 6개월까지 기다려야 한다.</li><li>6~12개월은 원칙적으로 어미를 검사한다. 어미가 없으면 본인 검사가 가능하다.</li></ul></div>
   `;
 }
