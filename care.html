@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>공수의 업무</title>
+<title>사양 및 처치</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
@@ -1117,53 +1117,6 @@ html[data-theme="dark"] mark.hl{background:rgba(255,224,102,.22);color:inherit;}
 .hl-bar button{font-family:inherit;font-size:13px;font-weight:700;padding:7px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);cursor:pointer;}
 .hl-bar button[data-hl-act="add"]{background:#FFF3B8;color:#1a1200;border-color:#EBDC96;}
 .hl-bar button:disabled{opacity:.4;cursor:default;}
-
-/* 채혈 검사 대상표 */
-.bt-wrap{overflow-x:auto;margin:8px 0;}
-.bt-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--line);text-align:center;}
-.bt-table th,.bt-table td{border:1px solid var(--line);padding:9px 4px;vertical-align:middle;}
-.bt-table thead th{background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:12px;}
-.bt-table td.age{font-weight:700;background:var(--surface-alt);word-break:keep-all;padding:7px 6px;}
-.bt-table td.o{font-weight:800;color:var(--primary-dark);}
-.bt-table td.x{color:var(--ink-soft);opacity:.65;}
-
-/* 달성군 농장 목록 */
-.fm-search{position:relative;margin:4px 0 8px;}
-.fm-search input{width:100%;box-sizing:border-box;padding:11px 36px 11px 12px;font-size:15px;font-family:inherit;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);outline:none;}
-.fm-search input:focus{border-color:var(--primary);}
-.fm-search button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:20px;line-height:1;color:var(--ink-soft);padding:4px 8px;cursor:pointer;display:none;}
-.fm-count{font-size:12px;color:var(--ink-soft);margin:2px 2px 8px;}
-.fm-table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--surface);border:1px solid var(--line);}
-.fm-table th{background:var(--surface-alt);color:var(--ink-soft);font-size:12px;font-weight:700;text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);}
-.fm-table td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4;}
-.fm-table td.nm{font-weight:700;white-space:nowrap;}
-.fm-table td.ph a{color:var(--primary-dark);text-decoration:none;white-space:nowrap;}
-.fm-empty{padding:24px 0;text-align:center;color:var(--ink-soft);font-size:13px;}
-
-.fm-note{font-size:13.5px;color:var(--ink-soft);margin:10px 2px 12px;line-height:1.5;}
-.fm-foot{margin:18px 2px 6px;}
-.fm-up{display:inline-block;font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;background:var(--surface);}
-
-/* 방역 동선 */
-.rt-ctl{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px;}
-.rt-ctl label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--ink-soft);}
-.rt-ctl select{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);}
-.rt-day{margin:12px 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
-.rt-dh{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--surface-alt);border-bottom:1px solid var(--line);}
-.rt-dh b{font-size:15px;color:var(--primary-dark);}
-.rt-dh span{font-size:12px;color:var(--ink-soft);}
-.rt-vh{display:flex;align-items:baseline;gap:8px;padding:8px 12px 4px;border-top:1px solid var(--line);}
-.rt-day .rt-dh+.rt-vh{border-top:none;}
-.rt-vh b{font-size:14px;}
-.rt-vh span{font-size:11.5px;color:var(--ink-soft);}
-.rt-vh a{margin-left:auto;font-size:11.5px;color:var(--primary-dark);text-decoration:none;}
-.rt-row{display:flex;gap:9px;padding:7px 12px;align-items:flex-start;}
-.rt-n{flex:0 0 24px;height:24px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--line);font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);margin-top:1px;}
-.rt-main{flex:1;min-width:0;}
-.rt-l1{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:14px;}
-.rt-tel{font-size:13px;color:var(--primary-dark);text-decoration:none;white-space:nowrap;}
-.rt-l2{font-size:12px;color:var(--ink-soft);line-height:1.5;}
-.rt-l2 a{margin-left:8px;color:var(--primary-dark);text-decoration:none;font-weight:700;}
 </style></head>
 <body><div class="app" id="app"></div>
 <script>
@@ -1183,8 +1136,8 @@ let DATA = {"theme": "light", "kpnFav": ["1838", "1657", "1642", "1849", "1523",
 try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)||'null');
   if(saved) DATA = {theme:saved.theme==='dark'?'dark':'light',kpnFav:Array.isArray(saved.kpnFav)?saved.kpnFav:DATA.kpnFav};
 } catch(e) { console.warn('수의학 설정 불러오기 실패',e); }
-const TABS = [['blood','채혈'],['farms','달성군 농장 목록'],['route','방역 동선']];
-function currentTab(){ const tab=location.hash.slice(1); return TABS.some(t=>t[0]===tab)?tab:'blood'; }
+const TABS = [['grass','풀정보']];
+function currentTab(){ const tab=location.hash.slice(1); return TABS.some(t=>t[0]===tab)?tab:'grass'; }
 const UI = {vetMode:true,vetTab:currentTab()};
 let _isOwner = false;
 let authReady = false;
@@ -1198,15 +1151,15 @@ function render(){
   const dark=DATA.theme==='dark';
   document.getElementById('app').innerHTML=`
     <header class="topbar"><div class="title-row">
-      <div><h1 class="vet-site-title">${svgIcon('clipboard',24)} 공수의 업무</h1><p class="vet-site-note">공수의 업무 참고자료</p></div>
+      <div><h1 class="vet-site-title">${svgIcon('leaf',24)} 사양 및 처치</h1><p class="vet-site-note">사양관리·처치 참고자료</p></div>
       <div class="header-actions">
         <a class="btn secondary small" href="index.html" title="번식진료 기록부로" style="text-decoration:none;"><span>← 기록부</span></a>
         <a class="btn secondary small" href="vet.html" title="소 수의학 자료" style="text-decoration:none;"><span>수의학</span></a>
-        <a class="btn secondary small" href="care.html" title="사양 및 처치" style="text-decoration:none;"><span>사양·처치</span></a>
+        <a class="btn secondary small" href="gongsu.html" title="공수의 업무" style="text-decoration:none;"><span>공수의</span></a>
         <button class="btn secondary small" data-action="${isAdmin()?'logoutAdmin':'openAdminLogin'}">${svgIcon(isAdmin()?'lockOpen':'lock')}<span>${isAdmin()?'로그아웃':'로그인'}</span></button>
         <button class="theme-toggle" data-action="toggleTheme" aria-label="${dark?'라이트 모드':'다크 모드'}">${svgIcon(dark?'sun':'moon')}</button>
       </div></div>
-      <nav class="subnav vet-subnav" aria-label="공수의 업무 분야">${TABS.map(([id,label])=>`<button class="${UI.vetTab===id?'active':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</nav>
+      <nav class="subnav vet-subnav" aria-label="사양 및 처치 분야">${TABS.map(([id,label])=>`<button class="${UI.vetTab===id?'active':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</nav>
     </header><main id="main" class="vet-main"></main>`;
   renderVet();
 }
@@ -1312,192 +1265,49 @@ function toast(msg){
   document.body.appendChild(div);
   setTimeout(()=>div.remove(), 2200);
 }
-/* 달성군 농장 목록: 개인정보라서 코드에 넣지 않고 Firestore(private/daeguFarms)에 두며, 주인 로그인 상태에서만 읽는다 */
-let FARMS=null, _farmsLoading=false, _farmsMissing=false, _farmsError=false;
-function farmsRef(){ return firebase.firestore().collection('private').doc('daeguFarms'); }
-function farmEsc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-function farmsBox(){ return document.querySelector('#main .vet-panel'); }
-async function farmsLoad(){
-  if(FARMS||_farmsLoading||!isAdmin()) return;
-  if(typeof firebase==='undefined'||!firebase.apps||!firebase.apps.length) return;
-  _farmsLoading=true; _farmsMissing=false; _farmsError=false;
-  try{
-    const snap=await farmsRef().get();
-    if(snap.exists && snap.data() && snap.data().data){ FARMS=JSON.parse(snap.data().data); }
-    else _farmsMissing=true;
-  }catch(e){ console.warn('농장 목록 불러오기 실패',e); _farmsError=true; }
-  _farmsLoading=false;
-  var _b=farmsBox(); if(_b){ if(UI.vetTab==='farms') farmsMount(_b); else if(UI.vetTab==='route') routeMount(_b); }
-}
-async function farmsImportText(text){
-  var rows;
-  try{ rows=JSON.parse(text); }catch(e){ toast('JSON 파일이 아니에요.'); return false; }
-  if(!Array.isArray(rows)||!rows.length||rows.length>5000||!rows.every(function(r){ return r&&typeof r.n==='string'&&typeof r.a==='string'&&typeof r.p==='string'; })){ toast('농장 목록 형식(이름·주소·전화번호)이 맞지 않아요.'); return false; }
-  try{ await farmsRef().set({data:JSON.stringify(rows),updated:Date.now()}); }
-  catch(e){ console.warn('농장 목록 저장 실패',e); toast('저장하지 못했어요. 주인 로그인과 접근 규칙을 확인해주세요.'); return false; }
-  FARMS=rows; _farmsMissing=false; _farmsError=false;
-  toast('농장 목록 '+rows.length+'곳을 저장했어요.');
-  if(UI.vetTab==='farms' && farmsBox()) farmsMount(farmsBox());
-  return true;
-}
-function farmsUploader(label){
-  return '<label class="fm-up">'+label+'<input type="file" accept=".json,application/json" id="fmFile" hidden></label>';
-}
-function farmsBindUpload(box){
-  var f=box.querySelector('#fmFile'); if(!f) return;
-  f.addEventListener('change',function(){
-    var file=f.files&&f.files[0]; if(!file) return;
-    var r=new FileReader(); r.onload=function(){ farmsImportText(String(r.result)); }; r.readAsText(file,'utf-8');
-  });
-}
-function farmsFilter(q){
-  var toks=q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if(!toks.length) return FARMS;
-  return FARMS.filter(function(f){
-    var hay=(f.n+' '+f.a+' '+f.p).toLowerCase(), hayNH=hay.replace(/-/g,'');
-    return toks.every(function(t){
-      if(hay.indexOf(t)>=0) return true;
-      return /^[\d-]+$/.test(t) && hayNH.indexOf(t.replace(/-/g,''))>=0;
-    });
-  });
-}
-function farmsDraw(box){
-  var q=box.querySelector('#fmQ').value, list=farmsFilter(q);
-  box.querySelector('#fmClr').style.display=q?'block':'none';
-  box.querySelector('#fmCount').textContent = q ? (list.length+'곳 / 전체 '+FARMS.length+'곳') : ('전체 '+FARMS.length+'곳');
-  if(!list.length){ box.querySelector('#fmList').innerHTML='<div class="fm-empty">검색 결과가 없다.</div>'; return; }
-  box.querySelector('#fmList').innerHTML='<table class="fm-table"><thead><tr><th>이름</th><th>주소</th><th>전화번호</th></tr></thead><tbody>'+
-    list.map(function(f){
-      var ph=f.p ? '<a href="tel:'+f.p.replace(/-/g,'')+'">'+farmEsc(f.p)+'</a>' : '-';
-      return '<tr><td class="nm">'+farmEsc(f.n)+'</td><td>'+farmEsc(f.a)+'</td><td class="ph">'+ph+'</td></tr>';
-    }).join('')+'</tbody></table>';
-}
-function farmsMount(box){
-  if(!box) return;
-  if(!isAdmin()){
-    FARMS=null; _farmsMissing=false; _farmsError=false;
-    box.innerHTML='<div class="fm-note">농장주 개인정보라서 주인 계정으로 로그인해야 볼 수 있다.</div><button type="button" class="btn secondary" data-action="openAdminLogin">로그인</button>';
-    return;
-  }
-  if(!FARMS){
-    if(_farmsMissing){
-      box.innerHTML='<div class="fm-note">저장된 농장 목록이 없다. 농장 목록 파일(farms.json)을 올리면 저장된다.</div>'+farmsUploader('파일 올리기');
-      farmsBindUpload(box); return;
-    }
-    if(_farmsError){
-      box.innerHTML='<div class="fm-note">농장 목록을 불러오지 못했다. 연결과 접근 규칙을 확인해라.</div><button type="button" class="btn secondary" id="fmRetry">다시 시도</button>';
-      box.querySelector('#fmRetry').addEventListener('click',function(){ _farmsError=false; farmsMount(box); });
-      return;
-    }
-    box.innerHTML='<div class="fm-note">불러오는 중…</div>';
-    farmsLoad(); return;
-  }
-  box.innerHTML='<div class="fm-wrap"><div class="fm-search"><input id="fmQ" type="search" placeholder="이름·주소·전화번호 검색" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" id="fmClr" aria-label="지우기">×</button></div><div class="fm-count" id="fmCount"></div><div id="fmList"></div><div class="fm-foot">'+farmsUploader('목록 파일 다시 올리기')+'</div></div>';
-  var inp=box.querySelector('#fmQ');
-  inp.addEventListener('input',function(){ farmsDraw(box); });
-  box.querySelector('#fmClr').addEventListener('click',function(){ inp.value=''; farmsDraw(box); inp.focus(); });
-  farmsBindUpload(box); farmsDraw(box);
-}
-
-/* 방역 동선: 유가읍·현풍읍 농장을 마을(리) 단위 최단 순환 경로 순서로 나열한다. 농장 데이터는 농장 목록과 같은 Firestore 문서를 쓴다.
-   아래 숫자는 마을 중심 사이 직선거리에 1.3을 곱한 추정 km(다음 마을까지)이며 좌표는 담지 않는다. */
-const ROUTE_LOOP=[['유가읍','도의리',4.5],['현풍읍','대리',1.6],['현풍읍','지리',2.6],['현풍읍','오산리',3.1],['현풍읍','원교리',4.8],['유가읍','쌍계리',2.2],['유가읍','초곡리',3.3],['유가읍','양리',3.2],['유가읍','음리',2.0],['유가읍','용리',3.9],['유가읍','유곡리',4.4],['유가읍','본말리',3.7],['유가읍','한정리',2.1]];
-let RT={start:'도의리',n:22};
-function routeLotKey(rest){
-  var m=String(rest||'').match(/(산)?\s*(\d+)(?:-(\d+))?/);
-  if(!m) return [1e9,0];
-  return [(m[1]?100000:0)+parseInt(m[2],10), m[3]?parseInt(m[3],10):0];
-}
-function routeBuild(){
-  var groups={};
-  FARMS.forEach(function(f){
-    var m=f.a.match(/달성군 (유가읍|현풍읍) (\S+리) ?(.*)$/); if(!m) return;
-    var k=m[1]+'|'+m[2]; (groups[k]=groups[k]||[]).push({f:f,key:routeLotKey(m[3])});
-  });
-  var total=0; Object.keys(groups).forEach(function(k){ total+=groups[k].length; });
-  var si=ROUTE_LOOP.findIndex(function(v){ return v[1]===RT.start; }); if(si<0) si=0;
-  var rot=ROUTE_LOOP.slice(si).concat(ROUTE_LOOP.slice(0,si));
-  var vills=[];
-  rot.forEach(function(v,i){
-    var arr=groups[v[0]+'|'+v[1]]; delete groups[v[0]+'|'+v[1]];
-    if(!arr||!arr.length) return;
-    arr.sort(function(a,b){ return a.key[0]-b.key[0]||a.key[1]-b.key[1]; });
-    vills.push({eup:v[0],ri:v[1],pos:i,farms:arr.map(function(x){ return x.f; })});
-  });
-  var extra=[];
-  Object.keys(groups).sort().forEach(function(k){ var p=k.split('|'); groups[k].sort(function(a,b){ return a.key[0]-b.key[0]||a.key[1]-b.key[1]; }); extra.push({eup:p[0],ri:p[1],pos:-1,farms:groups[k].map(function(x){ return x.f; })}); });
-  var days=[],cur=[],cnt=0;
-  vills.forEach(function(v){
-    if(RT.n>0 && cnt>0 && cnt+v.farms.length>RT.n && cnt>=RT.n*0.5){ days.push(cur); cur=[]; cnt=0; }
-    cur.push(v); cnt+=v.farms.length;
-  });
-  if(cur.length) days.push(cur);
-  function legSum(a,b){ var s=0; for(var i=a;i<b;i++) s+=rot[i][2]; return s; }
-  days.forEach(function(d){ var km=0; for(var i=1;i<d.length;i++) km+=legSum(d[i-1].pos,d[i].pos); d.km=km; d.count=d.reduce(function(s,v){ return s+v.farms.length; },0); });
-  return {days:days,extra:extra,total:total};
-}
-function routeKakao(q){ return 'https://map.kakao.com/link/search/'+encodeURIComponent(q); }
-function routeNaver(q){ return 'https://map.naver.com/p/search/'+encodeURIComponent(q); }
-function routeFarmRow(f,n){
-  var ph=f.p?'<a class="rt-tel" href="tel:'+f.p.replace(/-/g,'')+'">'+farmEsc(f.p)+'</a>':'';
-  return '<div class="rt-row"><span class="rt-n">'+n+'</span><div class="rt-main"><div class="rt-l1"><b>'+farmEsc(f.n)+'</b>'+ph+'</div>'+
-    '<div class="rt-l2">'+farmEsc(f.a.replace('대구광역시 달성군 ',''))+' <a href="'+routeKakao(f.a)+'" target="_blank" rel="noopener">카카오</a><a href="'+routeNaver(f.a)+'" target="_blank" rel="noopener">네이버</a></div></div></div>';
-}
-function routeDraw(box){
-  var r=routeBuild(), out=box.querySelector('#rtOut'), n=0, h='';
-  var loopKm=ROUTE_LOOP.reduce(function(s,v){ return s+v[2]; },0);
-  h+='<div class="fm-count">유가읍·현풍읍 농장 '+r.total+'곳 · 마을 한 바퀴(13곳) 약 '+loopKm.toFixed(1)+'km (추정)</div>';
-  r.days.forEach(function(d,di){
-    h+='<div class="rt-day"><div class="rt-dh"><b>'+(di+1)+'일차</b><span>농장 '+d.count+'곳 · 마을 '+d.length+'곳 · 마을 간 이동 약 '+d.km.toFixed(1)+'km</span></div>';
-    d.forEach(function(v){
-      h+='<div class="rt-vh"><b>'+farmEsc(v.ri)+'</b><span>'+v.eup+' · '+v.farms.length+'곳</span><a href="'+routeKakao('대구 달성군 '+v.eup+' '+v.ri)+'" target="_blank" rel="noopener">마을 지도</a></div>';
-      v.farms.forEach(function(f){ n++; h+=routeFarmRow(f,n); });
-    });
-    h+='</div>';
-  });
-  if(r.extra.length){
-    h+='<div class="rt-day"><div class="rt-dh"><b>순서 미정</b><span>경로표에 없는 마을이라 맨 뒤에 둔다</span></div>';
-    r.extra.forEach(function(v){
-      h+='<div class="rt-vh"><b>'+farmEsc(v.ri)+'</b><span>'+v.eup+' · '+v.farms.length+'곳</span></div>';
-      v.farms.forEach(function(f){ n++; h+=routeFarmRow(f,n); });
-    });
-    h+='</div>';
-  }
-  if(!r.total) h='<div class="fm-empty">유가읍·현풍읍 농장이 목록에 없다.</div>';
-  h+='<div class="fm-note" style="margin-top:14px;">이동 거리는 마을 중심 사이 직선거리에 1.3을 곱한 추정값이고, 출발지에서 첫 마을까지와 마지막 마을에서 돌아오는 길은 넣지 않았다. 같은 마을 안에서는 번지 순서로 나열했다. 마을 순서는 13개 마을을 한 바퀴 도는 최단 경로이고, 시작 마을을 바꾸면 같은 바퀴를 그 마을부터 돈다.</div>';
-  out.innerHTML=h;
-}
-function routeMount(box){
-  if(!box) return;
-  if(!isAdmin()){
-    FARMS=null; _farmsMissing=false; _farmsError=false;
-    box.innerHTML='<div class="fm-note">농장주 개인정보라서 주인 계정으로 로그인해야 볼 수 있다.</div><button type="button" class="btn secondary" data-action="openAdminLogin">로그인</button>';
-    return;
-  }
-  if(!FARMS){
-    if(_farmsMissing){ box.innerHTML='<div class="fm-note">저장된 농장 목록이 없다. 달성군 농장 목록 탭에서 목록을 먼저 올려라.</div>'; return; }
-    if(_farmsError){
-      box.innerHTML='<div class="fm-note">농장 목록을 불러오지 못했다. 연결과 접근 규칙을 확인해라.</div><button type="button" class="btn secondary" id="rtRetry">다시 시도</button>';
-      box.querySelector('#rtRetry').addEventListener('click',function(){ _farmsError=false; routeMount(box); });
-      return;
-    }
-    box.innerHTML='<div class="fm-note">불러오는 중…</div>'; farmsLoad(); return;
-  }
-  var so=ROUTE_LOOP.map(function(v){ return '<option value="'+v[1]+'"'+(v[1]===RT.start?' selected':'')+'>'+v[0].charAt(0)+' '+v[1]+'</option>'; }).join('');
-  var no=[[10,'하루 10곳'],[15,'하루 15곳'],[20,'하루 20곳'],[22,'하루 22곳 (3일)'],[30,'하루 30곳'],[0,'하루에 전부']].map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===RT.n?' selected':'')+'>'+o[1]+'</option>'; }).join('');
-  box.innerHTML='<div class="rt-ctl"><label>시작 마을<select id="rtStart">'+so+'</select></label><label>하루 방문<select id="rtN">'+no+'</select></label></div><div id="rtOut"></div>';
-  box.querySelector('#rtStart').addEventListener('change',function(e){ RT.start=e.target.value; routeDraw(box); });
-  box.querySelector('#rtN').addEventListener('change',function(e){ RT.n=parseInt(e.target.value,10); routeDraw(box); });
-  routeDraw(box);
-}
-function reproBloodHtml(){
+function grassContentHtml(){
   return `
-<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">혈액 튜브 종류</span></span></div>
-<div class="rb-block"><ul class="rb-list"><li>결핵: 헤파린</li><li>구제역·브루셀라: 플레인</li></ul></div>
-<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">연령별 검사 대상 (브루셀라·결핵)</span></span></div>
-<div class="rb-block"><div class="bt-wrap"><table class="bt-table"><colgroup><col style="width:25%"><col style="width:15%"><col><col><col><col></colgroup><thead><tr><th rowspan="2" colspan="2"></th><th colspan="2">우시장·이전</th><th colspan="2">도축</th></tr><tr><th>Br</th><th>TB</th><th>Br</th><th>TB</th></tr></thead><tbody><tr><td class="age" rowspan="3">~6개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">6~12개월</td><td>F</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="x">X</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="x">X</td><td class="x">X</td><td class="x">X</td></tr><tr><td class="age" rowspan="3">12개월 이상</td><td>F</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>M</td><td class="o">O</td><td class="o">O</td><td class="o">O</td><td class="x">X</td></tr><tr><td>거세</td><td class="x">X</td><td class="o">O</td><td class="x">X</td><td class="x">X</td></tr></tbody></table></div>
-<ul class="rb-list"><li>6개월 미만은 어미만 검사한다. 어미가 없으면 6개월까지 기다려야 한다.</li><li>6~12개월은 원칙적으로 어미를 검사한다. 어미가 없으면 본인 검사가 가능하다.</li></ul></div>
-  `;
+      <div class="modal-sub" style="margin-bottom:10px;">${svgIcon('leaf',15)} 조사료·사료 — 성분 해석과 종류별 특성</div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">사료 성분 읽는 법</span><span class="gst-sub">DM · CP · TDN · NDF · ADF</span></span></div>
+      <div class="rb-block">
+        <ul class="rb-list">
+          <li><b class="rb-label">DM·건물</b> 물을 제외한 실제 사료 성분이다. 생초나 수분 많은 사료는 무게가 많이 나가도 실제 영양분은 적을 수 있다. 서로 다른 조사료를 비교할 때 사용한다.</li>
+          <li><b class="rb-label">CP·조단백질</b> 사료의 단백질 공급 정도를 나타낸다. 반추위 미생물, 성장, 체중 유지, 임신과 비유에 필요하다. CP가 낮은 조사료는 다른 단백질 원료로 보충해야 할 수 있다.</li>
+          <li><b class="rb-label">TDN·가소화영양소총량</b> 사료가 제공하는 에너지 수준을 나타낸다. TDN이 낮으면 성장, 증체, 임신 후기, 비유에 필요한 에너지가 부족할 수 있다.</li>
+          <li><b class="rb-label">NDF</b> 사료의 부피와 포만감에 영향을 주는 섬유 성분이다. 높을수록 소가 빨리 배부르고, 전체 건물 섭취량이 제한될 수 있다.</li>
+          <li><b class="rb-label">ADF</b> 소화가 잘 되지 않는 섬유 성분이다. 높을수록 소화율과 에너지 이용성이 낮아지는 경향이 있다.</li>
+        </ul>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">국내 조사료</span><span class="gst-sub">볏짚 · 라이그라스 · 청보리류 · 옥수수 사일리지 · 톨페스큐</span></span></div>
+      <div class="rb-block">
+        <div class="rb-key"><div class="rb-key-t">볏짚</div><ul><li>CP와 TDN이 낮은 편</li><li>NDF와 ADF가 높은 편</li><li>저렴한 섬유 공급원으로 활용</li><li>성우 유지에는 사용할 수 있음</li><li>성장우, 임신 후기, 비유우에는 단백질과 에너지 보충이 필요할 수 있음</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">라이그라스</div><ul><li>볏짚보다 CP와 TDN이 높은 경우가 많음</li><li>국내 논에서 생산하기 쉽고 유통량이 많음</li><li>번식우와 육성우의 조사료로 활용 가능</li><li>수확이 늦거나 줄기 위주이면 품질이 떨어짐</li><li>“라이”가 라이그라스인지 호밀인지 확인 필요</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">청보리·호밀·귀리</div><ul><li>국내 생산 가능</li><li>볏짚보다 품질이 나은 경우가 많음</li><li>잎과 곡실이 많이 남아 있으면 TDN이 높아질 수 있음</li><li>수확이 늦으면 줄기가 굵어지고 NDF·ADF가 증가함</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">옥수수 사일리지</div><ul><li>TDN이 비교적 높아 에너지 공급에 유리</li><li>육성우와 비육우에서 활용성이 높음</li><li>CP가 충분하지 않을 수 있어 단백질 보충이 필요할 수 있음</li><li>발효 상태, 곰팡이, 수분, 입자 크기를 확인해야 함</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">톨페스큐</div><ul><li>중간 정도 품질의 조사료</li><li>성숙할수록 CP·TDN은 낮아지고 섬유 비율은 높아짐</li><li>품종과 내생균 여부를 확인할 필요가 있음</li><li>품질 편차가 큰 편이라 장기간 주력으로 사용할 때 주의</li></ul></div>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">수입 건초</span><span class="gst-sub">알팔파 · 티모시 · 오차드그라스</span></span></div>
+      <div class="rb-block">
+        <div class="rb-key"><div class="rb-key-t">알팔파</div><ul><li>CP가 높은 편</li><li>칼슘 공급에도 유리</li><li>육성우, 임신 후기, 포유 중인 번식우에 활용성이 높음</li><li>볏짚 위주의 저단백 사료를 보완하는 데 유용</li><li>과량 급여하면 전체 영양 균형을 다시 봐야 함</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">티모시</div><ul><li>CP는 알팔파보다 낮음</li><li>섬유 공급과 기호성이 비교적 안정적</li><li>번식우와 육성우에 무난하게 사용 가능</li><li>너무 성숙하면 줄기가 많아지고 TDN이 낮아질 수 있음</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">오차드그라스</div><ul><li>CP와 TDN이 중간 정도</li><li>잎이 많고 부드러운 물량은 기호성이 좋음</li><li>번식우와 육성우에 범용적으로 활용 가능</li><li>수확이 늦으면 섬유 비율이 높아짐</li></ul></div>
+      </div>
+
+      <div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">생산단계별 특징</span><span class="gst-sub">육성우 · 번식우 · 비육우 · 배합사료</span></span></div>
+      <div class="rb-block">
+        <ul class="rb-list">
+          <li><b class="rb-label">육성우</b> CP와 TDN이 모두 중요하다. 저급 조사료만 급여하면 성장 속도가 떨어질 수 있다.</li>
+          <li><b class="rb-label">번식우</b> 과비와 저영양을 모두 피해야 한다. 볏짚만 많이 급여하면 BCS 저하와 번식 지연이 생길 수 있다. 임신 후기에는 CP·TDN과 미네랄 공급을 더 신경 써야 한다.</li>
+          <li><b class="rb-label">비육우</b> 에너지 공급이 중요하지만 섬유 공급도 유지해야 한다. 비육 후기에는 고단백 건초가 항상 필요한 것은 아니다.</li>
+        </ul>
+        <div class="rb-key"><div class="rb-key-t">비육사료</div><ul><li>체중 증가와 육량·육질 향상이 목표</li><li>비교적 에너지 밀도가 높음</li><li>성장단계에 따라 CP와 에너지를 조절</li><li>전분·지방·육질 관련 설계가 중요</li><li>번식우에게 과량 급여하면 과비와 번식 문제가 생길 수 있음</li></ul></div>
+        <div class="rb-key"><div class="rb-key-t">번식사료</div><ul><li>BCS 유지와 번식기능이 목표</li><li>발정, 수태, 임신 유지, 분만과 초유 생산을 고려</li><li>임신단계와 번식 상태에 따라 CP·TDN을 조절</li><li>Ca, P, Mg, 미량광물, 비타민 등의 균형이 중요</li><li>무조건 고에너지로 만드는 것이 좋은 것은 아님</li></ul></div>
+      </div>
+
+    `;
 }
 function renderVet(){
   const main = document.getElementById('main');
@@ -1505,18 +1315,13 @@ function renderVet(){
   main.classList.remove('vet-panel');
   main.innerHTML = '<div class="vet-panel"></div>';
   const box = main.querySelector('.vet-panel');
-  const REPRO_TABS = {
-    blood: { fn: reproBloodHtml, title:'채혈', category:'공수의 업무 · 채혈', ibTitle:'채혈', infobox:[ ['분야','공수의 업무 · 채혈'] ] },
-  };
-  if(REPRO_TABS[UI.vetTab]){
-    const t = REPRO_TABS[UI.vetTab];
-    box.innerHTML = t.fn();
-    namuify(box, {title:t.title, category:t.category, ibTitle:t.ibTitle, infobox:t.infobox});
-  } else if(UI.vetTab==='farms'){
-    farmsMount(box);
-  } else if(UI.vetTab==='route'){
-    routeMount(box);
-  }
+  box.innerHTML = grassContentHtml();
+  namuify(box, {title:'조사료 (풀·짚)', category:'사양 및 처치 · 사양관리', ibTitle:'조사료 (Forage)', infobox:[
+    ['분야','사양관리 · 조사료'],
+    ['대상','소 (반추동물)'],
+    ['분류','짚류 · 화본과 · 두과 · 사일리지'],
+    ['핵심 지표','TDN · CP(조단백)']
+  ]});
 }
 function namuify(root, doc){
   root = root || document.getElementById('main');
@@ -1587,6 +1392,15 @@ function namuToggle(h){
   }
 }
 let VETEDITS = {}, _vetLoaded = false, _vetLoading = false;
+/* KPN 후대성적: 기본 데이터(KPN_DATA.DB) 위에 웹에서 고친 값(VETEDITS.__kpn__)을 덮어쓴다 */
+function kpnApplyEdits(){
+  var D=window.KPN_DATA; if(!D||!D.DB) return;
+  if(!window.__KPN_BASE_DB) window.__KPN_BASE_DB=JSON.parse(JSON.stringify(D.DB));
+  var db=JSON.parse(JSON.stringify(window.__KPN_BASE_DB));
+  var ed=(VETEDITS&&VETEDITS.__kpn__&&typeof VETEDITS.__kpn__==='object')?VETEDITS.__kpn__:{};
+  Object.keys(ed).forEach(function(k){ if(ed[k]===null) delete db[k]; else if(Array.isArray(ed[k])&&ed[k].length>=9) db[k]=ed[k]; });
+  D.DB=db;
+}
 async function vetEditsEnsure(){
   if(_vetLoaded || _vetLoading) return;
   if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length) return;
@@ -1596,6 +1410,7 @@ async function vetEditsEnsure(){
     const snap = await db.collection('library').doc('vetEdits').get();
     VETEDITS = (snap.exists && snap.data() && snap.data().data) ? (JSON.parse(snap.data().data)||{}) : {};
     _vetLoaded = true;
+    try{ kpnApplyEdits(); }catch(e){ console.warn('KPN 수정값 적용 실패', e); }
   }catch(e){ console.warn('vetEdits load 실패', e); }
   _vetLoading = false;
   if(typeof UI!=='undefined' && UI.vetMode){ try{ renderVet(); }catch(e){} }
@@ -1807,7 +1622,7 @@ function showEntryGate(onPass){
   ov.innerHTML = `
     <div style="width:100%;max-width:320px;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;color:#eafaf7;">
       <div style="margin-bottom:8px;"><svg viewBox="0 0 32 32" width="44" height="44" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="30" height="30" rx="8" style="fill:var(--primary)"/><g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6.5 L16 11 L21 6.5"/><line x1="16" y1="10.5" x2="16" y2="26.5"/><path d="M16 12.6c2.6 0 2.6 2.4 0 2.4s-2.6 2.4 0 2.4 2.6 2.4 0 2.4-2.6 2.4 0 2.4 2.6 2.4 0 2.4"/></g><circle cx="16" cy="26.6" r="1.3" fill="#fff"/></svg></div>
-      <div style="font-size:18px;font-weight:800;margin-bottom:4px;">공수의 업무</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px;">사양 및 처치</div>
       <div style="font-size:12.5px;color:#7fc8bf;margin-bottom:20px;">열람하려면 비밀번호를 입력하세요</div>
       <input id="entry-pw" type="password" inputmode="numeric" placeholder="비밀번호"
         style="width:100%;box-sizing:border-box;padding:13px 14px;font-size:16px;text-align:center;letter-spacing:.3em;
@@ -1834,6 +1649,5 @@ function showEntryGate(onPass){
   setTimeout(()=>inp.focus(), 50);
 }
 </script>
-
 <script>showEntryGate(init);</script>
 </body></html>
