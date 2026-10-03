@@ -987,6 +987,14 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .rb-sub{font-size:13px;font-weight:800;color:var(--primary-dark);margin:18px 0 9px;padding:8px 12px;background:var(--accent-soft);border-radius:9px;border-left:4px solid var(--primary);}
 .rb-h{font-size:12.5px;font-weight:700;color:var(--ink);margin:13px 0 5px;}
 .rb-p{font-size:13px;line-height:1.65;color:var(--ink-soft);margin:5px 0;}
+.rb-figs{display:grid;grid-template-columns:1fr 1fr;gap:22px 18px;align-items:start;}
+.rb-fig{margin:0;}
+.rb-fig img{display:block;width:100%;height:300px;object-fit:contain;border-radius:8px;background:#000;}
+@media (max-width:600px){.rb-fig img{height:260px;}}
+.rb-fig figcaption{font-size:13px;line-height:1.55;color:var(--ink);margin-top:7px;}
+@media (max-width:600px){.rb-figs{grid-template-columns:1fr;gap:22px;}}
+.rb-fig figcaption b{color:var(--primary-dark);margin-right:4px;}
+@media (max-width:600px){.rb-fig figcaption{font-size:14px;}}
 .rb-list{margin:5px 0 11px;padding-left:19px;}
 .rb-list li{font-size:13px;line-height:1.8;color:var(--ink);margin-bottom:8px;}
 .rb-label{display:inline-block;background:var(--primary);color:#fff;font-size:11px;padding:1px 8px;border-radius:6px;margin-right:5px;font-weight:700;}
@@ -1177,7 +1185,7 @@ try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)||'null');
   if(saved) DATA = {theme:saved.theme==='dark'?'dark':'light',kpnFav:Array.isArray(saved.kpnFav)?saved.kpnFav:DATA.kpnFav};
 } catch(e) { console.warn('수의학 설정 불러오기 실패',e); }
 const TAB_ROWS = [
-  [['phys','호르몬'],['wave','난포파'],['exam','직장검사'],['us','초음파검사']],
+  [['phys','호르몬'],['wave','난포파'],['exam','직장검사'],['us','초음파검사'],['doppler','도플러'],['media','영상 자료']],
   [['cyst','번식질환'],['cof','COF']],
   [['sync','동기화'],['et','수정란이식'],['breed','수정'],['pdiag','임신감정']],
   [['preg','임신'],['postpartum','산후'],['husb','사양·육성']]
@@ -1475,6 +1483,73 @@ function reproExamHtml(){
 
   `;
 }
+function reproDopplerHtml(){
+  return `
+<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('search',16)} 도플러 — 발정주기 중 난소 혈류 변화</div>
+<div class="rb-block"><ol class="rb-list">
+<li class="grp">생리적 혈관신생은 암컷 생식계에서 핵심 역할을 함. 난포 최종 성장·배란·새 황체 형성 과정에서 일어나는 난소 조직의 주기적 재편에 혈역학적 변화가 관여함.</li>
+<li>컬러 도플러 초음파는 난소 혈관 기능을 평가하는 비침습 기법임. 배란 직전 난포 벽의 정해진 영역이나 황체 내부의 혈류를 눈으로 볼 수 있음.</li>
+<li class="grp">난포 성장. 첫 난포파에서 직경 2.5mm 넘는 난포 각각의 혈류 유무를 본 연구에서, 편차(deviation) 전에는 나중에 최대가 되는 난포와 두 번째로 큰 난포 사이에 혈류 검출 비율 차이가 없었음(그림 4.22).</li>
+<li>두 번째로 큰 난포에서는 편차 후 혈류 검출 비율이 유의하게 감소함. 편차 하루 전부터 혈류가 검출되는 작은 난포가 검출되지 않는 난포보다 컸음(그림 4.23).</li>
+<li>개별 난포로 가는 혈액 공급의 변화가 난포의 성장·선택·폐쇄와 밀접하게 관련됨을 시사함.</li>
+<li class="grp">배란. 난포 벽 파열은 난소에서 가장 극적인 형태 변화 중 하나임. 배란 직전 난포의 외난포막에서 검출되는 국소 혈류는 LH surge가 시작될 무렵 급격히 늘어 배란 전에 최대가 됨(그림 4.24).</li>
+<li>LH surge 개시와 동시에 일어나는 난포 벽 내 혈류 증가가 배란 과정에서 난포 벽의 구조·기능 변화와 밀접히 연관될 수 있음.</li>
+<li class="grp">황체 발달. 황체는 몸에서 가장 혈관이 풍부한 기관 중 하나로, 조직 1g당 혈류량이 어떤 기관보다 많음. 황체가 발달하는 동안 초기 황체 주위 혈류는 황체 부피와 혈장 P4 농도 증가와 나란히 점차 증가함. 혈류가 P4를 생산·분비하는 능력과 밀접하게 관련됨.</li>
+<li class="grp">황체 퇴행. 황체 단면 영상에서 색으로 표시된 면적 비율을 혈류 변화의 정량 지표로 본 연구들에서, 발정 후 17~18일에 황체 주위 혈류가 뚜렷이 늘고 하루 뒤 혈장 P4가 감소함(그림 4.25).</li>
+<li>이 황체 혈류 증가는 PGF2α의 대사산물인 PGFM의 혈장 농도 급증과 시기가 일치함(그림 4.26). 주기 중반의 황체는 황체 퇴행 용량의 PGF2α를 주사한 뒤 30분 이내에 혈류가 급증해 주사 후 2시간까지 높게 유지됨(그림 4.27).</li>
+<li>자궁에서 분비된 PGF2α가 일으키는 황체 혈류의 급격한 증가가 황체 퇴행 개시의 핵심 현상임. 발정주기 동안의 난소 혈류 변화는 그림 4.28에 요약됨.</li>
+<li class="grp">낭종성 난소 변성. 성숙한 난포가 배란에 실패하고도 계속 자라 10일 이상 지속되면 낭종으로 봄. 난포 벽이 얇은 난포낭종과 황체 벽이 더 두꺼운 황체화 낭종이 있음.</li>
+<li>난포낭종 치료에는 GnRH 유사체나 hCG를, 황체화 낭종 치료에는 PGF2α나 그 유사체를 씀. 치료가 낭종 분류에 따라 달라지므로, 컬러 도플러로 낭종 벽의 두께와 혈류를 확인하는 것이 가장 효과적인 방법 중 하나임(그림 4.29).</li>
+</ol></div>
+`;
+}
+function reproMediaHtml(){
+  return `
+<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('search',16)} 영상 자료 — 초음파·검사 사진과 영상</div>
+<div class="rb-block rb-figs">
+<figure class="rb-fig"><img src="img/fig3_5.jpg" alt="그림 3.5" loading="lazy"><figcaption><b>그림 3.5</b> 광인대(broad ligament)의 초음파상(7.5MHz 탐촉자, 깊이 6cm). 1: 자궁각, 2: 광인대(혈관 여러 개가 가로로 잘린 단면).</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_5.jpg" alt="그림 4.5" loading="lazy"><figcaption><b>그림 4.5</b> 임신 32일 젖소의 공동성 황체(CCL)(7.5MHz, 깊이 5cm). 1: 공동성 황체, 2: 배아 본체, 3: 자궁내막.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_7.jpg" alt="그림 4.7" loading="lazy"><figcaption><b>그림 4.7</b> 발정주기 10일째, 공동이 사라지고 그 자리가 고에코 조직으로 바뀐 공동성 황체(7.5MHz, 깊이 5cm). 1: 황체 조직, 2: 고에코 부위.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_9.jpg" alt="그림 4.9" loading="lazy"><figcaption><b>그림 4.9</b> 발정주기 약 10일째, 공동이 흰 고에코 선(흉터)으로 바뀐 공동성 황체(7.5MHz, 깊이 4.5cm). 1: 황체 조직, 2: 중심부 흉터.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_10.jpg" alt="그림 4.10" loading="lazy"><figcaption><b>그림 4.10</b> 공동 둘레를 고에코 고리가 둘러싼 공동성 황체(7.5MHz, 깊이 4.5cm). 1: 황체 조직, 2: 공동, 3: 고에코 고리.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_11.jpg" alt="그림 4.11" loading="lazy"><figcaption><b>그림 4.11</b> 발정기 양쪽 난소의 BB모드 초음파상. 오른쪽 난소에는 퇴행 중인 황체와 배란 직전 우성 난포가 있고, 왼쪽 난소는 작은 난포 하나뿐인 비활동 상태임. 1: 배란 직전 우성 난포(14mm), 2: 퇴행 중인 황체. 눈금 한 칸은 1cm임.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_16.jpg" alt="그림 4.16" loading="lazy"><figcaption><b>그림 4.16</b> 실험적으로 유도한 난포낭종이 자연 배란한 뒤 생긴, 공동 지름 30mm의 큰 공동성 황체(미경산우 2두). A: 79번 소의 공동성 황체, 공동 안에 섬유소 가닥(fibrin trabecula)이 보임. B: 89번 소의 공동성 황체, 역시 섬유소 가닥이 있음.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_18.jpg" alt="그림 4.18" loading="lazy"><figcaption><b>그림 4.18</b> 소 과립막세포종(GCT)의 초음파상. 보통 한쪽 난소에만 생기고 겉모습은 매우 다양함. 표면은 매끈하거나 울퉁불퉁하고, 단면은 고형이거나, 크기가 제각각인 낭으로 가득하거나, 고형과 낭이 섞여 있거나, 큰 낭 하나로 된 경우도 있음. 구조적으로 불균일해서 일부는 에코가 있고 일부는 무에코임. 종양 기질 안에 석회화나 괴사 부위(A)가 보이기도 하고, 액체가 찬 공간(B)이 보이기도 함.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_19.jpg" alt="그림 4.19" loading="lazy"><figcaption><b>그림 4.19</b> 황체와 태반절(placentome)의 감별(7.5MHz, 깊이 5cm). A: 태반절, B: 황체. 1: 태반절, 2: 황체 조직, 3: 중심부 에코 부위.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_20.jpg" alt="그림 4.20" loading="lazy"><figcaption><b>그림 4.20</b> 황체와 난소 농양의 감별(7.5MHz, 깊이 5cm). A: 난소 농양, B: 황체. 1: 농양, 2: 난포, 3: 황체.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig4_21.jpg" alt="그림 4.21" loading="lazy"><figcaption><b>그림 4.21</b> 공동성 황체와 자궁각 횡단면의 감별(7.5MHz, 깊이 5cm). A: 발정기 자궁의 횡단면, B: 공동성 황체. 1: 자궁근층, 2: 자궁내막, 3: 무에코 액체가 든 자궁강, 4: 자궁근층의 혈관층, 5: 황체 조직, 6: 황체의 공동.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_16.jpg" alt="그림 5.16" loading="lazy"><figcaption><b>그림 5.16</b> 분만 8일 후 젖소의 급성 산욕기 자궁염(6MHz, 깊이 8cm). 급성 산욕기 자궁염은 자궁강에 감염된 오로가 차고 자궁 회복이 늦어짐. 초음파에서 자궁벽이 두껍고 혈관이 풍부하며 자궁소구(caruncle)가 안 보이고, 고에코 입자가 섞인 회색 액체가 보일 수 있음. 후산이 안 나왔으면 전체가 비정상적으로 크고 회복이 많이 늦음. 진단엔 임상 증상과 질 검사를 함께 봐야 함. 1: 자궁내막, 2: 자궁의 혈관이 풍부한 부분, 3: 두꺼워진 고에코 자궁근층, 4: 고에코 입자가 든 내강 내용물.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_17.jpg" alt="그림 5.17" loading="lazy"><figcaption><b>그림 5.17</b> 분만 12일 후 자궁염(A)과 19일 후 자궁내막염(B)(7.5MHz, 깊이 8cm). A: 자궁 안에 오로·혈액·농·섬유소·다형핵 세포로 된 걸쭉한 액체가 많아 눈보라(snowstorm)처럼 보임. 자궁내막과 자궁근층이 두꺼움. B: 자궁 안에 걸쭉한 액체가 있고 회복이 늦으며 자궁내막이 두꺼움. 회복이 늦어 자궁소구가 아직 뚜렷함. 1: 자궁소구, 2: 자궁내막, 3: 자궁근층, 4: 자궁 내용물.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_18.jpg" alt="그림 5.18" loading="lazy"><figcaption><b>그림 5.18</b> 분만 21일 후 자궁내막염(7.5MHz, 깊이 7cm). 왼쪽 종단면의 감염된 자궁각과 오른쪽 횡단면의 정상 자궁각의 차이를 볼 것. 1: 왼쪽 자궁각 내강의 치밀한 고에코 농, 2: 자궁내막, 3: 자궁근층, 4: 정상 오른쪽 자궁각의 내강, 5: 정상 자궁각의 자궁내막, 6: 오른쪽 자궁각의 혈관 부위, 7: 정상 자궁각의 자궁근층.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_19.jpg" alt="그림 5.19" loading="lazy"><figcaption><b>그림 5.19</b> 분만 25일 후 자궁내막염(7.5MHz, 깊이 6cm). 이런 덜 심한 자궁내막염에서는 에코가 고르지 않은 액체가 보통 자궁각의 앞쪽 아래 부분에만 고임(그림 5.20A도 참고). 초음파 없이는 초기 임신으로 착각해 오진할 수 있음. 1: 농성 자궁 내용물, 2: 자궁내막, 3: 자궁근층.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_20.jpg" alt="그림 5.20" loading="lazy"><figcaption><b>그림 5.20</b> 분만 25~30일 후 자궁내막염(7.5MHz, 깊이 8cm). A: 자궁내막과 자궁근층의 경계가 뚜렷함. B: BB모드 분할 영상. 왼쪽은 고에코 입자가 많은 눈보라 모양의 자궁 내용물, 오른쪽은 황체 두 개. PreSynch를 적용하기 좋은 사례임. 1: 농성 자궁 내용물, 2: 자궁내막, 3: 혈관 부위, 4: 자궁근층, 5: 황체.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_21.jpg" alt="그림 5.21" loading="lazy"><figcaption><b>그림 5.21</b> 분만 55일 후 만성 자궁내막염의 BB모드 영상(7.5MHz, 깊이 6cm). 왼쪽에 황체와 난포가 있음. 덜 심한 만성 자궁내막염에서는 에코가 고르지 않은 액체가 보통 자궁각 앞쪽 아래 부분에 고임. 고인 액체 중 에코가 강한 부분(1)에는 섬유소·농·점액이 들어 있음. 1: 고에코 자궁 내용물, 2: 자궁내막, 3: 자궁의 혈관 부위, 4: 자궁근층, 5: 음영 아티팩트, 6: 황체, 7: 난포.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_22.jpg" alt="그림 5.22" loading="lazy"><figcaption><b>그림 5.22</b> 분만 62일 후 자궁축농증(8MHz, 깊이 9cm). 자궁내막염의 최종 형태인 자궁축농증에서도 초음파상 불균일한 에코의 액체가 다량 고이고 자궁벽이 두꺼움. 액체가 자궁 전체에 보임. 자궁을 몇 번 톡톡 치면 떠 있던 고에코 입자가 액체 속에서 움직여 눈송이처럼 보임. 자궁축농증의 자궁강 직경은 보통 5~20cm이나 임신 말기만 한 크기도 볼 수 있음. 1: 자궁벽, 2: 고에코 입자가 많은 내강 내용물.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_23.jpg" alt="그림 5.23" loading="lazy"><figcaption><b>그림 5.23</b> 질에 점액농성 물질이 있는 소의 자궁 종단면(6MHz, 깊이 6cm). 이 소의 진단은 불확실함. 자궁내막염인가, 발정기 자궁내막 액체가 고인 것인가? 추가 검사 없이는 확진이 어려움. 자궁 모양이 발정기 소와 비슷함(그림 5.3~5.5, 5.24B 참고). 1: 자궁내막, 2: 자궁근층, 3: 자궁의 혈관 부위, 화살촉: 맑은 자궁 내용물이 고인 선.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_24.jpg" alt="그림 5.24" loading="lazy"><figcaption><b>그림 5.24</b> 자궁내막염(A)과 발정기 정상 자궁(B)의 분할 영상(5MHz, 깊이 5cm). 나란히 놓고 보면 자궁내막염과 발정기 자궁의 차이가 분명함. 둘 다 우성 난포가 보임. 이 사례의 또 다른 감별 진단은 초음파 검사 25~40일 전에 수정했을 경우의 초기 배사멸임(6장 참고). 1: 자궁, 2: 내용물(농 또는 점액)이 고임, 3: 난포, 4: 오래된 황체, 화살촉: 횡단면에서 본 자궁각 끝.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_25.jpg" alt="그림 5.25" loading="lazy"><figcaption><b>그림 5.25</b> 점액자궁증(A)과 초기 임신(B)의 감별(7.5MHz, 깊이 5cm). 점액자궁증은 자궁강에 비농성·비감염성 액체가 고인 것임. 액체는 완전히 맑거나 아주 작은 에코 반점을 띨 수 있는데, 자궁내막염의 에코가 더 강한 액체나 정상 초기 임신의 아주 무에코인 액체와 다름. 발정기 자궁과 달리 자궁벽이 얇고 자궁이 늘어진 경향이 있음. 항상은 아니지만 종종 난포낭종을 동반함. 6장의 확실한 임신 징후를 자궁에서 꼼꼼히 확인해 임신 위양성을 피해야 함. 두 상황의 자궁벽 두께 차이에 주목할 것. 1: 맑은 무에코 내용물, 2: 자궁벽, 3: 배아.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_26.jpg" alt="그림 5.26" loading="lazy"><figcaption><b>그림 5.26</b> 젖소 광인대의 농양(7.5MHz, 깊이 8cm). 불균일한 에코의 액체가 다량 고이고 고에코 입자가 많은 전형적인 농양 소견임. 1: 불균일한 농성 액체, 2: 농양의 가장자리.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_27.jpg" alt="그림 5.27" loading="lazy"><figcaption><b>그림 5.27</b> 젖소의 기자궁증(pneumouterus)(5MHz, 깊이 8cm). 기자궁증도 드물게 생기며 자궁 안에 공기 주머니가 줄지어 고에코로 보이고, 그 아래로 음영 원뿔(초음파 반사)이 생김. 1: 자궁, 2: 공기 주머니, 3: 음영 원뿔.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig5_28.jpg" alt="그림 5.28" loading="lazy"><figcaption><b>그림 5.28</b> 요질(urovagina)(6MHz, 깊이 6cm). 같은 영상에 자궁경의 뒤쪽 부분이 보임. 무에코 부분이 요질임. 질벽이 울퉁불퉁하고 소변 안에 큰 고에코 입자가 떠 있음. 1: 자궁경, 2: 질벽, 3: 고인 소변.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_11.jpg" alt="그림 6.11" loading="lazy"><figcaption><b>그림 6.11</b> 임신 30일, 크기 12mm 배아가 같은 크기의 자궁 주름 옆에 있음(7.5MHz, 깊이 6cm). 양수가 요수보다 적음. 1: 배아, 2: 요수, 3: 자궁 주름, 화살촉: 양막.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_12.jpg" alt="그림 6.12" loading="lazy"><figcaption><b>그림 6.12</b> 임신 40일, 크기 21mm 배아(A: 7.5MHz, 깊이 4.5cm. B: 10MHz, 깊이 4cm). 임신 30일부터는 보통 양수와 요수가 충분해 고인 액체 한가운데에 배아를 놓고 볼 수 있음. 머리, 앞다리·뒷다리 싹, 0.5cm 태반절이 보임. 1: 배아, 2: 양막, 3: 요수, 4: 사지, 5: 태반절.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_13.jpg" alt="그림 6.13" loading="lazy"><figcaption><b>그림 6.13</b> 임신 47일 태아와 제대. 1: 태아, 2: 양막, 3: 요수, 4: 제대.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_14.jpg" alt="그림 6.14" loading="lazy"><figcaption><b>그림 6.14</b> 임신 59일 태아, 갈비뼈가 처음 보임. A: 흉곽 앞부분 높이의 태아 횡단면(10MHz, 깊이 5cm). B: 종단면(8MHz, 깊이 7cm). 1: 태아, 2: 앞다리, 3: 태반절, 4: 갈비뼈, 5: 제대.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_15.jpg" alt="그림 6.15" loading="lazy"><figcaption><b>그림 6.15</b> 두둔장(CRL) 측정으로 임신 단계 평가. 40일 배아(A)는 1.63cm, 53일 태아(B)는 3.97cm(10MHz 리니어, 깊이 5cm). 1: 사지, 2: 양막, 3: 요수, 4: 머리.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_16.jpg" alt="그림 6.16" loading="lazy"><figcaption><b>그림 6.16</b> 임신 30일에 확인된 배사멸(7.5MHz 리니어, 깊이 5cm). 죽은 배아의 찌꺼기가 양막강 밖으로 흘러나와 있음. 1: 배아 찌꺼기, 2: 양막, 3: 요수.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_17.jpg" alt="그림 6.17" loading="lazy"><figcaption><b>그림 6.17</b> 임신 32일에 확인된 배사멸(8MHz 리니어, 깊이 5cm). 배아 윤곽이 흐릿하고 양막과 융모요막이 울퉁불퉁하며 고에코임. 1: 배아, 2: 양막, 3: 요막.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_18.jpg" alt="그림 6.18" loading="lazy"><figcaption><b>그림 6.18</b> 앞 그림과 같은 자궁, 배사멸 진단 13일 후인 임신 45일(10MHz 리니어, 깊이 4cm). 요수가 여전히 탁함. 수태산물 찌꺼기는 50일에 완전히 배출됐음. 1: 배아 찌꺼기, 2: 울퉁불퉁한 융모요막.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_19.jpg" alt="그림 6.19" loading="lazy"><figcaption><b>그림 6.19</b> 임신 48일경(CRL 3cm)으로 추정되는 태아 사망(7.5MHz 리니어, 깊이 6cm). 태아 변성이 시작돼 양수에 고에코 찌꺼기가 많이 쌓여 있음. 죽은 태아 위의 양막과 태반절이 울퉁불퉁하고 고에코임. 1: 태아 찌꺼기, 2: 양막, 3: 직경 0.6cm 태반절.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_20.jpg" alt="그림 6.20" loading="lazy"><figcaption><b>그림 6.20</b> 이란성 쌍태(BB모드, 5MHz, 깊이 7cm). 왼쪽 난소에 황체 두 개, 오른쪽 같은 자궁각에 쌍태가 있음. 이란성 쌍태는 한쪽 또는 양쪽 자궁각에 있을 수 있는데 이 경우는 같은 쪽임. 1: 황체, 2: 배아.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_21.jpg" alt="그림 6.21" loading="lazy"><figcaption><b>그림 6.21</b> 일란성 쌍태(BB모드, 5MHz, 깊이 7cm). 일란성 쌍태는 거의 항상 같은 자궁각에 있고 서로 가까이 붙어 있음. 황체는 하나뿐임(오른쪽). 1: 황체, 2: 배아.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_22.jpg" alt="그림 6.22" loading="lazy"><figcaption><b>그림 6.22</b> 임신 26일 쌍태의 쌍태선(twin line)(BB모드, 5MHz, 깊이 5cm). 1: 배아, 빨간 화살표: 쌍태선.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_24.jpg" alt="그림 6.24" loading="lazy"><figcaption><b>그림 6.24</b> 임신 39일 쌍태(BB모드, 5MHz, 깊이 5cm). 분할 화면에 양쪽 자궁각의 쌍태가 보이고 둘 다 정상임. 1: 배아, 2: 양막, 3: 요수, 4: 쌍태선.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_25.jpg" alt="그림 6.25" loading="lazy"><figcaption><b>그림 6.25</b> 임신 43일 쌍태(BB모드, 5MHz, 깊이 5cm). 양쪽 자궁각의 정상 43일 쌍태. 왼쪽 자궁각 태아의 양막이 오른쪽 자궁각 태아 영상에도 보임(흰 화살촉). 1: 배아, 2: 양막, 3: 요수.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_26.jpg" alt="그림 6.26" loading="lazy"><figcaption><b>그림 6.26</b> 임신 30일 쌍태 중 하나는 살고 하나는 죽은 경우(5MHz, 깊이 5cm). 오른쪽 태아는 정상, 왼쪽 태아는 변성돼 죽었음. 고위험 임신이라 다음 방문 때 재검해야 함.</figcaption></figure>
+<figure class="rb-fig"><img src="img/fig6_27.jpg" alt="그림 6.27" loading="lazy"><figcaption><b>그림 6.27</b> 임신 54일 사망한 쌍태(5MHz, 깊이 8cm). 54일 재검에서 둘 다 죽어 있었음. 양수가 탁하고(왼쪽 배아 주위에서 더 뚜렷) 태아 윤곽이 불분명함. 이 시기 정상 태아는 사지·머리·움직임이 뚜렷함. 촉진으로는 완전히 정상으로 느껴졌음.</figcaption></figure>
+</div>
+`;
+}
 function reproUsHtml(){
   return `
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('search',16)} 초음파검사 — 난포·황체 크기 기준·주기별 소견·아티팩트</div>
@@ -1529,12 +1604,30 @@ function reproCofHtml(){
 }
 function reproSyncHtml(){
   return `
-<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('calendar',16)} 동기화 — 프로토콜 전 황체 평가</div>
+<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('calendar',16)} 동기화 — 프로토콜 전 황체 평가·초음파 활용 두 관점</div>
 <div class="rb-block"><ol class="rb-list">
 <li>Ovsynch 전 PGF로 전동기화(Presynch)하면 정상 주기 동물은 첫 GnRH(G1) 때 황체를 가져야 함. 난소 검사로 전동기화 성공을 앎. 많은 소가 황체 없으면 프로토콜 실패임. 부실 순응도, 건강, 낮은 BCS, 영양 문제임.</li>
 <li>G1 황체·배란과 38일 수태율(Galvão)은 황체 있고 G1 배란 42.2%, 황체 있고 배란 없음 37.7%, 황체 없고 배란 27.6%, 황체 없고 배란 없음 15.4%임. 기능적 황체 존재가 G1 배란보다 중요함.</li>
 <li>초음파는 매우 초기 후발정기·퇴행 중 전발정기 황체까지 잘 봐 민감하나, 이들은 Ovsynch 최적 P4를 못 낼 수 있음. Bicalho는 2.2cm 기준 시 초음파가 혈중 P4 1ng/ml 초과 황체 식별에 약 90% 민감·특이(촉진은 민감도 33~60%)라 함.</li>
 <li>단 Ovsynch는 일부 황체가 2.2cm 미만일 수 있는 주기 5~10일에 가장 잘 작동함. 저자는 전형적 초기 휴지기 황체로 보이면 최소 1.5cm를 쓰고, 전발정기 퇴행 중으로 보이면 배란 후 5~10일까지 기다려 시작함.</li>
+<li class="grp">첫 번째 관점(Colloton·DesCôteaux). 동기화 프로토콜은 젖소 번식 관리를 극적으로 바꿨고, 초음파를 쓰면 동기화 성적을 크게 높일 수 있음.</li>
+<li>초음파는 촉진보다 자궁·난소 건강을 정확히 평가함. 생식기 병변이 있는 소는 어떤 동기화를 쓰든 수태가 안 되므로, 프로토콜 시작 전 초음파로 가려내면 약값과 수정 비용을 아낌. 건강·관리·기록이 좋은 농장이면 분만 후 검진을 난산·후산정체·자궁염·대사질환 병력우에 한정해도 됨.</li>
+<li>초음파로 수정 시점의 무배란우 비율을 추정할 수 있음. 특히 PreSynch(PG 2주 간격 2회 → 12~14일 후 OvSynch) 뒤에는 주기가 도는 소는 거의 다 OvSynch 시작일에 황체가 있어야 하므로, 황체 유무로 바로 드러남. 무배란우 비율이 높으면 우군 관리 문제가 있다는 뜻임.</li>
+<li>프로토콜 선택. P4가 있으면 배란 동기화 반응이 좋아짐. 건강하고 체형은 좋은데 황체가 없는 소는 질내 P4 기구를 넣으면 이득이고, 황체가 있는 소는 넣어도 이득이 없음(2번 Galvão 자료가 근거).</li>
+<li>조기 임신 검사로 공태우를 빨리 번식 대상으로 되돌림. 위스콘신 자료로는 수정 후 약 32일이 공태우 재동기화 최적 시점임.</li>
+<li>한계. G1이 배란을 일으키면 수태율이 좋아지고, 초음파로 G1 당일 8mm 넘는 난포를 볼 수는 있음. 그러나 그것이 실제 배란을 정확히 예측하진 못함. 황체 유무가 G1 후 배란 여부보다 더 중요하므로, 황체 유무만으로 프로토콜을 고르는 것이 더 간단하고 빠름. 컬러 도플러가 더해지면 앞으로 배란 가능성 평가가 더 정확해질 수 있음.</li>
+<li class="grp">두 번째 관점(Gnemmi). 많은 사람이 정기 분만 후 검진을 쓸모없다고 보지만, 이 저자는 어떤 동기화든 시작 전 초음파 평가가 임신율 향상에 필수라고 봄.</li>
+<li>첫 초음파 평가는 분만 후 10일 이후에 해서 자궁 상태(자궁염·자궁내막염)와 난소 활동 재개 여부를 봄. 분만 후 25일 이후 황체 식별은 초음파가 촉진보다 정밀해 PreSynch 성공률이 올라감. 우성 난포 유무는 초음파 없이는 알 수 없음.</li>
+<li>난소를 정밀 평가하지 않으면 이미 P4가 높은 주기우에 P4 기구가 너무 많이 쓰임. 2006년 10월부터 EU 호르몬 사용 규제가 시행되면서 PG·GnRH·서방형 P4 기구가 정말 필요한 때를 가려야 하게 됐음. 동기화에 초음파를 쓰는 것은 윤리·의학·경제적 우려를 조화시키고 호르몬 사용을 제한하면서 품질을 보장하는 접근임.</li>
+<li class="grp">동기화에는 발정 동기화와 배란 동기화 두 종류가 있음.</li>
+<li>발정 동기화는 PG 투여 후 정시 수정임. PG 투여부터 발정까지 걸리는 시간은 투여 시점의 우성 난포 직경에 달림. 난포파 2~3개 소에서 첫 우성 난포의 편차는 배란 4일 이후 난포가 8mm일 때 일어남. 8mm가 LH 수용체가 충분해 배란 가능한 최소 크기인데, 손으로는 8mm 난포를 찾기 어려워 초음파가 필요함.</li>
+<li>배란 동기화는 GnRH·PG, 때로 P4 기구를 조합함(OvSynch, PreSynch, CIDRsynch 등). OvSynch 수태율은 자연 발정 수정과 비슷함. G1과 PG 사이 최소 7일 기능을 유지하는 활성 황체와, G1 후 배란할 기능성 우성 난포가 있어야 함. OvSynch 처치우의 약 30%는 동기화 안 돼 임신 못 함. 난포파 2개 소에서 가장 잘 들어 젖소·물소에 적합하고, 난포파 3개인 육우·제부엔 덜 맞음.</li>
+<li>OvSynch 수태율은 황체 나이에 따라 크게 달라짐(표 4.1). 그래서 초음파 검사와 함께 써야 함. G1에 대한 배란 반응은 황체 나이와 우성 난포 크기·나이에 따라 달라짐.</li>
+<li>주기 0~4일은 우성 난포 없이 난포 동원만 일어나고 8mm 미만 난포만 있어 배란 반응이 낮음. 4일 이후 편차가 일어나 우성 난포(공우성이면 둘)가 커짐. 5~10일엔 10mm 넘는 우성 난포와 황체가 함께 있어 GnRH 배란율이 높음. OvSynch 시작에 가장 좋은 때임.</li>
+<li>11~16일은 첫째 또는 둘째 난포파의 우성 난포가 폐쇄를 시작했을 수 있어 GnRH 반응이 들쭉날쭉함. 황체는 최대 직경이라 촉진으로 쉽게 잡히지만, 큰 황체 때문에 8~13mm 난포는 촉진으로 찾기 어려움. 초음파로 8mm 이상 난포와 크기를 재서 배란 가능성을 추정함. 우성 난포 대부분이 폐쇄돼 OvSynch 성적이 가장 낮은 시기고, PG 한 번에 발정이 빨리 안 오는 이유이기도 함.</li>
+<li>16일 이후엔 다시 GnRH에 반응하는 우성 난포가 생기지만 배란 반응은 5~10일보다 떨어짐. P4 하강 때문으로 보임.</li>
+<li class="grp">PreSynch는 주기가 도는 소에 쓰고 황체가 있을 때 시작하면 좋음. 보통 분만 후 25~28일 이후 시작함. 35~38일 안에 발정이 세 번 오므로 자궁내막염 소의 치료 목적으로도 적합함. PG 2회로 OvSynch를 5~10일령 황체 상태에서 시작하게 돼 전체 임신율이 올라감. OvSynch 10일 전 PG 1회만으로는 성적이 안 좋아짐.</li>
+<li>서방형 P4 기구는 진성 무발정이나 낭종성 난소 변성 소에서 높은 수태율을 보장하는 가장 좋은 수단 중 하나임. 질내 또는 귀 피하에 넣음. 비용, 삽입 부위 자극·감염, EU 법규 제한이 한계임. 그래서 이 저자는 모든 소를 분만 후 10일부터 초음파로 검사해 치료·동기화 프로토콜을 구체적으로 정하는 쪽을 택함.</li>
 </ol></div>
 
   `;
@@ -2288,6 +2381,8 @@ function renderVet(){
       ['분야','생식기 검사·진단 실무'],['대상','소 (젖소·한우)'],['구성','생식기 해부·직장검사 / 직장검사 실전 / 생식기 초음파'],
       ['핵심','촉진 기준·주기 시점 추정·초음파 소견·아티팩트'],['용도','검사 술기 레퍼런스'] ] },
     us: { fn: reproUsHtml, title:'초음파검사', category:'번식학 · 진단·검사', ibTitle:'초음파검사 (Ultrasonography)', infobox:[ ['분야','생식기 초음파'],['대상','소 (젖소·한우)'],['구성','난포·황체 크기 기준 · 주기별 자궁·난소 소견 · 아티팩트 · 3D·도플러'] ] },
+    doppler: { fn: reproDopplerHtml, title:'도플러', category:'번식학 · 진단·검사', ibTitle:'컬러 도플러 (Color Doppler)', infobox:[ ['분야','난소 혈류 초음파'],['구성','난포 성장 · 배란 · 황체 발달·퇴행 · 낭종'] ] },
+    media: { fn: reproMediaHtml, title:'영상 자료', category:'번식학 · 진단·검사', ibTitle:'영상 자료', infobox:[ ['분야','초음파·검사 영상'],['구성','사진·영상 링크·판독 메모'] ] },
     cof: { fn: reproCofHtml, title:'COF', category:'번식학 · 난소 질환', ibTitle:'낭종성 난포 (COF)', infobox:[ ['분야','난소 질환 · 낭종'],['대상','소 (젖소·한우)'],['구성','정의 · 발생률 · 병태생리 · 증상 · 진단 · 치료 · 위험요인'] ] },
     cyst: { fn: reproCystHtml, title:'번식질환', category:'수의학 · 소 번식', ibTitle:'번식질환 (Reproductive Pathology)', infobox:[ ['분야','난소·자궁 병리 · 초음파'],['대상','소 (젖소·한우)'],['구성','분류 · 난소 정지 · 황체 유존 · 둔성 발정 · 자궁·질 질환 · 리피트 브리더 · 태아 기형'] ] },
     pdiag: { fn: reproPdiagHtml, title:'임신감정', category:'수의학 · 소 번식', ibTitle:'임신감정 (Pregnancy Diagnosis)', infobox:[ ['분야','초음파 임신감정'],['대상','소 (젖소·한우)'],['구성','감정 시기 · 태령 · 생존성 · 쌍태 · 성별'] ] },
