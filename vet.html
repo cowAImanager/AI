@@ -142,10 +142,10 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .subnav.vet-subnav-rows{flex-direction:column;align-items:stretch;gap:0;overflow:visible;padding:10px 0 0;}
 .subnav.vet-subnav-rows .subnav-row{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);padding:0 0 0;margin-top:6px;}
 .subnav.vet-subnav-rows .subnav-row:first-child{margin-top:0;}
-.subnav.vet-subnav-rows button{display:inline-flex;align-items:center;padding:7px 14px;border-radius:9px 9px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:12.5px;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;letter-spacing:-.01em;transition:background .15s,color .15s;}
+.subnav.vet-subnav-rows button{display:inline-flex;align-items:center;padding:4px 12px;border-radius:9px 9px 0 0;background:var(--surface-alt);color:var(--ink-soft);font-weight:700;font-size:12.5px;border:1px solid var(--line);border-bottom:none;position:relative;top:1px;letter-spacing:-.01em;transition:background .15s,color .15s;}
 .subnav.vet-subnav-rows button.active{background:var(--surface);color:var(--primary-dark);font-weight:800;box-shadow:0 -2px 8px rgba(0,0,0,.06);border-bottom:none;}
 .subnav.vet-subnav-rows button:hover{background:var(--surface);}
-@media (max-width:600px){.subnav.vet-subnav-rows{padding-top:8px;}.subnav.vet-subnav-rows .subnav-row{gap:4px;margin-top:5px;}.subnav.vet-subnav-rows button{padding:6px 11px;font-size:12px;}}
+@media (max-width:600px){.subnav.vet-subnav-rows{padding-top:8px;}.subnav.vet-subnav-rows .subnav-row{gap:4px;margin-top:5px;}.subnav.vet-subnav-rows button{padding:3px 10px;font-size:12px;}}
 .global-search-bar{display:flex;align-items:center;gap:7px;margin:0;padding:5px 8px 5px 12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;position:relative;width:190px;transition:border-color .15s,box-shadow .15s;}
 .global-search-bar:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-ring,rgba(0,166,156,.13));}
 .global-search-bar .gs-icon{display:inline-flex;color:var(--ink-soft);flex:0 0 auto;}
@@ -1487,19 +1487,13 @@ function reproDopplerHtml(){
   return `
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('search',16)} 도플러 — 발정주기 중 난소 혈류 변화</div>
 <div class="rb-block"><ol class="rb-list">
-<li class="grp">생리적 혈관신생은 암컷 생식계에서 핵심 역할을 함. 난포 최종 성장·배란·새 황체 형성 과정에서 일어나는 난소 조직의 주기적 재편에 혈역학적 변화가 관여함.</li>
 <li>컬러 도플러 초음파는 난소 혈관 기능을 평가하는 비침습 기법임. 배란 직전 난포 벽의 정해진 영역이나 황체 내부의 혈류를 눈으로 볼 수 있음.</li>
-<li class="grp">난포 성장. 첫 난포파에서 직경 2.5mm 넘는 난포 각각의 혈류 유무를 본 연구에서, 편차(deviation) 전에는 나중에 최대가 되는 난포와 두 번째로 큰 난포 사이에 혈류 검출 비율 차이가 없었음(그림 4.22).</li>
-<li>두 번째로 큰 난포에서는 편차 후 혈류 검출 비율이 유의하게 감소함. 편차 하루 전부터 혈류가 검출되는 작은 난포가 검출되지 않는 난포보다 컸음(그림 4.23).</li>
-<li>개별 난포로 가는 혈액 공급의 변화가 난포의 성장·선택·폐쇄와 밀접하게 관련됨을 시사함.</li>
-<li class="grp">배란. 난포 벽 파열은 난소에서 가장 극적인 형태 변화 중 하나임. 배란 직전 난포의 외난포막에서 검출되는 국소 혈류는 LH surge가 시작될 무렵 급격히 늘어 배란 전에 최대가 됨(그림 4.24).</li>
-<li>LH surge 개시와 동시에 일어나는 난포 벽 내 혈류 증가가 배란 과정에서 난포 벽의 구조·기능 변화와 밀접히 연관될 수 있음.</li>
+<li class="grp">난포 성장. 편차(deviation) 전에는 나중에 우성이 될 난포와 두 번째 난포의 혈류 검출 비율이 같지만, 편차 후 두 번째 난포는 혈류가 사라짐. 편차 하루 전부터 혈류가 보이는 난포가 안 보이는 난포보다 큼. 즉 난포로 가는 혈류가 성장·선택·폐쇄를 따라감.</li>
+<li class="grp">배란. 배란 직전 난포의 외난포막 혈류는 LH surge가 시작될 무렵 급격히 늘어 배란 전에 최대가 됨. 이 혈류 증가가 난포 벽이 터지는 구조·기능 변화와 맞물린 것으로 봄.</li>
 <li class="grp">황체 발달. 황체는 몸에서 가장 혈관이 풍부한 기관 중 하나로, 조직 1g당 혈류량이 어떤 기관보다 많음. 황체가 발달하는 동안 초기 황체 주위 혈류는 황체 부피와 혈장 P4 농도 증가와 나란히 점차 증가함. 혈류가 P4를 생산·분비하는 능력과 밀접하게 관련됨.</li>
-<li class="grp">황체 퇴행. 황체 단면 영상에서 색으로 표시된 면적 비율을 혈류 변화의 정량 지표로 본 연구들에서, 발정 후 17~18일에 황체 주위 혈류가 뚜렷이 늘고 하루 뒤 혈장 P4가 감소함(그림 4.25).</li>
-<li>이 황체 혈류 증가는 PGF2α의 대사산물인 PGFM의 혈장 농도 급증과 시기가 일치함(그림 4.26). 주기 중반의 황체는 황체 퇴행 용량의 PGF2α를 주사한 뒤 30분 이내에 혈류가 급증해 주사 후 2시간까지 높게 유지됨(그림 4.27).</li>
-<li>자궁에서 분비된 PGF2α가 일으키는 황체 혈류의 급격한 증가가 황체 퇴행 개시의 핵심 현상임. 발정주기 동안의 난소 혈류 변화는 그림 4.28에 요약됨.</li>
-<li class="grp">낭종성 난소 변성. 성숙한 난포가 배란에 실패하고도 계속 자라 10일 이상 지속되면 낭종으로 봄. 난포 벽이 얇은 난포낭종과 황체 벽이 더 두꺼운 황체화 낭종이 있음.</li>
-<li>난포낭종 치료에는 GnRH 유사체나 hCG를, 황체화 낭종 치료에는 PGF2α나 그 유사체를 씀. 치료가 낭종 분류에 따라 달라지므로, 컬러 도플러로 낭종 벽의 두께와 혈류를 확인하는 것이 가장 효과적인 방법 중 하나임(그림 4.29).</li>
+<li class="grp">황체 퇴행. 황체 단면 영상에서 색으로 표시된 면적 비율을 혈류 변화의 정량 지표로 본 연구들에서, 발정 후 17~18일에 황체 주위 혈류가 뚜렷이 늘고 하루 뒤 혈장 P4가 감소함.</li>
+<li>이 황체 혈류 증가는 PGF2α의 대사산물인 PGFM의 혈장 농도 급증과 시기가 일치함. 주기 중반의 황체는 황체 퇴행 용량의 PGF2α를 주사한 뒤 30분 이내에 혈류가 급증해 주사 후 2시간까지 높게 유지됨. 즉 자궁 PGF2α가 일으키는 황체 혈류 급증이 황체 퇴행 개시의 핵심 현상임.</li>
+<li class="grp">낭종. 난포낭종(얇은 벽)은 GnRH·hCG, 황체화 낭종(두꺼운 황체 벽)은 PGF2α로 치료하므로 유형 구분이 중요함. 컬러 도플러로 벽 두께와 혈류를 보면 구분이 쉬움. 낭종 자체는 COF 탭 참고.</li>
 </ol></div>
 `;
 }
