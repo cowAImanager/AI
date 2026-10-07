@@ -313,9 +313,15 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-num{width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sync-row select{flex:1 1 0;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
 .sync-row input[type=date]{flex:0 0 100px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
-.sync-row .sync-dose{flex:0 0 58px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-f{display:contents;}
+.sync-f>span:first-child{display:none;}
+.sync-f-date{}
+.sync-dose-wrap{display:inline-flex;align-items:center;gap:3px;flex:0 0 70px;min-width:0;}
+.sync-dose-wrap em{font-style:normal;font-size:11px;color:var(--ink-soft);font-weight:700;}
+.sync-row .sync-dose{flex:1 1 0;width:100%;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;-moz-appearance:textfield;}
+.sync-row .sync-dose::-webkit-outer-spin-button,.sync-row .sync-dose::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .sync-proto-btn.custom{border-style:dashed;}
-.sync-alltime{display:inline-flex;align-items:center;gap:4px;margin-left:auto;}
+.sync-alltime{display:flex;align-items:center;gap:6px;margin:0 0 8px;}
 .sync-alltime input[type=time]{padding:3px 5px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:11px;height:26px;background:var(--bg);}
 .sync-alltime button{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;height:26px;}
 .sync-batch-tools{display:flex;gap:6px;align-items:center;margin:6px 0 8px;flex-wrap:wrap;}
@@ -883,12 +889,18 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .modal{padding:18px;border-radius:14px;}
   .form-grid{grid-template-columns:1fr 1fr;}
   .sync-proto-hint{font-size:10.5px;}
-  .sync-row{flex-wrap:wrap;row-gap:4px;}
-  .sync-row select{flex:1 1 calc(100% - 96px);}
-  .sync-row .sync-dose{flex:0 0 66px;}
-  .sync-row input[type=date]{flex:1 1 120px;margin-left:24px;}
-  .sync-row input[type=time]{flex:1 1 80px;}
-  .sync-list{gap:10px;}
+  .sync-list{gap:8px;}
+  .sync-row{display:grid;grid-template-columns:18px 1fr 1fr 1fr;grid-template-rows:auto auto;gap:4px 6px;align-items:end;background:var(--surface-alt);border:1px solid var(--line);border-radius:10px;padding:7px 8px;}
+  .sync-num{grid-row:1;grid-column:1;align-self:center;}
+  .sync-row select{grid-row:1;grid-column:2/5;height:32px;font-size:13px;}
+  .sync-f{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .sync-f>span:first-child{display:block;font-size:10px;font-weight:700;color:var(--ink-soft);}
+  .sync-f-date{grid-row:2;grid-column:1/3;}
+  .sync-f-time{grid-row:2;grid-column:3;}
+  .sync-f-dose{grid-row:2;grid-column:4;}
+  .sync-row input[type=date],.sync-row input[type=time]{flex:none;width:100%;height:32px;font-size:12.5px;-webkit-appearance:none;appearance:none;display:block;}
+  .sync-dose-wrap{flex:none;width:100%;}
+  .sync-row .sync-dose{height:32px;font-size:13px;}
 }
 
 /* 보관함 (라이브러리) */
@@ -2188,7 +2200,7 @@ function buildAutoSchedule(owner){
       const type = rec['sync'+i+'Type'];
       const date = dateOnly(rec['sync'+i+'Date']);
       const time = timeOnly(rec['sync'+i+'Date']);
-      const dose = (rec['sync'+i+'Dose']||'').trim();
+      const dose = doseText(rec['sync'+i+'Dose']);
       if(type && date) add(rec.animalId, date, [type, dose, time?ampmTime(time):''].filter(Boolean).join(' '));
     }
   });
@@ -3202,9 +3214,9 @@ function syncRow(i, type, date, dose){
       <option value="" ${!type?'selected':''}>선택 안 함</option>
       ${opts}
     </select>
-    <input type="date" id="f_sync${i}Date" value="${dateOnly(date)}">
-    <input type="time" id="f_sync${i}Time" value="${timeOnly(date)}">
-    <input type="text" class="sync-dose" id="f_sync${i}Dose" value="${esc(dose||'')}" placeholder="용량">
+    <label class="sync-f sync-f-date"><span>날짜</span><input type="date" id="f_sync${i}Date" value="${dateOnly(date)}"></label>
+    <label class="sync-f sync-f-time"><span>시간</span><input type="time" id="f_sync${i}Time" value="${timeOnly(date)}"></label>
+    <label class="sync-f sync-f-dose"><span>용량</span><span class="sync-dose-wrap"><input type="number" inputmode="decimal" step="0.5" min="0" class="sync-dose" id="f_sync${i}Dose" value="${esc(dose||'')}" placeholder="0"><em>ml</em></span></label>
   </div>`;
 }
 /* ---------- 동기화 템플릿 ----------
@@ -3239,10 +3251,11 @@ function syncProtoRowHtml(){
         <button type="button" class="sync-proto-btn clear" data-action="saveSyncTemplate" title="지금 입력한 단계(종류·간격·시간·용량)를 새 템플릿으로 저장">템플릿 저장</button>
         ${hasCustom?`<button type="button" class="sync-proto-btn clear" data-action="manageSyncTemplates">템플릿 관리</button>`:''}
       </div>
-      <div class="sync-proto-hint">프로토콜을 누른 뒤 <b>1번 날짜</b>를 넣으면 날짜·시간·용량이 채워져요. 시간·용량은 마지막 저장값을 기억해요.
-        <span class="sync-alltime"><input type="time" id="f_syncAllTime"><button type="button" data-action="syncApplyAllTime">시간 모두 적용</button></span>
-      </div>`;
+      <div class="sync-proto-hint">프로토콜을 누른 뒤 <b>1번 날짜</b>를 넣으면 날짜·시간·용량이 채워져요. 시간·용량은 마지막 저장값을 기억해요.</div>
+      <div class="sync-alltime"><span class="sync-proto-label">시간 일괄:</span><input type="time" id="f_syncAllTime"><button type="button" data-action="syncApplyAllTime">모든 단계에 적용</button></div>`;
 }
+/* 용량 표시: 숫자만 저장돼 있으면 ml 붙여서 */
+function doseText(d){ d = String(d==null?'':d).trim(); if(!d) return ''; return /^\d+(\.\d+)?$/.test(d) ? d+'ml' : d; }
 function readSyncStepsFromForm(){
   const steps = [];
   for(let i=1;i<=SYNC_STEPS;i++){
@@ -3352,7 +3365,7 @@ function openSyncTemplateManage(){
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
         ${custom.length ? custom.map(t=>`<div class="share-card">
           <div class="share-row"><b>${esc(t.name)}</b><button class="btn secondary small" data-action="deleteSyncTemplate" data-name="${esc(t.name)}" style="margin-left:auto;">삭제</button></div>
-          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">${t.steps.map((s,i)=>`${i+1}) ${esc(s.type)} D+${s.offset||0}${s.time?' '+ampmTime(s.time):''}${s.dose?' '+esc(s.dose):''}`).join(' · ')}</div>
+          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">${t.steps.map((s,i)=>`${i+1}) ${esc(s.type)} D+${s.offset||0}${s.time?' '+ampmTime(s.time):''}${s.dose?' '+esc(doseText(s.dose)):''}`).join(' · ')}</div>
         </div>`).join('') : '<div class="empty-state">저장한 템플릿이 없어요.</div>'}
       </div>
       <div class="modal-actions" style="margin-top:14px;"><button class="btn secondary" data-action="closeModal">닫기</button></div>
@@ -3364,7 +3377,7 @@ function syncSummary(r){
     const type = r['sync'+i+'Type'];
     const date = r['sync'+i+'Date'];
     const dose = r['sync'+i+'Dose'];
-    if(type) parts.push(`${i}) ${type}${dose?' '+dose:''}${date?' '+fmtShort(date):''}`);
+    if(type) parts.push(`${i}) ${type}${dose?' '+doseText(dose):''}${date?' '+fmtShort(date):''}`);
   }
   return parts.join(' · ');
 }
