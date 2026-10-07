@@ -2687,8 +2687,9 @@ function syncExpectedPAI(d21){
   return ov*cl*42.2 + (1-ov)*cl*37.7 + ov*(1-cl)*27.6 + (1-ov)*(1-cl)*15.4;
 }
 function syncStartPlan(animal, recs, horizon){
-  const est = estimateCycleToday(animal, recs);
-  if(!est || est.lo==null || est.hi==null || !est.baseDate) return null;
+  let est = estimateCycleToday(animal, recs);
+  if(!est || est.lo==null || est.hi==null || !est.baseDate) est = estrusBasedEst(animal, recs);   // 초음파 없으면 발정·수정일 기준
+  if(!est) return null;
   horizon = horizon || 14;
   const L = 21;                                   // 주기일은 21일 척도로 정규화돼 있음
   const days = est.days && est.days.length ? est.days : [est.lo];   // 오늘 주기일 후보(균등 가중)
@@ -2701,6 +2702,26 @@ function syncStartPlan(animal, recs, horizon){
   }
   let best = series[0]; series.forEach(x => { if(x.p > best.p + 0.05) best = x; });   // 동률이면 빠른 날
   return { series, best, today: series[0], est };
+}
+/* 초음파 없을 때: 마지막 분만 이후, 63일 이내의 발정일(또는 수정일=발정)로 오늘 주기일 추정 */
+function estrusBasedEst(animal, recs){
+  if(!recs || !recs.length || (animal && animal.fattening)) return null;
+  if(isCurrentlyPregnant(recs)) return null;
+  const today = todayStr();
+  const lastCalv = dateOnly((animal&&animal.lastCalving)||'') || latestCalvingDate(recs) || '';
+  const bases = [];
+  recs.forEach(r => {
+    const e = dateOnly(r.estrusDate||''), ai = dateOnly(r.aiDate||'');
+    if(e) bases.push(e);
+    if(ai) bases.push(ai);
+  });
+  const ok = bases.filter(d => d <= today && (!lastCalv || d >= lastCalv) && daysBetween(d, today) <= 63).sort();
+  if(!ok.length) return null;
+  const baseDate = ok[ok.length-1];
+  const cycleLen = parseInt(animal.cycleLength,10) || 21;
+  const elapsed = daysBetween(baseDate, today);
+  const day = Math.round((elapsed % cycleLen) * 21 / cycleLen);   // 21일 척도
+  return { day, lo:day, hi:day, days:[day], stale:false, cycleLen, elapsed, baseDate, basis:'발정', fromEstrus:true };
 }
 function syncPlanSpark(plan){
   const max = Math.max(...plan.series.map(x=>x.p)), min = Math.min(...plan.series.map(x=>x.p));
@@ -2820,10 +2841,14 @@ function nextEstrusForAnimal(a, recs){
     return x;
   };
   // 수기 '다음발정일'과 그 출처 기록의 기준일
-  const manRec = recs.filter(r => dateOnly(r.nextEstrusDate||''))
+  // 분만 이전 기록의 다음발정일은 무효. 또 3주기(63일) 넘게 지난 다음발정일을 주기 더해 미는 건 의미 없으니 버림
+  const lastCalv = dateOnly(a.lastCalving||'') || latestCalvingDate(recs) || '';
+  // 수기 다음발정일은 '실제 발정·수정 기록'이 있고 그 기록이 63일 이내일 때만 인정 (오래된 날짜를 주기로 밀어 만든 예정일은 안 씀)
+  const manRec = recs.filter(r => dateOnly(r.nextEstrusDate||'') && (dateOnly(r.estrusDate||'') || dateOnly(r.aiDate||'')))
+    .filter(r => { const b = dateOnly(r.estrusDate || r.aiDate); return (!lastCalv || b >= lastCalv) && daysBetween(b, today) <= 63; })
     .sort((x,y)=> dateOnly(y.nextEstrusDate).localeCompare(dateOnly(x.nextEstrusDate)))[0];
   const manual = manRec ? dateOnly(manRec.nextEstrusDate) : '';
-  const manualBase = manRec ? dateOnly(manRec.examDate || manRec.aiDate || manRec.estrusDate || '') : '';
+  const manualBase = manRec ? dateOnly(manRec.estrusDate || manRec.aiDate || '') : '';
   // 발정주기 추정
   const est = estimateCycleToday(a, recs);
   const estOk = est && typeof est.day==='number' && est.baseDate;
@@ -2880,7 +2905,7 @@ function renderOpenView(){
     let due;
     const rt = repeatTag(a, recs);
     if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)}</span>${plan?` <span class="open-basis">${rt}적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
-    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span></span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파)</span>`;
+    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span></span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} ${plan.est.fromEstrus?'발정 기준':'초음파'})</span>`;
     else due = `<span class="open-basis">${esc(basis)}</span><span class="open-date">발정 ${fmtShort(date)} ${ddLabel(dd)}</span>`;
     return `
     <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
