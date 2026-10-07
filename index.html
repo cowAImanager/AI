@@ -334,6 +334,9 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-batch-item .sb-status{margin-left:auto;font-size:11px;color:var(--ink-soft);white-space:nowrap;}
 .sync-batch-item input{width:16px;height:16px;flex-shrink:0;}
 .open-group{background:var(--surface);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin:8px 0 12px;}
+.open-group.muted{border-color:var(--line);background:var(--surface-alt);}
+.tag-chip.insync{opacity:.6;}
+.tag-chip.insync i,.open-group-sub i{font-style:normal;font-size:9.5px;color:var(--accent);font-weight:800;}
 .open-group-h{font-size:14px;font-weight:800;color:var(--primary-dark);display:flex;align-items:center;gap:8px;}
 .open-group-n{font-size:11.5px;font-weight:700;color:var(--ink-soft);}
 .open-group-sub{font-size:11.5px;color:var(--ink-soft);margin:3px 0 8px;}
@@ -2802,8 +2805,8 @@ function renderOpenView(){
     if(a.fattening) return;
     if(awaitingPregOutcome(recs)) return;
     const syncAi = nextScheduledAiDate(owner, a.animalId);
-    if(syncAi){ withDate.push({ a, date:syncAi, dd:daysBetween(today, syncAi), basis:'동기화', st }); return; }
     const plan = syncStartPlan(a, recs);
+    if(syncAi){ withDate.push({ a, date:syncAi, dd:daysBetween(today, syncAi), basis:'동기화', st, plan, recs }); return; }
     if(plan){
       withDate.push({ a, date:plan.best.date, dd:plan.best.k, basis:'적기', st, plan, recs });
     } else {
@@ -2827,13 +2830,13 @@ function renderOpenView(){
 
   const rowsHtml = withDate.map(({a,date,dd,basis,st,plan}) => {
     let due;
-    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}`;
+    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}${plan?` <span class="open-basis">적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
     else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span>${syncPlanSpark(plan)}<span class="open-basis">오늘 시작 ${plan.today.p.toFixed(0)}% · 오늘 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파${plan.est.stale?` ${plan.est.elapsed}일 경과 · 20~22일 주기 가정`:''})</span>`;
     else due = `<span class="open-basis">${esc(basis)}</span> 발정 ${fmtShort(date)} ${ddLabel(dd)}`;
     return `
-    <div class="open-row oneline ${basis==='적기'?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+    <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
-      <div class="open-name">${esc(animalShortName(a))}</div>
+      ${animalShortName(a)!==a.animalId?`<div class="open-name">${esc(animalShortName(a))}</div>`:''}
       <div class="open-due">${due}</div>
       <div class="open-chev">›</div>
     </div>`; }).join('');
@@ -2841,7 +2844,7 @@ function renderOpenView(){
   const noInfoHtml = noInfo.map(({a,st}) => `
     <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
-      <div class="open-name">${esc(animalShortName(a))}</div>
+      ${animalShortName(a)!==a.animalId?`<div class="open-name">${esc(animalShortName(a))}</div>`:''}
       <div class="open-due muted">정보없음</div>
       <div class="open-chev">›</div>
     </div>`).join('');
@@ -2849,7 +2852,7 @@ function renderOpenView(){
   const noRecordHtml = noRecord.map(({a}) => `
     <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
-      <div class="open-name">${esc(animalShortName(a))}</div>
+      ${animalShortName(a)!==a.animalId?`<div class="open-name">${esc(animalShortName(a))}</div>`:''}
       <div class="open-due muted">기록 없음</div>
       <div class="open-chev">›</div>
     </div>`).join('');
@@ -2860,20 +2863,24 @@ function renderOpenView(){
     <div class="open-list">${noRecordHtml}</div>` : '';
 
   // 동기화 묶음 제안
-  const planItems = withDate.filter(x=>x.basis==='적기');
+  const planItems = withDate.filter(x=>x.plan);
   let groupHtml = '';
   if(planItems.length){
     const gp = syncGroupPlan(planItems);
-    const chips = ms => ms.map(c=>`<span class="tag-chip sm" data-animal-id="${esc(c.a.animalId)}">${esc(c.a.animalId)}</span>`).join('');
+    const inSyncSet = new Set(withDate.filter(x=>x.basis==='동기화').map(x=>x.a.animalId));
+    const chips = ms => ms.map(c=>`<span class="tag-chip sm ${inSyncSet.has(c.a.animalId)?'insync':''}" data-animal-id="${esc(c.a.animalId)}" ${inSyncSet.has(c.a.animalId)?'title="동기화 진행 중"':''}>${esc(c.a.animalId)}${inSyncSet.has(c.a.animalId)?' <i>진행중</i>':''}</span>`).join('');
     groupHtml = `<div class="open-group">
       <div class="open-group-h">동기화 묶음 제안 <span class="open-group-n">${planItems.length}두 → ${gp.groups.length}회</span></div>
-      <div class="open-group-sub">각 소의 적기(최고 기대치 -5%p 이내)에 가장 많이 겹치는 날부터 묶었어요. 남은 소는 다음 날짜로.</div>
+      <div class="open-group-sub">각 소의 적기(최고 기대치 -5%p 이내)에 가장 많이 겹치는 날부터 묶었어요. 남은 소는 다음 날짜로. <i>진행중</i>은 이미 동기화가 잡힌 소(일괄 입력에선 빠짐).</div>
       ${gp.groups.map((g,i)=>`<div class="open-group-row">
         <div class="open-group-date"><b>${i+1}차</b> ${fmtShort(g.date)} (${weekdayKr(g.date)}) ${g.k===0?'<span class="open-dd today">오늘</span>':`<span class="open-dd">D-${g.k}</span>`}<span class="open-pai">${g.members.length}두 · 평균 ${g.avg.toFixed(0)}%</span>
-          ${isAdmin()?`<button class="btn small open-group-btn" data-action="openSyncBatchGroup" data-date="${g.date}" data-ids="${esc(g.members.map(c=>c.a.animalId).join('|'))}">⚡ 일괄 입력</button>`:''}</div>
+          ${isAdmin()?`<button class="btn small open-group-btn" data-action="openSyncBatchGroup" data-date="${g.date}" data-ids="${esc(g.members.filter(c=>!inSyncSet.has(c.a.animalId)).map(c=>c.a.animalId).join('|'))}">⚡ 일괄 입력</button>`:''}</div>
         <div class="open-group-ids">${chips(g.members)}</div>
       </div>`).join('')}
     </div>`;
+  } else if(withDate.length + noInfo.length){
+    const inSync = withDate.filter(x=>x.basis==='동기화').length;
+    groupHtml = `<div class="open-group muted"><div class="open-group-sub" style="margin:0;">묶음 제안 없음 — 최근 초음파(난소 소견)가 있는 공태 소가 없어요.${inSync?` 동기화 진행 중 ${inSync}두는 제외.`:''} 초음파를 넣으면 시작 적기가 계산돼요.</div></div>`;
   }
   const mainList = (withDate.length + noInfo.length) ? `${groupHtml}<div class="open-list">${rowsHtml}${noInfoHtml}</div>`
     : `<div class="empty-msg" style="margin:6px 0;">미수정 상태로 관리할 개체가 없어요.</div>`;
