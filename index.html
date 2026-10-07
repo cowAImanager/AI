@@ -541,6 +541,14 @@ main{flex:1;padding:18px 20px 70px;}
 .sched-table th.corner{position:sticky;left:0;top:0;z-index:4;background:var(--surface-alt);min-width:180px;text-align:left;padding:7px 12px;}
 .sched-table td.rowhead{position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;padding:8px 10px;min-width:180px;}
 .rowhead-inner{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.rowhead-chips{display:flex;}
+.rowhead-n{font-size:10.5px;font-weight:800;color:var(--primary-dark);background:var(--green-soft);border-radius:6px;padding:1px 6px;white-space:nowrap;}
+.allsched-chips{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 auto;min-width:0;}
+.allsched-item.multi{flex-direction:column;align-items:stretch;gap:6px;}
+.allsched-item.multi .allsched-note{order:-1;flex:0 0 auto;}
+.allsched-item.multi .allsched-chips{flex:1 1 auto;}
+.rowhead-chips{flex-direction:row;flex-wrap:wrap;gap:3px 4px;max-width:270px;}
+.allsched-n{font-size:10px;font-weight:800;color:var(--primary-dark);background:var(--green-soft);border-radius:6px;padding:1px 6px;margin-left:4px;}
 .sched-cell{padding:0;}
 .sched-cell.today{background:var(--today-cell-bg);}
 .sched-cell.auto input{color:var(--primary);font-style:italic;opacity:.85;}
@@ -1088,7 +1096,9 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .open-group-row{padding:6px 0 4px;}
   .open-group-date{font-size:12px;gap:6px;}
   .open-group-meta{font-size:11px;}
-  .open-group-btn{padding:3px 8px;font-size:11px;}
+  .open-group-btn{padding:2px 7px;font-size:10.5px;height:24px;}
+  .open-group-date{font-size:11.5px;gap:5px;}
+  .open-group-date b{font-size:12px;}
   .open-group-ids{gap:4px;margin-top:4px;}
   .open-group-busy{font-size:10.5px;}
 }
@@ -2362,16 +2372,23 @@ function renderScheduleAgenda(){
   if(!rows.length){
     body = `<div class="empty-state">이 기간에 표시할 일정이 없어요.${isAdmin()?'<br>아래 + 일정 버튼으로 추가할 수 있어요.':''}</div>`;
   } else {
-    let last = '';
+    // 같은 날 · 같은 내용(자동 일정)은 개체를 한 줄에 묶음. 수동 일정은 개별 편집이 필요하니 그대로
+    const merged = [];
     rows.forEach(r => {
+      const key = [r.date, r.note, r.done?1:0, r.skipped?1:0, r.isAuto?1:0].join('|');
+      const g = (!r.manual) ? merged.find(x => x.key===key) : null;
+      if(g) g.aids.push(r.aid); else merged.push(Object.assign({ key, aids:[r.aid] }, r));
+    });
+    let last = '';
+    merged.forEach(r => {
       if(r.date !== last){
         last = r.date;
         body += `<div class="allsched-date ${r.date===today?'allsched-today':''}">${fmtShort(r.date)} (${weekdayKr(r.date)})${r.date===today?' · 오늘':''}</div>`;
       }
       const tappable = r.manual && isAdmin();
-      body += `<div class="allsched-item ${r.done?'done':''} ${r.skipped?'skipped':''} ${r.isAuto?'auto':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
-        <span class="tag-chip sm" data-animal-id="${esc(r.aid)}">${esc(r.aid)}</span>
-        <span class="allsched-note">${esc(r.note)}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
+      body += `<div class="allsched-item ${r.done?'done':''} ${r.skipped?'skipped':''} ${r.isAuto?'auto':''} ${r.aids.length>1?'multi':''}" ${tappable?`data-action="editSchedItem" data-aid="${esc(r.aid)}" data-date="${r.date}" style="cursor:pointer;"`:''}>
+        <span class="allsched-chips">${r.aids.map(id=>`<span class="tag-chip sm" data-animal-id="${esc(id)}">${esc(id)}</span>`).join('')}</span>
+        <span class="allsched-note">${esc(r.note)}${r.aids.length>1?` <span class="allsched-n">${r.aids.length}두</span>`:''}${r.isAuto?' <span style="font-size:10px;opacity:.7;">(자동)</span>':''}</span>
       </div>`;
     });
   }
@@ -2403,8 +2420,9 @@ function renderScheduleGrid(){
     <th class="${isWeekend(d)?'weekend':''} ${d===today?'today':''}">${fmtShort(d)}<br>${weekdayKr(d)}</th>
   `).join('');
 
-  const bodyRows = animalIds.map(aid => {
-    const safeId = aid.replace(/\s+/g,'_');
+  // 개체별 셀 데이터 계산 → (1) 기간 안에 일정이 하나도 없는 개체는 숨김 (방금 추가한 개체는 예외)
+  //                      (2) 모든 셀이 동일한 개체들은 한 줄로 묶음 (칸 수정은 묶인 개체 전부에 적용)
+  const rowsData = animalIds.map(aid => {
     const cells = dates.map(d => {
       const manual = DATA.schedule.find(s=>s.owner===UI.owner && s.animalId===aid && s.date===d);
       let autoEntries = (auto[aid]||{})[d] || [];
@@ -2418,23 +2436,36 @@ function renderScheduleGrid(){
       const isAuto = !manual && !!autoText;
       const done = isCellDone(UI.owner, aid, d);
       const skipped = isCellSkipped(UI.owner, aid, d);
-      const hasContent = !!(displayVal);
-      return `<td class="sched-cell ${d===today?'today':''} ${isAuto?'auto':''} ${done&&hasContent?'done':''} ${skipped&&hasContent?'skipped':''}">
+      return { d, displayVal, autoText, isAuto, done, skipped, hasContent: !!displayVal };
+    });
+    const hasAny = cells.some(c=>c.hasContent);
+    const sig = cells.map(c => [c.displayVal, c.autoText, c.isAuto?1:0, c.done?1:0, c.skipped?1:0].join('\u0001')).join('\u0002');
+    return { aid, cells, hasAny, sig };
+  }).filter(r => r.hasAny || r.aid===UI.schedKeepAid);
+  const groups = [];
+  rowsData.forEach(r => {
+    const g = r.hasAny ? groups.find(x => x.sig===r.sig) : null;
+    if(g) g.aids.push(r.aid); else groups.push({ sig:r.sig, aids:[r.aid], cells:r.cells });
+  });
+  const bodyRows = groups.map(g => {
+    const aid = g.aids[0];
+    const safeId = aid.replace(/\s+/g,'_');
+    const aidsAttr = g.aids.length>1 ? ` data-aids="${esc(g.aids.join('|'))}"` : '';
+    const cells = g.cells.map(c => `<td class="sched-cell ${c.d===today?'today':''} ${c.isAuto?'auto':''} ${c.done&&c.hasContent?'done':''} ${c.skipped&&c.hasContent?'skipped':''}">
         <div class="sched-cell-inner">
-          <input type="text" id="sc_${safeId}_${d}" data-aid="${esc(aid)}" data-date="${d}" value="${esc(displayVal)}" ${isAuto?'placeholder="'+esc(autoText)+'"':''}>
+          <input type="text" id="sc_${safeId}_${c.d}" data-aid="${esc(aid)}"${aidsAttr} data-date="${c.d}" value="${esc(c.displayVal)}" ${c.isAuto?'placeholder="'+esc(c.autoText)+'"':''}>
         </div>
-      </td>`;
-    }).join('');
-    return `<tr>
+      </td>`).join('');
+    return `<tr class="${g.aids.length>1?'merged':''}">
       <td class="rowhead">
-        <div class="rowhead-inner">
-          <span class="tag-chip sm" data-animal-id="${esc(aid)}">${esc(aid)}</span>
-          <button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">${svgIcon('x',14)}</button>
+        <div class="rowhead-inner ${g.aids.length>1?'multi':''}">
+          <div class="rowhead-chips">${g.aids.map(id=>`<span class="tag-chip sm" data-animal-id="${esc(id)}">${esc(id)}</span>`).join('')}</div>
+          ${g.aids.length>1?`<span class="rowhead-n">${g.aids.length}두</span>`:`<button class="iconbtn" data-action="removeScheduleAnimal" data-id="${esc(aid)}">${svgIcon('x',14)}</button>`}
         </div>
       </td>
       ${cells}
     </tr>`;
-  }).join('') || `<tr><td class="rowhead">—</td><td colspan="${dates.length}"><div class="empty-state" style="padding:14px;">개체를 추가해주세요</div></td></tr>`;
+  }).join('') || `<tr><td class="rowhead">—</td><td colspan="${dates.length}"><div class="empty-state" style="padding:14px;">이 기간에 일정이 있는 개체가 없어요. 개체를 추가하고 칸을 채워보세요.</div></td></tr>`;
 
   const existingIds = ownerAnimals().map(a=>a.animalId);
 
@@ -2780,7 +2811,11 @@ function syncGroupPlan(items, tol){
     const members = left.filter(c=>c.ok[bestK]);
     left = left.filter(c=>!c.ok[bestK]);
     const avg = members.reduce((a,c)=>a+c.plan.series[bestK].p,0)/members.length;
-    groups.push({ k:bestK, date: addDays(todayStr(), bestK), members, avg });
+    // 이 묶음 전원이 적기 범위에 드는 연속 기간
+    let k0 = bestK, k1 = bestK;
+    while(k0 > 0 && members.every(c=>c.ok[k0-1])) k0--;
+    while(k1 < H && members.every(c=>c.ok[k1+1])) k1++;
+    groups.push({ k:bestK, k0, k1, date: addDays(todayStr(), bestK), from: addDays(todayStr(), k0), to: addDays(todayStr(), k1), open: k1===H, members, avg });
   }
   groups.sort((x,y)=>x.k-y.k);
   return { groups, unplanned: left };
@@ -2982,7 +3017,7 @@ function renderOpenView(){
       <div class="open-group-h">동기화 묶음 제안 <span class="open-group-n">${planItems.length}두 → ${gp.groups.length}회</span></div>
       <div class="open-group-sub">적기(최고치 -5%p 이내) 겹치는 날끼리 묶음 · 진행 중 소는 일괄 입력 제외</div>
       ${gp.groups.map((g,i)=>`<div class="open-group-row">
-        <div class="open-group-date"><b>${i+1}차</b> ${fmtShort(g.date)} (${weekdayKr(g.date)}) ${g.k===0?'<span class="open-dd today">오늘</span>':`<span class="open-dd">D-${g.k}</span>`}<span class="open-group-meta">${g.members.length}두 · ${g.avg.toFixed(0)}%</span>
+        <div class="open-group-date"><b>${i+1}차</b> ${g.k0===g.k1 ? `${fmtShort(g.date)}(${weekdayKr(g.date)})` : `${fmtShort(g.from)}(${weekdayKr(g.from)})~${g.open?'':(fmtShort(g.to).slice(0,3)===fmtShort(g.from).slice(0,3)?fmtShort(g.to).slice(3):fmtShort(g.to))+'('+weekdayKr(g.to)+')'}`} ${g.k0===0?'<span class="open-dd today">오늘</span>':`<span class="open-dd">D-${g.k0}</span>`}<span class="open-group-meta">${g.members.length}두 · ${g.avg.toFixed(0)}%</span>
           ${isAdmin()&&g.members.some(c=>!inSyncSet.has(c.a.animalId))?`<button class="btn secondary small open-group-btn" data-action="openSyncBatchGroup" data-date="${g.date}" data-ids="${esc(g.members.filter(c=>!inSyncSet.has(c.a.animalId)).map(c=>c.a.animalId).join('|'))}">일괄 입력</button>`:''}</div>
         <div class="open-group-ids">${chips(g.members)}</div>
       </div>`).join('')}
@@ -3111,7 +3146,7 @@ const KV_CATS = [
 ============================================================ */
 function inhouseAiCountForOwner(owner, year){
   return DATA.records.filter(r=>{
-    if(r.owner!==owner || !r.aiDate) return false;
+    if((owner && r.owner!==owner) || !r.aiDate) return false;
     if(year && String(r.aiDate).slice(0,4)!==String(year)) return false;
     const v = (r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'');
     return (parseInt(String(v).trim(),10)||0) >= 1;
@@ -3162,7 +3197,7 @@ function renderOwnerInfoView(){
         <div class="info-row cols3 ai-count-row">
           <div class="field"><label>내 수정 누적</label><div class="val"><b>${inhouseAiCountForOwner(UI.owner)}</b>회</div></div>
           <div class="field"><label>내 수정 ${y}년</label><div class="val"><b>${inhouseAiCountForOwner(UI.owner, y)}</b>회</div></div>
-          <div class="field"><label>농장 전체 수정 ${y}년</label><div class="val"><b>${totalAiCountForOwner(UI.owner, y)}</b>회 <span class="kv2-note" style="display:inline;font-weight:400;color:var(--ink-soft);">(내 수정 포함)</span></div></div>
+          <div class="field"><label>전 농장 내 수정 ${y}년</label><div class="val"><b>${inhouseAiCountForOwner(null, y)}</b>회 <span class="kv2-note" style="display:inline;font-weight:400;color:var(--ink-soft);">(누적 ${inhouseAiCountForOwner(null)}회)</span></div></div>
         </div>`; })()}
       </div>
       ${kvBlock('feeds','사료')}
@@ -4490,6 +4525,7 @@ function actionAddScheduleAnimal(){
   ensureAnimalExists(UI.owner, id);
   ensureOwnerMeta(UI.owner);
   if(!DATA.scheduleAnimals[UI.owner].includes(id)) DATA.scheduleAnimals[UI.owner].push(id);
+  UI.schedKeepAid = id;   // 일정이 아직 없어도 표에 보이게
   saveState();
   renderMain();
   toast('스케줄에 추가했어요.');
@@ -4519,7 +4555,7 @@ function actionInsertChip(code){
   const el = document.getElementById(UI.focusedCell.id);
   if(!el){ toast('칸을 다시 선택해주세요.'); return; }
   el.value = code;
-  updateScheduleCell(UI.focusedCell.aid, UI.focusedCell.date, code);
+  (UI.focusedCell.aids ? UI.focusedCell.aids.split('|') : [UI.focusedCell.aid]).forEach(aid => updateScheduleCell(aid, UI.focusedCell.date, code));
 }
 
 /* ---------- 일정 항목 추가/수정 모달 (목록 보기용) ---------- */
@@ -5483,7 +5519,7 @@ function initEvents(){
   });
   document.addEventListener('change', e=>{
     const t = e.target;
-    if(t.matches && t.matches('.sched-cell input')){ if(!isAdmin()){ t.value = DATA.schedule.find(s=>s.owner===UI.owner&&s.animalId===t.dataset.aid&&s.date===t.dataset.date)?.note||''; return noAdminToast(); } updateScheduleCell(t.dataset.aid, t.dataset.date, t.value); }
+    if(t.matches && t.matches('.sched-cell input')){ if(!isAdmin()){ t.value = DATA.schedule.find(s=>s.owner===UI.owner&&s.animalId===t.dataset.aid&&s.date===t.dataset.date)?.note||''; return noAdminToast(); } (t.dataset.aids ? t.dataset.aids.split('|') : [t.dataset.aid]).forEach(aid => updateScheduleCell(aid, t.dataset.date, t.value)); }
     else if(t.matches && t.matches('.aiplan-kpn')){ if(!isAdmin()){ t.value = getAiPlanKpn(t.dataset.owner, t.dataset.aid, t.dataset.date); return noAdminToast(); } updateAiPlanKpn(t.dataset.owner, t.dataset.aid, t.dataset.date, t.value); }
     else if(t.id==='dateFromInput'){ UI.dateFrom=t.value; renderMain(); }
     else if(t.id==='dateToInput'){ UI.dateTo=t.value; renderMain(); }
@@ -5509,7 +5545,7 @@ function initEvents(){
   });
   document.addEventListener('focusin', e=>{
     if(e.target.matches && e.target.matches('.sched-cell input')){
-      UI.focusedCell = { id:e.target.id, aid:e.target.dataset.aid, date:e.target.dataset.date };
+      UI.focusedCell = { id:e.target.id, aid:e.target.dataset.aid, aids:e.target.dataset.aids, date:e.target.dataset.date };
     }
   });
   document.addEventListener('keydown', e=>{
