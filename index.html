@@ -347,6 +347,7 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-stat-num{font-size:25px;font-weight:900;color:var(--ink);line-height:1;}
 .preg-stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:7px;line-height:1.35;}
 .preg-stat-sub{display:block;margin-top:3px;font-weight:700;font-size:10px;color:var(--primary-dark);white-space:nowrap;}
+.preg-stat-sub.all{color:var(--ink-soft);font-weight:600;}
 .preg-stat.pregcol{background:var(--green-soft);}
 .preg-stat.pregcol .preg-stat-num{color:var(--primary-dark);}
 .preg-stat.ratecol{background:var(--accent-soft);}
@@ -940,6 +941,15 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .open-row.oneline .open-due.muted{color:var(--ink-soft);font-weight:600;}
 
 .open-st.rebreed{color:var(--notpregnant-bg);background:var(--notpregnant-soft,#FBE9E7);}
+.open-sync-tag.plan{background:var(--accent);}
+.open-row.stale{opacity:.55;}
+.open-row.stale:hover{opacity:.85;}
+.open-pai{font-size:13px;font-weight:900;color:var(--accent);}
+.sync-spark{display:inline-flex;align-items:flex-end;gap:1.5px;height:14px;margin:0 2px;}
+.sync-spark i{display:inline-block;width:4px;border-radius:1px;background:var(--line);}
+.sync-spark i.now{background:var(--ink-soft);}
+.sync-spark i.best{background:var(--accent);}
+.open-row.oneline .open-due{flex-wrap:wrap;row-gap:2px;}
 .open-st.unbred{color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);}
 
 /* 공태관리 — 모바일 글자 밀도 (다른 뷰와 동일하게) */
@@ -962,6 +972,13 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .open-row.oneline .open-name{font-size:12.5px;}
   .open-row.oneline .open-due{font-size:11.5px;}
   .open-row.oneline .open-due b{font-size:12.5px;}
+  /* 동기화 적기 행: 모바일에선 두 줄 (윗줄 번호·적기·날짜·%, 아랫줄 그래프·근거) */
+  .open-row.oneline.plan{flex-wrap:wrap;row-gap:4px;column-gap:6px;}
+  .open-row.oneline.plan .open-name,.open-row.oneline.plan .open-chev{display:none;}
+  .open-row.oneline.plan .open-due{display:contents;font-size:11.5px;}
+  .open-row.oneline.plan .open-due .open-pai{font-size:12.5px;}
+  .open-row.oneline.plan .open-due .sync-spark{flex:0 0 100%;margin:0;}
+  .open-row.oneline.plan .open-due .open-basis{flex:0 0 100%;width:100%;box-sizing:border-box;white-space:normal;line-height:1.4;}
 }
 
 .home-link{display:inline-flex;align-items:center;border-radius:8px;transition:opacity .15s;}
@@ -1660,10 +1677,11 @@ function parseUltra(text){
   const foll = allMm.slice();
   if(clSize!=null){ const i=foll.indexOf(clSize); if(i>-1) foll.splice(i,1); }
   const follMax = foll.length ? Math.max(...foll) : null;
+  const follBig = foll.filter(v => v >= 10).length;   // 10mm 넘는 난포 개수 (좌·우 각각 적힌 경우만 셀 수 있음)
   let dom = null;
   const dm = clean.match(/(?:우성|우세)난포[^\d]{0,3}(\d+(?:\.\d+)?)\s*mm/);
   if(dm) dom = parseFloat(dm[1]);
-  return { clMentioned, clSize, smallFoll, follMax, dom, cyst };
+  return { clMentioned, clSize, smallFoll, follMax, follBig, dom, cyst };
 }
 function recHasCyst(r){
   if(!r) return false;
@@ -1758,18 +1776,36 @@ function hasEstrusSign(r){
   return false;
 }
 function cycleDayRange(p, estrus){
-  const cl=p.clSize, clM=p.clMentioned, f=p.follMax, dom=p.dom, small=p.smallFoll;
-  if(!clM && f!=null && f>=12) return [0,0];
-  if((!clM || (cl!=null && cl<=10)) && small) return [1,2];
+  /* 직장검사 탭 '날짜별 난소 모식(21일 2파)' 기준. 황체 크기 + 가장 큰 난포 + 10mm 넘는 난포 개수로 주기일 범위를 추정.
+     황체 크기 없이 '황체'만 적힌 기록은 20mm(기능성)로 간주 */
+  const cl = p.clSize!=null ? p.clSize : (p.clMentioned ? 20 : null);
+  const f  = Math.max(p.follMax!=null ? p.follMax : -1, p.dom!=null ? p.dom : -1); const fm = f>=0 ? f : null;
+  const small = p.smallFoll, big = p.follBig||0;
+  const noCL = cl==null;
   if(cl!=null && cl>=20){
-    // 발정징후 듣고 진료 왔는데 큰 황체 + 우성난포가 보이면 → 1난포파 우성난포(주기 중반)
-    if(estrus && ((dom!=null && dom>=8) || (f!=null && f>=8))) return [7,9];
-    if((dom!=null && dom>=15) || (f!=null && f>=15)) return [7,9];
-    if(small) return [10,12];
-    if(f!=null && f>=8) return [13,17];
+    if(estrus && fm!=null && fm>=8) return [7,9];            // 큰 황체 + 난포 + 발정 비슷한 징후 → 1차 우성난포 E2(주기 중반)
+    if(fm!=null && fm>=15) return [7,10];                    // 황체 25~30 + 1차 우성난포 15~18mm
+    if(fm!=null && fm>=10 && big>=2) return [14,16];         // 10mm 넘는 난포 2개(폐쇄된 1차+2차) → 황체기 후반
+    if(fm!=null && fm>=10) return [5,6];                     // 황체 20~25 + 1차 우성난포 12~14mm
+    if(small || fm==null || fm<10) return [11,13];           // 큰 황체 + 소난포만 → 1차 폐쇄·2차 난포파 출현
   }
-  if(cl!=null && cl>=15 && f!=null && f>=8) return [3,6];
-  if(cl!=null && cl>=10 && cl<=20 && f!=null && f>=10) return [18,20];
+  if(cl!=null && cl>=15 && cl<20){
+    if(fm!=null && fm>=14) return [19,20];                   // 퇴행 황체(<20) + 성숙 난포 15~18mm
+    if(fm!=null && fm>=8)  return [3,4];                     // 형성 중 황체 15~18 + 1차 우성난포 8~10mm
+    if(small || fm==null)  return [2,3];
+  }
+  if(cl!=null && cl>=10 && cl<15){
+    if(fm!=null && fm>=14) return [20,21];                   // 퇴행 황체 + 배란 직전 난포
+    return [2,3];                                            // 황체 10~15 + 소난포 → 배란 2~3일 후
+  }
+  if(cl!=null && cl<10){
+    if(fm!=null && fm>=15) return [0,0];                     // 퇴행 황체(작음) + 배란 난포 → 발정일
+    return [1,2];                                            // 적체·작은 황체 + 소난포
+  }
+  if(noCL){
+    if(fm!=null && fm>=15) return [0,0];                     // 황체 안 보임 + 큰 난포 → 발정·배란 전 (낭종·난소정지 감별 필요)
+    if(small || (fm!=null && fm<10)) return [1,2];           // 황체 안 보임 + 소난포 → 배란 직후
+  }
   return null;
 }
 function estimateCycleToday(animal, recs){
@@ -1800,8 +1836,21 @@ function estimateCycleToday(animal, recs){
   const rng = cycleDayRange(p, hasEstrusSign(ultraRec));
   if(!rng) return { undetermined:true, cycleLen, baseDate };
   const elapsed = daysBetween(baseDate, todayStr());
-  let day = (((rng[0]+rng[1])/2)*(cycleLen/21) + elapsed) % cycleLen; if(day<0) day+=cycleLen;
-  return { day: Math.round(day), cycleLen, elapsed, baseDate, basis:`초음파 ${rng[0]}~${rng[1]}일`, mode };
+  // 초음파가 21일 넘게 지났으면 그 사이 발정이 지났다는 가정이라, 주기 길이를 20~22일로 폭을 주고 추정(신뢰도 낮음 표시)
+  const stale = elapsed > 21;
+  const lens = stale ? [20,21,22] : [cycleLen];
+  const set = new Set();
+  lens.forEach(L => { const sc = L/21;
+    for(let r=rng[0]; r<=rng[1]; r++){ let x = Math.round((r*sc + elapsed) % L); if(x<0) x+=L; set.add(Math.round(x*21/L) % 21); } });
+  const days = [...set].sort((a,b)=>a-b);
+  // 연속 구간(21일 순환)으로 lo~hi 표시
+  let lo = days[0], hi = days[days.length-1];
+  if(days.length>1 && hi-lo+1 > days.length){                   // 0 근처를 넘는 경우: 가장 큰 빈틈 뒤가 시작
+    let gapAt=-1, gapMax=0; for(let i=0;i<days.length;i++){ const g=((days[(i+1)%days.length]-days[i])+21)%21; if(g>gapMax){gapMax=g;gapAt=i;} }
+    lo = days[(gapAt+1)%days.length]; hi = days[gapAt];
+  }
+  const day = days[Math.floor(days.length/2)];
+  return { day, lo, hi, days, stale, cycleLen, elapsed, baseDate, basis:`초음파 ${rng[0]}~${rng[1]}일${stale?' · 20~22일 주기 가정':''}`, mode, ultra };
 }
 function cycleTodayHtml(animal, recs){
   const r = estimateCycleToday(animal, recs);
@@ -1811,7 +1860,8 @@ function cycleTodayHtml(animal, recs){
   if(r.cystSkip) return `<span style="color:var(--ink-soft);">낭종 — 추정 안 함</span>`;
   if(r.needManual) return `<span style="color:var(--ink-soft);">3난포파 · 주기일 입력 필요</span>`;
   if(r.undetermined) return `<span style="color:var(--ink-soft);">${r.cyst?'낭종 — 추정 제외':'초음파로 판정 불가'}</span>`;
-  return `<span class="cycle-today-main" style="color:var(--accent);">약 ${r.day}일째</span>`
+  const dayTxt = (r.lo!=null && r.hi!=null && r.lo!==r.hi) ? `약 ${r.lo}~${r.hi}일째` : `약 ${r.day}일째`;
+  return `<span class="cycle-today-main" style="color:var(--accent);${r.stale?'opacity:.55;':''}">${dayTxt}</span>${r.stale?' <span style="font-size:11px;color:var(--ink-soft);">(신뢰도 낮음)</span>':''}`
     + `<div style="font-size:11px;color:var(--ink-soft);font-weight:500;margin-top:2px;">`
     + `${r.mode==='3'?'3':'2'}난포파 · ${r.basis} · 진료후 ${r.elapsed}일</div>`;
 }
@@ -2438,56 +2488,8 @@ function renderPregCheckView(){
   const waitingHtml = waiting.map(renderRow).join('');
   const fattenHtml  = fatten.map(renderRow).join('');
 
-  // 수태율: 임신감정(O/X)이 난 라운드 중 '그 라운드의 수정을 내가 한 것'만 집계.
-  //   (감정은 감정한 날, 내수정횟수는 수정한 날에 적힐 수 있으므로 — 같은 줄이 아니어도
-  //    개체별 날짜순으로 보며 '직전 수정' 기록의 내수정 여부로 내 라운드인지 판정)
-  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
-  const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
-  const inhN = r => { const n = parseInt(inh(r),10); return isNaN(n) ? 0 : n; };
-  const pregOf = r => (r.pregnant||'').trim().toUpperCase();
-  const allByAnimal = {};
-  DATA.records.filter(r=>r.owner===UI.owner).forEach(r => { (allByAnimal[r.animalId] = allByAnimal[r.animalId] || []).push(r); });
-
-  let totalServices = 0, svcSuccess = 0;   // 분모: 내가 수정한 라운드의 감정 수 / 분자: 그중 O
-  let fsSuccess = 0, fsTotal = 0;          // 첫수정 수태율
-  let concCows = 0, concRounds = 0;        // 수태당 수정횟수: 수태 소가 임신까지 걸린 수정(라운드) 합/수
-  Object.values(allByAnimal).forEach(list => {
-    list.sort((a,b)=> dkeyP(a).localeCompare(dkeyP(b)));
-    // 수정횟수대비 수태율 — 각 감정(O/X)을 직전 수정의 내수정 여부와 연결
-    let lastAiMine = null;   // 가장 최근 수정(aiDate)을 내가 했는지
-    let roundToConc = 0;     // 이번 임신까지 누적 내수정 라운드(O 나오면 확정·리셋)
-    list.forEach(r => {
-      if(r.aiDate){
-        lastAiMine = inhN(r) >= 1;
-        if(lastAiMine) roundToConc++;    // 실제 수정(AI)이 발생할 때마다 라운드 카운트 (진단 유무와 무관)
-      }
-      const p = pregOf(r);
-      if(p==='O' || p==='X'){
-        let mine = lastAiMine;
-        if(mine===null) mine = inhN(r) >= 1;   // 직전 수정이 없으면 감정 기록 자체의 내수정 사용
-        if(mine){
-          totalServices++; if(p==='O') svcSuccess++;
-          if(p==='O'){ concCows++; concRounds += (roundToConc||1); roundToConc = 0; }  // 임신 성립 → 그 소가 걸린 수정 횟수 확정
-        }
-      }
-    });
-    // 첫수정 수태율 — '내수정 1' 실제수정이 분모(결과 난 사이클만), 재수정 없이 O면 성공
-    const firstIdx = [];
-    list.forEach((r,i)=>{ if(inh(r)==='1' && r.aiDate) firstIdx.push(i); });
-    firstIdx.forEach((startI, k) => {
-      const endI = (k+1 < firstIdx.length) ? firstIdx[k+1] : list.length;
-      const cycle = list.slice(startI, endI);
-      const hasResult = cycle.some(r => pregOf(r)==='O' || pregOf(r)==='X');
-      if(!hasResult) return;
-      fsTotal++;
-      const hasReAI = cycle.some(r => inhN(r) >= 2);
-      const hasO = cycle.some(r => pregOf(r)==='O');
-      if(!hasReAI && hasO) fsSuccess++;
-    });
-  });
-  const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
-  const avgServices = concCows ? (concRounds / concCows).toFixed(1) : '—';
-  const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
+  const { fsSuccess, fsTotal, concCows, concRounds, avgServices, rateFirst } = pregStatsFor(UI.owner);
+  const ALL = pregStatsFor('');   // 전체 농장 합산
 
   const pf = UI.pregFilter || 'all';   // all | active | pregnant | calvings
   const showActive = (pf==='all' || pf==='active');
@@ -2539,11 +2541,11 @@ function renderPregCheckView(){
         </div>
         <div class="preg-stat ratecol">
           <div class="preg-stat-num">${rateFirst}%</div>
-          <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">수태 ${fsSuccess} / 첫수정 ${fsTotal}</span></div>
+          <div class="preg-stat-label">첫수정 수태율 <span class="preg-stat-sub">수태 ${fsSuccess} / 첫수정 ${fsTotal}</span><span class="preg-stat-sub all">전체 농장 ${ALL.rateFirst}% (${ALL.fsSuccess}/${ALL.fsTotal})</span></div>
         </div>
         <div class="preg-stat">
           <div class="preg-stat-num">${avgServices}<span style="font-size:14px;font-weight:700;">회</span></div>
-          <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${concRounds} / 수태 ${concCows}</span></div>
+          <div class="preg-stat-label">수태당 수정횟수 <span class="preg-stat-sub">수정 ${concRounds} / 수태 ${concCows}</span><span class="preg-stat-sub all">전체 농장 ${ALL.avgServices}회 (${ALL.concRounds}/${ALL.concCows})</span></div>
         </div>
         <div class="preg-stat clickable ${pf==='calvings'?'sel':''}" data-action="setPregFilter" data-filter="calvings">
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
@@ -2575,6 +2577,95 @@ function renderPregCheckView(){
 /* ============================================================
    질환 보기
 ============================================================ */
+
+/* ============================================================
+   동기화 시작 적기 — 마지막 초음파 기준 주기일 추정 → 시작일별 기대 수태율
+   · 첫 GnRH 배란 반응(Pursley): 황체 1~4일 23%, 5~10일 96%, 11~16일 54%, 17~21일 77%
+   · 38일 수태율(Galvão): 황체+배란 42.2, 황체+무배란 37.7, 무황체+배란 27.6, 둘 다 없음 15.4
+   · 기능 황체 있음 = 주기 5~17일. 젖소 자료라 절대값은 상대 비교용.
+============================================================ */
+function syncOvProb(d21){ if(d21<=0) d21=21; if(d21<=4) return .23; if(d21<=10) return .96; if(d21<=16) return .54; return .77; }
+function syncClProb(d21){ return (d21>=5 && d21<=17) ? 1 : 0; }
+function syncExpectedPAI(d21){
+  const ov = syncOvProb(d21), cl = syncClProb(d21);
+  return ov*cl*42.2 + (1-ov)*cl*37.7 + ov*(1-cl)*27.6 + (1-ov)*(1-cl)*15.4;
+}
+function syncStartPlan(animal, recs, horizon){
+  const est = estimateCycleToday(animal, recs);
+  if(!est || est.lo==null || est.hi==null || !est.baseDate) return null;
+  horizon = horizon || 14;
+  const L = 21;                                   // 주기일은 21일 척도로 정규화돼 있음
+  const days = est.days && est.days.length ? est.days : [est.lo];   // 오늘 주기일 후보(균등 가중)
+  const today = todayStr();
+  const series = [];
+  for(let k=0;k<=horizon;k++){
+    let sum=0;
+    days.forEach(d0 => { const dk = (d0 + k) % L; sum += syncExpectedPAI(dk); });
+    series.push({ k, date: addDays(today,k), p: sum/days.length });
+  }
+  let best = series[0]; series.forEach(x => { if(x.p > best.p + 0.05) best = x; });   // 동률이면 빠른 날
+  return { series, best, today: series[0], est };
+}
+function syncPlanSpark(plan){
+  const max = Math.max(...plan.series.map(x=>x.p)), min = Math.min(...plan.series.map(x=>x.p));
+  return `<span class="sync-spark" title="오늘부터 14일, 시작일별 기대 수태율">${plan.series.map(x=>{
+    const h = max>min ? 3 + Math.round((x.p-min)/(max-min)*11) : 8;
+    return `<i style="height:${h}px" class="${x.k===plan.best.k?'best':''}${x.k===0?' now':''}"></i>`; }).join('')}</span>`;
+}
+/* 수태율 집계 (owner 지정 시 그 농장, 빈 값이면 전체 농장) */
+function pregStatsFor(owner){
+  // 수태율: 임신감정(O/X)이 난 라운드 중 '그 라운드의 수정을 내가 한 것'만 집계.
+  //   (감정은 감정한 날, 내수정횟수는 수정한 날에 적힐 수 있으므로 — 같은 줄이 아니어도
+  //    개체별 날짜순으로 보며 '직전 수정' 기록의 내수정 여부로 내 라운드인지 판정)
+  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
+  const inhN = r => { const n = parseInt(inh(r),10); return isNaN(n) ? 0 : n; };
+  const pregOf = r => (r.pregnant||'').trim().toUpperCase();
+  const allByAnimal = {};
+  DATA.records.filter(r=>!owner || r.owner===owner).forEach(r => { const k=r.owner+'|'+r.animalId; (allByAnimal[k] = allByAnimal[k] || []).push(r); });
+
+  let totalServices = 0, svcSuccess = 0;   // 분모: 내가 수정한 라운드의 감정 수 / 분자: 그중 O
+  let fsSuccess = 0, fsTotal = 0;          // 첫수정 수태율
+  let concCows = 0, concRounds = 0;        // 수태당 수정횟수: 수태 소가 임신까지 걸린 수정(라운드) 합/수
+  Object.values(allByAnimal).forEach(list => {
+    list.sort((a,b)=> dkeyP(a).localeCompare(dkeyP(b)));
+    // 수정횟수대비 수태율 — 각 감정(O/X)을 직전 수정의 내수정 여부와 연결
+    let lastAiMine = null;   // 가장 최근 수정(aiDate)을 내가 했는지
+    let roundToConc = 0;     // 이번 임신까지 누적 내수정 라운드(O 나오면 확정·리셋)
+    list.forEach(r => {
+      if(r.aiDate){
+        lastAiMine = inhN(r) >= 1;
+        if(lastAiMine) roundToConc++;    // 실제 수정(AI)이 발생할 때마다 라운드 카운트 (진단 유무와 무관)
+      }
+      const p = pregOf(r);
+      if(p==='O' || p==='X'){
+        let mine = lastAiMine;
+        if(mine===null) mine = inhN(r) >= 1;   // 직전 수정이 없으면 감정 기록 자체의 내수정 사용
+        if(mine){
+          totalServices++; if(p==='O') svcSuccess++;
+          if(p==='O'){ concCows++; concRounds += (roundToConc||1); roundToConc = 0; }  // 임신 성립 → 그 소가 걸린 수정 횟수 확정
+        }
+      }
+    });
+    // 첫수정 수태율 — '내수정 1' 실제수정이 분모(결과 난 사이클만), 재수정 없이 O면 성공
+    const firstIdx = [];
+    list.forEach((r,i)=>{ if(inh(r)==='1' && r.aiDate) firstIdx.push(i); });
+    firstIdx.forEach((startI, k) => {
+      const endI = (k+1 < firstIdx.length) ? firstIdx[k+1] : list.length;
+      const cycle = list.slice(startI, endI);
+      const hasResult = cycle.some(r => pregOf(r)==='O' || pregOf(r)==='X');
+      if(!hasResult) return;
+      fsTotal++;
+      const hasReAI = cycle.some(r => inhN(r) >= 2);
+      const hasO = cycle.some(r => pregOf(r)==='O');
+      if(!hasReAI && hasO) fsSuccess++;
+    });
+  });
+  const rateSvc = totalServices ? Math.round(svcSuccess / totalServices * 100) : 0;
+  const avgServices = concCows ? (concRounds / concCows).toFixed(1) : '—';
+  const rateFirst = fsTotal ? Math.round(fsSuccess / fsTotal * 100) : 0;
+  return { totalServices, svcSuccess, fsSuccess, fsTotal, concCows, concRounds, rateSvc, avgServices, rateFirst };
+}
 /* ===== 공태관리: 미수정 개체의 다음 발정예정일 모음 ===== */
 /* 동기화 프로그램의 예정된 수정(AI)일 — 오늘 이후 가장 이른 것.
    (1) 수동 스케줄(DATA.schedule)의 'AI'  (2) 진료기록의 동기화 단계 syncNType='AI' 둘 다 확인 */
@@ -2638,12 +2729,15 @@ function renderOpenView(){
     if(st!=='미수정' && st!=='비임신') return;
     if(a.fattening) return;
     if(awaitingPregOutcome(recs)) return;
-    const nx = nextEstrusForAnimal(a, recs);
-    if(nx){
-      const dd = daysBetween(today, nx.date);
-      withDate.push({ a, date:nx.date, dd, basis:nx.basis, st });
+    const syncAi = nextScheduledAiDate(owner, a.animalId);
+    if(syncAi){ withDate.push({ a, date:syncAi, dd:daysBetween(today, syncAi), basis:'동기화', st }); return; }
+    const plan = syncStartPlan(a, recs);
+    if(plan){
+      withDate.push({ a, date:plan.best.date, dd:plan.best.k, basis:'적기', st, plan });
     } else {
-      noInfo.push({ a, st });
+      const nx = nextEstrusForAnimal(a, recs);     // 초음파 없으면 수기 다음발정일 등으로 보조
+      if(nx) withDate.push({ a, date:nx.date, dd:daysBetween(today, nx.date), basis:nx.basis, st });
+      else noInfo.push({ a, st });
     }
   });
   withDate.sort((x,y)=> x.date.localeCompare(y.date));
@@ -2656,16 +2750,21 @@ function renderOpenView(){
       <div class="empty-msg">미수정 상태인 개체가 없어요.</div></div>`;
   }
 
-  const ddLabel = dd => dd<=0 ? `<span class="open-dd today">오늘! D-0</span>`
+  const ddLabel = dd => dd<=0 ? `<span class="open-dd today">오늘</span>`
     : `<span class="open-dd">D-${dd}</span>`;
 
-  const rowsHtml = withDate.map(({a,date,dd,basis,st}) => `
-    <div class="open-row oneline" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
+  const rowsHtml = withDate.map(({a,date,dd,basis,st,plan}) => {
+    let due;
+    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}`;
+    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span>${syncPlanSpark(plan)}<span class="open-basis">오늘 시작 ${plan.today.p.toFixed(0)}% · 오늘 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파${plan.est.stale?` ${plan.est.elapsed}일 경과 · 20~22일 주기 가정`:''})</span>`;
+    else due = `<span class="open-basis">${esc(basis)}</span> 발정 ${fmtShort(date)} ${ddLabel(dd)}`;
+    return `
+    <div class="open-row oneline ${basis==='적기'?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}</div>
       <div class="open-name">${esc(animalShortName(a))}</div>
-      <div class="open-due">${basis==='동기화'?'<span class="open-sync-tag">동기화 수정</span> ':''}${fmtShort(date)} ${ddLabel(dd)}</div>
+      <div class="open-due">${due}</div>
       <div class="open-chev">›</div>
-    </div>`).join('');
+    </div>`; }).join('');
 
   const noInfoHtml = noInfo.map(({a,st}) => `
     <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
@@ -2693,7 +2792,7 @@ function renderOpenView(){
 
   return `<div class="open-wrap">
     <div class="open-head"><h2>공태관리</h2><span class="open-count">${total}마리</span></div>
-    <div class="open-sub">미수정 개체의 다음 발정예정일이에요. 줄을 누르면 개체 상세로 이동해요.</div>
+    <div class="open-sub">마지막 초음파 기준으로 <b>동기화(첫 GnRH)를 시작하기 좋은 날</b>과 그날 시작 시 기대 수태율이에요. 수치는 젖소 자료(Pursley·Galvão) 기반이라 날짜 간 <b>상대 비교용</b>이에요. 줄을 누르면 개체 상세로 이동해요.</div>
     ${mainList}
     ${noRecordSection}
   </div>`;
@@ -4260,6 +4359,10 @@ function openShareManage(){
         축주에게 보낼 <b>읽기 전용</b> 링크예요. 소 상태와 동기화(처치) 일정만 보이고,
         진료 소견·메모 등은 포함되지 않아요. <b>공유 갱신</b>을 눌러야 최신 상태가 반영됩니다.
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <button class="btn small" data-action="shareRefreshAll">${svgIcon('refresh',14)} 전체 갱신 (${owners.length}농장)</button>
+        <span class="share-status" id="sharestatus_all" style="margin-top:0;"></span>
+      </div>
       <div style="display:flex;flex-direction:column;gap:12px;">
         ${owners.map(o=>{
           const link = shareViewerLink(o);
@@ -4544,6 +4647,26 @@ const ACTIONS = {
       if(st){ st.textContent='✗ 갱신 실패 — 인터넷/Firebase 연결을 확인해주세요.'; st.className='share-status err'; }
       toast('공유 갱신에 실패했어요.');
     }
+  },
+  shareRefreshAll: async ()=>{
+    const owners = DATA.owners.slice();
+    const all = document.getElementById('sharestatus_all');
+    let ok=0, fail=0;
+    for(const o of owners){
+      const st = document.getElementById('sharestatus_'+o);
+      if(all){ all.textContent=`갱신 중… ${ok+fail+1}/${owners.length}`; all.className='share-status'; }
+      if(st){ st.textContent='갱신 중…'; st.className='share-status'; }
+      try{
+        const p = await publishShare(o);
+        ok++;
+        if(st){ st.textContent=`✓ 갱신 완료 — 소 ${p.animals.length}두 · 일정 ${p.schedule.length}건 (${p.updatedAt})`; st.className='share-status ok'; }
+      }catch(e){
+        console.error(e); fail++;
+        if(st){ st.textContent='✗ 갱신 실패'; st.className='share-status err'; }
+      }
+    }
+    if(all){ all.textContent = fail ? `완료 ${ok} · 실패 ${fail}` : `✓ ${ok}농장 모두 갱신 완료`; all.className = 'share-status '+(fail?'err':'ok'); }
+    toast(fail ? `${ok}농장 갱신, ${fail}농장 실패` : `${ok}농장 모두 갱신했어요.`);
   },
   shareCopy: (ds)=>{
     const el = document.getElementById('sharelink_'+ds.owner);
