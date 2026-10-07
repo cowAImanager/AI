@@ -772,13 +772,16 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   /* 정보 밀도 ↑ — 한 화면에 더 많이 */
   main{padding:12px 12px 60px;}
   .panel{padding:11px;border-radius:9px;}
-  .toolbar{gap:5px;margin-bottom:6px;}
-  .toolbar .seg{width:100%;}
-  .toolbar .seg button{flex:1;padding:5px 8px;font-size:12px;}
-  .toolbar .date-field{flex:1;min-width:0;}
-  .toolbar input[type=date]{width:100%;min-width:0;padding:4px 6px;height:30px;font-size:12px;}
-  .toolbar .search-input{width:100%;padding:5px 9px;font-size:12px;height:30px;}
-  .toolbar .btn,.toolbar .btn.small{padding:4px 9px;font-size:11.5px;}
+  .toolbar{gap:4px;margin-bottom:5px;}
+  .toolbar .seg{flex:1 1 60%;width:auto;order:0;}
+  .toolbar .seg button{flex:1;padding:4px 6px;font-size:11.5px;height:28px;}
+  .toolbar .date-field{flex:1 1 42%;min-width:0;order:2;}
+  .toolbar > span{order:2;}
+  .toolbar input[type=date]{width:100%;min-width:0;padding:0 5px;height:28px;font-size:11.5px;-webkit-appearance:none;appearance:none;line-height:28px;}
+  .toolbar .search-input{flex:1 1 60%;width:auto;padding:0 8px;font-size:11.5px;height:28px;order:3;margin:0;}
+  .toolbar .btn,.toolbar .btn.small{padding:0 8px;font-size:11px;height:28px;}
+  .toolbar .btn.secondary{order:3;}
+  .toolbar .btn:not(.secondary){order:1;margin-left:0 !important;}
   .search-input{padding:5px 9px;font-size:12px;margin-bottom:5px;height:30px;}
   .panel-head{margin-bottom:5px;}
   .panel-head h3{font-size:13px;margin:0;}
@@ -867,6 +870,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .animal-detail-head,.head-actions{margin-bottom:4px;}
   .rec-title{margin-top:8px;}
   .info-row .field.cycle-field{grid-column:1/-1;}
+  .info-row.ai-count-row{grid-template-columns:1fr;}
+  .info-row.ai-count-row .field .val{white-space:nowrap;}
   .info-row .field.cycle-field .val{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .info-row .field.cycle-field .cycle-today-sub{display:inline;margin-left:6px;}
   /* 혈통: 3칸 한 줄 유지 (부·외조부·외외증조부 / 품종·출생·개월령) */
@@ -924,11 +929,14 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .status-badge .btn-label{display:none;}
   .status-badge{font-size:13px;padding:4px 8px;}
   .header-actions .theme-toggle{width:28px;height:28px;font-size:13px;}
-  .owner-tabs{gap:4px;margin-top:10px;}
+  .owner-tabs{gap:3px;margin-top:6px;}
   .owner-tabs .tab-break{display:block;flex-basis:100%;height:0;margin:0;padding:0;border:none;}
-  .owner-tab{padding:6px 12px;font-size:12.5px;border-radius:8px 8px 0 0;}
-  .subnav{gap:14px;padding:10px 0 0;}
-  .subnav button{font-size:13px;padding:5px 1px 9px;}
+  .owner-tab{padding:4px 9px;font-size:11.5px;border-radius:7px 7px 0 0;gap:3px;}
+  .owner-tab.calc-tab{margin-right:3px;}
+  .subnav{gap:12px;padding:6px 0 0;}
+  .subnav button{font-size:12.5px;padding:4px 1px 7px;border-bottom-width:2px;}
+  header.topbar{padding-top:8px;}
+  .title-row{margin-bottom:4px;}
 }
 @media (max-width:540px){
   .modal{padding:18px;border-radius:14px;}
@@ -1072,6 +1080,11 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .open-group-n{font-size:10.5px;}
   .open-group-sub{font-size:9px;margin:2px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em;}
   .open-row.oneline .open-chev{display:none;}
+  .open-sync-tag{font-size:9.5px;padding:1px 5px;}
+  .open-sync-tag.plan .pcd-suffix{display:none;}
+  .open-date{gap:4px;font-size:12px;}
+  .open-dd{font-size:10px;padding:1px 6px;}
+  .open-pai{font-size:12px;}
   .open-group-row{padding:6px 0 4px;}
   .open-group-date{font-size:12px;gap:6px;}
   .open-group-meta{font-size:11px;}
@@ -2707,7 +2720,18 @@ function syncStartPlan(animal, recs, horizon){
     series.push({ k, date: addDays(today,k), p: sum/days.length });
   }
   let best = series[0]; series.forEach(x => { if(x.p > best.p + 0.05) best = x; });   // 동률이면 빠른 날
-  return { series, best, today: series[0], est };
+  // 적기 범위: 최고치 -5%p 이내로 이어지는 날들 (best 포함)
+  let k0 = best.k, k1 = best.k;
+  while(k0 > 0 && series[k0-1].p >= best.p - 5) k0--;
+  while(k1 < series.length-1 && series[k1+1].p >= best.p - 5) k1++;
+  const win = { k0, k1, from: series[k0].date, to: series[k1].date, open: k1===series.length-1 };
+  return { series, best, today: series[0], est, win };
+}
+/* 적기 범위 표기: 10/09~13, 10/30~11/02, 단일이면 10/09 */
+function fmtRange(from, to){
+  if(from===to) return fmtShort(from);
+  const a = fmtShort(from), b = fmtShort(to);
+  return a.slice(0,3)===b.slice(0,3) ? `${a}~${b.slice(3)}` : `${a}~${b}`;
 }
 /* 초음파 없을 때: 마지막 분만 이후, 63일 이내의 발정일(또는 수정일=발정)로 오늘 주기일 추정 */
 function estrusBasedEst(animal, recs){
@@ -2886,7 +2910,7 @@ function renderOpenView(){
     const plan = syncStartPlan(a, recs);
     if(syncAi){ withDate.push({ a, date:syncAi, dd:daysBetween(today, syncAi), basis:'동기화', st, plan, recs }); return; }
     if(plan){
-      withDate.push({ a, date:plan.best.date, dd:plan.best.k, basis:'적기', st, plan, recs });
+      withDate.push({ a, date:plan.win.from, dd:plan.win.k0, basis:'적기', st, plan, recs });
     } else {
       const nx = nextEstrusForAnimal(a, recs);     // 초음파 없으면 수기 다음발정일 등으로 보조
       if(nx) withDate.push({ a, date:nx.date, dd:daysBetween(today, nx.date), basis:nx.basis, st });
@@ -2910,8 +2934,8 @@ function renderOpenView(){
   const rowsHtml = withDate.map(({a,date,dd,basis,st,plan,recs}) => {
     let due;
     const rt = repeatTag(a, recs);
-    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)}</span>${plan?` <span class="open-basis">${rt}적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
-    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span></span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} ${plan.est.fromEstrus?'발정 기준':'초음파'})</span>`;
+    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)}</span>${plan?` <span class="open-basis">${rt}적기 ${plan.win.open?fmtShort(plan.win.from)+'~':fmtRange(plan.win.from, plan.win.to)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
+    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작<span class="pcd-suffix"> </span>적기</span><span class="open-date">${plan.win.open?fmtShort(plan.win.from)+'~':fmtRange(plan.win.from, plan.win.to)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span></span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} ${plan.est.fromEstrus?'발정 기준':'초음파'})</span>`;
     else due = `<span class="open-basis">${esc(basis)}</span><span class="open-date">발정 ${fmtShort(date)} ${ddLabel(dd)}</span>`;
     return `
     <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
@@ -3085,12 +3109,17 @@ const KV_CATS = [
 /* ============================================================
    축주 정보 보기
 ============================================================ */
-function inhouseAiCountForOwner(owner){
+function inhouseAiCountForOwner(owner, year){
   return DATA.records.filter(r=>{
     if(r.owner!==owner || !r.aiDate) return false;
+    if(year && String(r.aiDate).slice(0,4)!==String(year)) return false;
     const v = (r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'');
     return (parseInt(String(v).trim(),10)||0) >= 1;
   }).length;
+}
+/* 농장 전체 수정 건수(내 수정 + 농장 자체 수정 기록 포함) */
+function totalAiCountForOwner(owner, year){
+  return DATA.records.filter(r => r.owner===owner && r.aiDate && (!year || String(r.aiDate).slice(0,4)===String(year))).length;
 }
 function renderOwnerInfoView(){
   ensureOwnerMeta(UI.owner);
@@ -3129,9 +3158,12 @@ function renderOwnerInfoView(){
             </div>
           </div>
         </div>
-        <div class="info-row cols2">
-          <div class="field"><label>이 농장 누적 수정 <span style="font-weight:400;color:var(--ink-soft);">(내가 수정한 횟수)</span></label><div class="val"><b>${inhouseAiCountForOwner(UI.owner)}</b>회</div></div>
-        </div>
+        ${(()=>{ const y = new Date().getFullYear(); return `
+        <div class="info-row cols3 ai-count-row">
+          <div class="field"><label>내 수정 누적</label><div class="val"><b>${inhouseAiCountForOwner(UI.owner)}</b>회</div></div>
+          <div class="field"><label>내 수정 ${y}년</label><div class="val"><b>${inhouseAiCountForOwner(UI.owner, y)}</b>회</div></div>
+          <div class="field"><label>농장 전체 수정 ${y}년</label><div class="val"><b>${totalAiCountForOwner(UI.owner, y)}</b>회 <span class="kv2-note" style="display:inline;font-weight:400;color:var(--ink-soft);">(내 수정 포함)</span></div></div>
+        </div>`; })()}
       </div>
       ${kvBlock('feeds','사료')}
       ${kvBlock('grasses','풀(조사료)')}
