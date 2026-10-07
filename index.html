@@ -321,7 +321,8 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-row .sync-dose{flex:1 1 0;width:100%;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;-moz-appearance:textfield;}
 .sync-row .sync-dose::-webkit-outer-spin-button,.sync-row .sync-dose::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .sync-proto-btn.custom{border-style:dashed;}
-.sync-alltime{display:flex;align-items:center;gap:6px;margin:0 0 8px;}
+.sync-alltime{display:flex;align-items:center;gap:6px;margin:4px 0 6px;}
+.sync-alltime input[type=time]{width:96px;}
 .sync-alltime input[type=time]{padding:3px 5px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:11px;height:26px;background:var(--bg);}
 .sync-alltime button{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;height:26px;}
 .sync-batch-tools{display:flex;gap:6px;align-items:center;margin:6px 0 8px;flex-wrap:wrap;}
@@ -889,18 +890,20 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .modal{padding:18px;border-radius:14px;}
   .form-grid{grid-template-columns:1fr 1fr;}
   .sync-proto-hint{font-size:10.5px;}
-  .sync-list{gap:8px;}
-  .sync-row{display:grid;grid-template-columns:18px 1fr 1fr 1fr;grid-template-rows:auto auto;gap:4px 6px;align-items:end;background:var(--surface-alt);border:1px solid var(--line);border-radius:10px;padding:7px 8px;}
-  .sync-num{grid-row:1;grid-column:1;align-self:center;}
-  .sync-row select{grid-row:1;grid-column:2/5;height:32px;font-size:13px;}
-  .sync-f{display:flex;flex-direction:column;gap:2px;min-width:0;}
-  .sync-f>span:first-child{display:block;font-size:10px;font-weight:700;color:var(--ink-soft);}
+  .sync-list{gap:5px;}
+  .sync-row{display:grid;grid-template-columns:16px 1fr 1fr 1fr;grid-template-rows:auto auto;gap:3px 5px;align-items:center;background:var(--surface-alt);border:1px solid var(--line);border-radius:8px;padding:4px 6px;}
+  .sync-num{grid-row:1;grid-column:1;width:16px;height:16px;font-size:9px;}
+  .sync-row select{grid-row:1;grid-column:2/5;height:26px;font-size:11.5px;padding:2px 6px;}
+  .sync-f{display:flex;align-items:center;gap:3px;min-width:0;}
+  .sync-f>span:first-child{display:block;font-size:9.5px;font-weight:700;color:var(--ink-soft);flex-shrink:0;}
   .sync-f-date{grid-row:2;grid-column:1/3;}
   .sync-f-time{grid-row:2;grid-column:3;}
   .sync-f-dose{grid-row:2;grid-column:4;}
-  .sync-row input[type=date],.sync-row input[type=time]{flex:none;width:100%;height:32px;font-size:12.5px;-webkit-appearance:none;appearance:none;display:block;}
-  .sync-dose-wrap{flex:none;width:100%;}
-  .sync-row .sync-dose{height:32px;font-size:13px;}
+  .sync-row input[type=date],.sync-row input[type=time]{flex:1 1 0;width:100%;min-width:0;height:26px;font-size:11px;padding:2px 4px;-webkit-appearance:none;appearance:none;display:block;}
+  .sync-dose-wrap{flex:1 1 0;width:100%;}
+  .sync-dose-wrap em{font-size:10px;}
+  .sync-row .sync-dose{height:26px;font-size:11.5px;padding:2px 4px;}
+  .sync-proto-btn{padding:4px 8px;font-size:10.5px;}
 }
 
 /* 보관함 (라이브러리) */
@@ -3251,7 +3254,6 @@ function syncProtoRowHtml(){
         <button type="button" class="sync-proto-btn clear" data-action="saveSyncTemplate" title="지금 입력한 단계(종류·간격·시간·용량)를 새 템플릿으로 저장">템플릿 저장</button>
         ${hasCustom?`<button type="button" class="sync-proto-btn clear" data-action="manageSyncTemplates">템플릿 관리</button>`:''}
       </div>
-      <div class="sync-proto-hint">프로토콜을 누른 뒤 <b>1번 날짜</b>를 넣으면 날짜·시간·용량이 채워져요. 시간·용량은 마지막 저장값을 기억해요.</div>
       <div class="sync-alltime"><span class="sync-proto-label">시간 일괄:</span><input type="time" id="f_syncAllTime"><button type="button" data-action="syncApplyAllTime">모든 단계에 적용</button></div>`;
 }
 /* 용량 표시: 숫자만 저장돼 있으면 ml 붙여서 */
