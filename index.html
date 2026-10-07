@@ -2569,7 +2569,7 @@ function renderPregCheckView(){
       <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.isPreg && !row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="수정 ${row.aiCountCur}회 불수태">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
-        ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
+        ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${isNotPregnant?'수정 후 ':''}${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end ${syncTag?'has-sync':''}">${syncTag}${badge}${diagSum}${subTag}</span>
