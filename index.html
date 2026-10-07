@@ -2844,7 +2844,7 @@ function renderOpenView(){
   const rowsHtml = withDate.map(({a,date,dd,basis,st,plan}) => {
     let due;
     if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}${plan?` <span class="open-basis">적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
-    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span>${syncPlanSpark(plan)}<span class="open-basis">오늘 시작 ${plan.today.p.toFixed(0)}% · 오늘 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파${plan.est.stale?` ${plan.est.elapsed}일 경과 · 20~22일 주기 가정`:''})</span>`;
+    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span><span class="open-basis">오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파)</span>`;
     else due = `<span class="open-basis">${esc(basis)}</span> 발정 ${fmtShort(date)} ${ddLabel(dd)}`;
     return `
     <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
