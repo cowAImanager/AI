@@ -846,13 +846,24 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .disease-tag .dtag-prefix{display:none;}
 
   /* 개체 상세 — 혈통/번식 정보 패널 */
-  .info-panel{padding:13px 0;gap:11px;}
-  .info-row{gap:9px 12px;}
-  .info-row .field label{font-size:10px;margin-bottom:2px;}
-  .info-row .field .val{font-size:10.5px;}
+  .info-panel{padding:8px 0;gap:6px;}
+  .info-row{gap:4px 10px;}
+  .info-row .field{flex-direction:row;align-items:center;gap:6px;min-width:0;}      /* 라벨·값 한 줄 */
+  .info-row .field label{font-size:10px;margin-bottom:0;flex:0 0 auto;}
+  .info-row .field .val{font-size:11px;flex:1 1 auto;min-width:0;}
   .info-panel-title{font-size:11.5px;}
+  .breeding-grid .val{min-height:24px;line-height:24px;}
+  .breeding-grid .val .kv2-note,.breeding-grid .val > div{line-height:1.3;font-size:10px;}
+  .breeding-grid .inline-edit,.breeding-grid .inline-edit.num,.breeding-grid .inline-edit.sel,.breeding-grid input[type=date].inline-edit{height:24px;max-width:100%;}
+  .breeding-grid .inline-edit.num{width:44px;}
+  .info-groups{gap:0;}
+  .animal-detail-head,.head-actions{margin-bottom:4px;}
+  .rec-title{margin-top:8px;}
+  .info-row .field.cycle-field{grid-column:1/-1;}
+  .info-row .field.cycle-field .val{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .info-row .field.cycle-field .cycle-today-sub{display:inline;margin-left:6px;}
   /* 혈통: 3칸 한 줄 유지 (부·외조부·외외증조부 / 품종·출생·개월령) */
-  .info-panel.pedigree .info-row.cols3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 8px;}
+  .info-panel.pedigree .info-row.cols3{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px;}
   .info-panel.pedigree .info-row.cols3 .field label{font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .info-panel.pedigree .info-row.cols3 .field .val{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* 번식정보 라벨-값 행 */
@@ -1943,7 +1954,7 @@ function cycleTodayHtml(animal, recs){
   if(r.undetermined) return `<span style="color:var(--ink-soft);">${r.cyst?'낭종 — 추정 제외':'초음파로 판정 불가'}</span>`;
   const dayTxt = (r.lo!=null && r.hi!=null && r.lo!==r.hi) ? `약 ${r.lo}~${r.hi}일째` : `약 ${r.day}일째`;
   return `<span class="cycle-today-main" style="color:var(--accent);${r.stale?'opacity:.55;':''}">${dayTxt}</span>${r.stale?' <span style="font-size:11px;color:var(--ink-soft);">(신뢰도 낮음)</span>':''}`
-    + `<div style="font-size:11px;color:var(--ink-soft);font-weight:500;margin-top:2px;">`
+    + `<div class="cycle-today-sub" style="font-size:11px;color:var(--ink-soft);font-weight:500;margin-top:2px;">`
     + `${r.mode==='3'?'3':'2'}난포파 · ${r.basis} · 진료후 ${r.elapsed}일</div>`;
 }
 
@@ -2042,7 +2053,7 @@ function renderAnimalView(){
               <div class="field"><label>예상발정주기 (일)</label><div class="val">${isAdmin()
                 ? `<input type="text" inputmode="numeric" class="inline-edit num" data-id="${esc(a.animalId)}" data-animal-field="cycleLength" value="${esc(a.cycleLength||'21')}"> <span class="kv2-unit">일</span>`
                 : (a.cycleLength?esc(a.cycleLength)+'일':(esc(lastNonEmpty(recs,'expectedCycle'))||'—'))}</div></div>
-              <div class="field"><label>오늘 발정주기 (추정)</label><div class="val">${cycleTodayHtml(a, recs)}</div></div>
+              <div class="field cycle-field"><label>오늘 발정주기 (추정)</label><div class="val">${cycleTodayHtml(a, recs)}</div></div>
               <div class="field"><label>수정 난이도</label><div class="val">${isAdmin()
                 ? `<select class="inline-edit sel" data-id="${esc(a.animalId)}" data-animal-field="aiDifficulty"><option value="">선택 안 함</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${'★'.repeat(n)} ${n}</option>`).join('')}</select>`
                 : difficultyStars(a.aiDifficulty)}${a.aiDifficultyNote?`<div class="kv2-note">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
