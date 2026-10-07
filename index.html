@@ -335,6 +335,9 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-batch-item input{width:16px;height:16px;flex-shrink:0;}
 .open-group{background:var(--surface);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin:8px 0 12px;}
 .open-group.muted{border-color:var(--line);background:var(--surface-alt);}
+.open-basis .open-repeat{margin:0 4px 0 0;}
+.pregcheck-row .open-repeat{flex:0 0 auto;margin-left:0;}
+.open-repeat{display:inline-block;margin-left:5px;font-size:9.5px;font-weight:800;color:var(--notpregnant-bg);background:var(--notpregnant-soft,#FBE9E7);border-radius:4px;padding:1px 5px;vertical-align:2px;letter-spacing:0;}
 .open-group-meta{font-size:12px;font-weight:800;color:var(--accent);}
 .open-group-busy{flex:0 0 100%;font-size:11px;color:var(--ink-soft);margin-top:2px;}
 .open-busy-id{font-weight:700;color:var(--ink);cursor:pointer;}
@@ -812,6 +815,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-badge{font-size:10px;padding:3px 7px;border-radius:6px;font-weight:800;}
   .pregcheck-badge.preg,.pregcheck-badge.confirmed,.pregcheck-badge.notpregnant,.pregcheck-badge.unknown{font-size:10px;padding:3px 7px;}
   .pregcheck-end{gap:5px;}
+  .pregcheck-end.has-sync .pregcheck-badge,.pregcheck-end.has-sync .pc-badge.rebreed{display:none;}   /* 동기화 잡힌 소: '재수정 대기' 배지는 모바일에서 생략 */
+  .pregcheck-row .open-repeat{font-size:9px;padding:1px 4px;}
   .preg-subtag{font-size:9.5px;padding:2px 6px;}
   .pc-badge{font-size:10.5px;padding:4px 8px;border-radius:6px;}
   .pregcheck-mid .pregcheck-date{font-size:10.5px;}
@@ -2444,7 +2449,7 @@ function renderPregCheckView(){
     const recordForEdit = sorted.find(r => (r.pregnant||r.pregnant2||r.fetalSex||r.calvingDate||r.stillbirthDate)) || aiRec || sorted[0];
     const lastCalv = [latestCalvingDate(allRecs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     rows.push({ animalId: a.animalId, record: recordForEdit, aiDate: aiRec ? aiRec.aiDate : null, days,
-      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, isStillbirthEnd, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening, syncAi });
+      pregnant: preg1, preg1, preg2, fsex, isPreg, calved, isStillbirthEnd, calvDate, calfSex, expCalv, lastCalv, fattening: !!a.fattening, syncAi, aiCountCur: currentAiCount(a, sorted) });
   });
   // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
@@ -2533,13 +2538,13 @@ function renderPregCheckView(){
 
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
-      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>
+      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.isPreg && !row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="수정 ${row.aiCountCur}회 불수태">리피트 ${row.aiCountCur}회</span>`:''}
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일 경과</span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일 경과</span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${row.days}일 경과</span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
-      <span class="pregcheck-end">${syncTag}${badge}${diagSum}${subTag}</span>
+      <span class="pregcheck-end ${syncTag?'has-sync':''}">${syncTag}${badge}${diagSum}${subTag}</span>
       <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>
     </div>
   `;
@@ -2841,14 +2846,16 @@ function renderOpenView(){
   const ddLabel = dd => dd<=0 ? `<span class="open-dd today">오늘</span>`
     : `<span class="open-dd">D-${dd}</span>`;
 
-  const rowsHtml = withDate.map(({a,date,dd,basis,st,plan}) => {
+  const repeatTag = (a, recs) => { const n = currentAiCount(a, recs||recordsOf(owner, a.animalId)); return n>=3 ? `<span class="open-repeat" title="수정 ${n}회 불수태">리피트 ${n}회</span>` : ''; };
+  const rowsHtml = withDate.map(({a,date,dd,basis,st,plan,recs}) => {
     let due;
-    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}${plan?` <span class="open-basis">적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
-    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span><span class="open-basis">오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파)</span>`;
+    const rt = repeatTag(a, recs);
+    if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span> ${fmtShort(date)} ${ddLabel(dd)}${plan?` <span class="open-basis">${rt}적기 ${fmtShort(plan.best.date)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
+    else if(basis==='적기') due = `<span class="open-sync-tag plan">시작 적기</span> ${fmtShort(date)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} 초음파)</span>`;
     else due = `<span class="open-basis">${esc(basis)}</span> 발정 ${fmtShort(date)} ${ddLabel(dd)}`;
     return `
     <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
-      <div class="open-id">${esc(a.animalId)}</div>
+      <div class="open-id">${esc(a.animalId)}${plan?'':rt}</div>
       ${animalShortName(a)!==a.animalId?`<div class="open-name">${esc(animalShortName(a))}</div>`:''}
       <div class="open-due">${due}</div>
       <div class="open-chev">›</div>
@@ -2856,7 +2863,7 @@ function renderOpenView(){
 
   const noInfoHtml = noInfo.map(({a,st}) => `
     <div class="open-row oneline noinfo" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
-      <div class="open-id">${esc(a.animalId)}</div>
+      <div class="open-id">${esc(a.animalId)}${repeatTag(a)}</div>
       ${animalShortName(a)!==a.animalId?`<div class="open-name">${esc(animalShortName(a))}</div>`:''}
       <div class="open-due muted">정보없음</div>
       <div class="open-chev">›</div>
