@@ -342,6 +342,8 @@ main{flex:1;padding:18px 20px 70px;}
 .open-date{display:inline-flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap;}
 .open-row.oneline .open-due{margin-left:auto;}
 .open-group-meta{font-size:12px;font-weight:800;color:var(--accent);}
+.open-group-alt{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+.open-group-alt b{color:var(--ink);font-weight:800;}
 .open-group-busy{flex:0 0 100%;font-size:11px;color:var(--ink-soft);margin-top:2px;}
 .open-busy-id{font-weight:700;color:var(--ink);cursor:pointer;}
 .open-group-h{font-size:14px;font-weight:800;color:var(--primary-dark);display:flex;align-items:center;gap:8px;}
@@ -678,9 +680,27 @@ html[data-theme="dark"] .stat-cp{background:#1A3A20;color:#7BE39D;}
 .aiplan-info{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .aiplan-date{font-size:12.5px;font-weight:800;color:var(--ink);}
 .aiplan-kpn{width:120px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:13.5px;font-weight:700;background:var(--surface);color:var(--ink);}
-@media (max-width:520px){
-  .aiplan-item{flex-direction:column;align-items:stretch;}
-  .aiplan-kpn{width:100%;}
+.vac-date{font-size:12.5px;color:var(--ink-soft);margin-left:auto;white-space:nowrap;}
+.vac-dd{font-size:13.5px;font-weight:800;min-width:52px;text-align:right;white-space:nowrap;}
+.vac-over-s{display:none;}
+@media (max-width:600px){
+  .aiplan-title{font-size:14px;}
+  .aiplan-sub{font-size:11px;margin-bottom:8px;}
+  .aiplan-list{gap:4px;}
+  .aiplan-item{padding:5px 9px;gap:6px;border-radius:8px;flex-wrap:nowrap;}
+  .aiplan-info{gap:6px;flex-wrap:nowrap;min-width:0;}
+  .aiplan-date{font-size:11.5px;white-space:nowrap;}
+  .aiplan-kpn{width:84px;flex:0 0 84px;padding:4px 7px;font-size:12px;height:28px;}
+  .vac-row{gap:5px;padding:4px 8px;}
+  .vac-row .tag-chip{padding:2px 6px 2px 9px;font-size:11px;}
+  .vac-tags{flex:1 1 auto !important;margin-left:0 !important;}
+  .vac-tags .disease-tag{font-size:10px !important;padding:2px 6px !important;white-space:nowrap !important;}
+  .vac-date{font-size:10.5px;margin-left:0;}
+  .vac-dd{font-size:11.5px;min-width:0;}
+  .vac-over{display:none;} .vac-over-s{display:inline;}
+  .vac-btn{padding:3px 6px !important;font-size:10.5px !important;}
+  .vac-btn-s{display:none;}
+  .disease-tags .disease-tag.ovary,.disease-tags .disease-tag.uterine{white-space:normal;line-height:1.25;text-align:left;}
 }
 
 /* 모바일: 스케줄 표 모드 압축 + 빠른코드 가로 스크롤 + 목록 줄바꿈 */
@@ -2815,7 +2835,16 @@ function syncGroupPlan(items, tol){
     let k0 = bestK, k1 = bestK;
     while(k0 > 0 && members.every(c=>c.ok[k0-1])) k0--;
     while(k1 < H && members.every(c=>c.ok[k1+1])) k1++;
-    groups.push({ k:bestK, k0, k1, date: addDays(todayStr(), bestK), from: addDays(todayStr(), k0), to: addDays(todayStr(), k1), open: k1===H, members, avg });
+    // 이 기간을 놓쳤을 때의 다음 기회: 이후 날짜 중 가장 많은 멤버가 적기인 연속 구간
+    let alt = null;
+    const cnt = k => members.filter(c=>c.ok[k]).length;
+    let altN = 0; for(let k=k1+1;k<=H;k++) altN = Math.max(altN, cnt(k));
+    if(altN > 0){
+      let a0 = k1+1; while(a0<=H && cnt(a0)!==altN) a0++;
+      let a1 = a0; while(a1<H && cnt(a1+1)===altN) a1++;
+      alt = { from: addDays(todayStr(), a0), to: addDays(todayStr(), a1), n: altN, open: a1===H, k0:a0, k1:a1 };
+    }
+    groups.push({ k:bestK, k0, k1, date: addDays(todayStr(), bestK), from: addDays(todayStr(), k0), to: addDays(todayStr(), k1), open: k1===H, members, avg, alt });
   }
   groups.sort((x,y)=>x.k-y.k);
   return { groups, unplanned: left };
@@ -3020,6 +3049,7 @@ function renderOpenView(){
         <div class="open-group-date"><b>${i+1}차</b> ${g.k0===g.k1 ? `${fmtShort(g.date)}(${weekdayKr(g.date)})` : `${fmtShort(g.from)}(${weekdayKr(g.from)})~${g.open?'':(fmtShort(g.to).slice(0,3)===fmtShort(g.from).slice(0,3)?fmtShort(g.to).slice(3):fmtShort(g.to))+'('+weekdayKr(g.to)+')'}`} ${g.k0===0?'<span class="open-dd today">오늘</span>':`<span class="open-dd">D-${g.k0}</span>`}<span class="open-group-meta">${g.members.length}두 · ${g.avg.toFixed(0)}%</span>
           ${isAdmin()&&g.members.some(c=>!inSyncSet.has(c.a.animalId))?`<button class="btn secondary small open-group-btn" data-action="openSyncBatchGroup" data-date="${g.date}" data-ids="${esc(g.members.filter(c=>!inSyncSet.has(c.a.animalId)).map(c=>c.a.animalId).join('|'))}">일괄 입력</button>`:''}</div>
         <div class="open-group-ids">${chips(g.members)}</div>
+        ${g.alt?`<div class="open-group-alt">놓치면 다음: <b>${fmtShort(g.alt.from)}(${weekdayKr(g.alt.from)})${g.alt.k0!==g.alt.k1?'~'+(g.alt.open?'':(fmtShort(g.alt.to).slice(0,3)===fmtShort(g.alt.from).slice(0,3)?fmtShort(g.alt.to).slice(3):fmtShort(g.alt.to))+'('+weekdayKr(g.alt.to)+')'):''}</b> · ${g.alt.n}/${g.members.length}두 적기</div>`:''}
       </div>`).join('')}
     </div>`;
   } else if(withDate.length + noInfo.length){
@@ -3826,22 +3856,22 @@ function renderVaccineView(){
   const today = todayStr();
   const rows = items.map(it=>{
     const dd = daysBetween(today, it.date);
-    const ddText = dd===0 ? '오늘! D-0' : (dd>0 ? `D-${dd}` : `${-dd}일 지남`);
+    const ddText = dd===0 ? '오늘' : (dd>0 ? `D-${dd}` : `<span class="vac-over">${-dd}일 지남</span><span class="vac-over-s">+${-dd}일</span>`);
     const ddColor = dd<0 ? 'var(--overdue-days-text)' : (dd<=3 ? 'var(--accent)' : 'var(--primary-dark)');
     const vcls = it.vaccine==='resp' ? 'uterine' : 'ovary';
     return `
-    <div class="disease-row">
+    <div class="disease-row vac-row">
       <span class="tag-chip" data-animal-id="${esc(it.animalId)}">${esc(it.animalId)}</span>
-      <span class="disease-tags"><span class="disease-tag ${vcls}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span>
-      <span style="font-size:12.5px;color:var(--ink-soft);margin-left:auto;">${fmtShort(it.date)}</span>
-      <span style="font-size:13.5px;font-weight:800;color:${ddColor};min-width:52px;text-align:right;">${ddText}</span>
-      ${isAdmin()?`<button class="btn secondary small" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종 기록</button>`:''}
+      <span class="disease-tags vac-tags"><span class="disease-tag ${vcls}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span>
+      <span class="vac-date">${fmtShort(it.date)}</span>
+      <span class="vac-dd" style="color:${ddColor};">${ddText}</span>
+      ${isAdmin()?`<button class="btn secondary small vac-btn" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종<span class="vac-btn-s"> 기록</span></button>`:''}
     </div>`;
   }).join('') || `<div class="empty-state">예정된 백신이 없어요. 호흡기 1차는 아래 버튼으로 시작하세요.</div>`;
   return `
     <div class="panel">
       <div class="open-head"><h2>백신관리</h2><span class="open-count">${items.length}건 예정</span></div>
-      ${isAdmin()?`<div style="margin:10px 0;"><button class="btn" data-action="openVaccineLog">+ 백신 접종 기록</button></div>`:''}
+      ${isAdmin()?`<div style="margin:6px 0 8px;"><button class="btn small" data-action="openVaccineLog">+ 백신 접종 기록</button></div>`:''}
       <div class="disease-list">${rows}</div>
       <div style="margin-top:14px;font-size:12px;color:var(--ink-soft);line-height:1.7;">
         호흡기: 1차(수동) → 2주 후 2차 → 이후 매년 보강(마지막 접종 +365일).<br>
