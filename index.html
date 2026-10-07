@@ -313,6 +313,28 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-num{width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sync-row select{flex:1 1 0;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
 .sync-row input[type=date]{flex:0 0 100px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-row .sync-dose{flex:0 0 58px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
+.sync-proto-btn.custom{border-style:dashed;}
+.sync-alltime{display:inline-flex;align-items:center;gap:4px;margin-left:auto;}
+.sync-alltime input[type=time]{padding:3px 5px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:11px;height:26px;background:var(--bg);}
+.sync-alltime button{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;height:26px;}
+.sync-batch-tools{display:flex;gap:6px;align-items:center;margin:6px 0 8px;flex-wrap:wrap;}
+.sync-batch-tools input{flex:1 1 140px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);}
+.sync-batch-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 6px;background:var(--surface-alt);}
+.sync-batch-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:12px;}
+.sync-batch-item:last-child{border-bottom:none;}
+.sync-batch-item.preg{opacity:.45;}
+.sync-batch-item .sb-status{margin-left:auto;font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+.sync-batch-item input{width:16px;height:16px;flex-shrink:0;}
+.open-group{background:var(--surface);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin:8px 0 12px;}
+.open-group-h{font-size:14px;font-weight:800;color:var(--primary-dark);display:flex;align-items:center;gap:8px;}
+.open-group-n{font-size:11.5px;font-weight:700;color:var(--ink-soft);}
+.open-group-sub{font-size:11.5px;color:var(--ink-soft);margin:3px 0 8px;}
+.open-group-row{border-top:1px solid var(--line);padding:8px 0 6px;}
+.open-group-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;}
+.open-group-btn{margin-left:auto;}
+.open-group-ids{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.schedimg-prev{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);display:block;margin:10px 0;}
 .sync-row input[type=time]{flex:0 0 74px;min-width:0;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:11px;background:var(--bg);height:28px;box-sizing:border-box;}
 .sync-row select:focus,.sync-row input:focus{outline:2px solid var(--tag-yellow);background:var(--surface);}
 .kv-row .kv-name{flex:1.3;}
@@ -861,6 +883,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .modal{padding:18px;border-radius:14px;}
   .form-grid{grid-template-columns:1fr 1fr;}
   .sync-proto-hint{font-size:10.5px;}
+  .sync-row{flex-wrap:wrap;row-gap:4px;}
+  .sync-row select{flex:1 1 calc(100% - 96px);}
+  .sync-row .sync-dose{flex:0 0 66px;}
+  .sync-row input[type=date]{flex:1 1 120px;margin-left:24px;}
+  .sync-row input[type=time]{flex:1 1 80px;}
+  .sync-list{gap:10px;}
 }
 
 /* 보관함 (라이브러리) */
@@ -2160,7 +2188,8 @@ function buildAutoSchedule(owner){
       const type = rec['sync'+i+'Type'];
       const date = dateOnly(rec['sync'+i+'Date']);
       const time = timeOnly(rec['sync'+i+'Date']);
-      if(type && date) add(rec.animalId, date, time ? type+' '+ampmTime(time) : type);
+      const dose = (rec['sync'+i+'Dose']||'').trim();
+      if(type && date) add(rec.animalId, date, [type, dose, time?ampmTime(time):''].filter(Boolean).join(' '));
     }
   });
 
@@ -2181,6 +2210,8 @@ function renderScheduleView(){
       <button class="${mode==='grid'?'active':''}" data-action="setSchedMode" data-mode="grid">📊 표</button>
     </div>
     <button class="btn secondary small" data-action="toggleSchedSort" title="정렬 방식 전환">${(DATA.scheduleSortMode||'date')==='date'?'📅 일정순':'🔢 번호순'}</button>
+    <button class="btn secondary small" data-action="openSchedImage" title="축주에게 보낼 일정 사진 만들기">📷 일정 사진</button>
+    ${isAdmin()?`<button class="btn small" data-action="openSyncBatch" title="여러 소에 같은 동기화 일정 한 번에 입력">⚡ 동기화 일괄</button>`:''}
   </div>`;
   return toggle + (mode==='list' ? renderScheduleAgenda() : renderScheduleGrid());
 }
@@ -2612,6 +2643,32 @@ function syncPlanSpark(plan){
     const h = max>min ? 3 + Math.round((x.p-min)/(max-min)*11) : 8;
     return `<i style="height:${h}px" class="${x.k===plan.best.k?'best':''}${x.k===0?' now':''}"></i>`; }).join('')}</span>`;
 }
+/* 동기화 묶음 제안: 공태 소들을 '같은 날 시작'으로 최대한 묶기
+   · 소마다 오늘~21일 시작일별 기대 수태율 곡선 → 자기 최고치에서 -5%p 이내인 날을 '적기 범위'로 봄
+   · 가장 많은 소의 적기 범위에 들어가는 날을 고르고(동률이면 빠른 날), 남은 소로 반복 */
+function syncGroupPlan(items, tol){
+  tol = tol==null ? 5 : tol;
+  const H = 21;
+  const pool = items.map(it => {
+    const plan = syncStartPlan(it.a, it.recs, H);
+    if(!plan) return null;
+    const bestP = Math.max(...plan.series.map(x=>x.p));
+    return { a: it.a, plan, ok: plan.series.map(x => x.p >= bestP - tol) };
+  }).filter(Boolean);
+  const groups = [];
+  let left = pool.slice();
+  while(left.length){
+    let bestK = -1, bestN = 0;
+    for(let k=0;k<=H;k++){ const n = left.filter(c=>c.ok[k]).length; if(n > bestN){ bestN=n; bestK=k; } }
+    if(bestK<0){ break; }
+    const members = left.filter(c=>c.ok[bestK]);
+    left = left.filter(c=>!c.ok[bestK]);
+    const avg = members.reduce((a,c)=>a+c.plan.series[bestK].p,0)/members.length;
+    groups.push({ k:bestK, date: addDays(todayStr(), bestK), members, avg });
+  }
+  groups.sort((x,y)=>x.k-y.k);
+  return { groups, unplanned: left };
+}
 /* 수태율 집계 (owner 지정 시 그 농장, 빈 값이면 전체 농장) */
 function pregStatsFor(owner){
   // 수태율: 임신감정(O/X)이 난 라운드 중 '그 라운드의 수정을 내가 한 것'만 집계.
@@ -2733,7 +2790,7 @@ function renderOpenView(){
     if(syncAi){ withDate.push({ a, date:syncAi, dd:daysBetween(today, syncAi), basis:'동기화', st }); return; }
     const plan = syncStartPlan(a, recs);
     if(plan){
-      withDate.push({ a, date:plan.best.date, dd:plan.best.k, basis:'적기', st, plan });
+      withDate.push({ a, date:plan.best.date, dd:plan.best.k, basis:'적기', st, plan, recs });
     } else {
       const nx = nextEstrusForAnimal(a, recs);     // 초음파 없으면 수기 다음발정일 등으로 보조
       if(nx) withDate.push({ a, date:nx.date, dd:daysBetween(today, nx.date), basis:nx.basis, st });
@@ -2787,7 +2844,23 @@ function renderOpenView(){
     <div class="open-divider-sub">차트·분만 기록이 하나도 없는 개체예요. 줄을 눌러 첫 기록을 남겨보세요.</div>
     <div class="open-list">${noRecordHtml}</div>` : '';
 
-  const mainList = (withDate.length + noInfo.length) ? `<div class="open-list">${rowsHtml}${noInfoHtml}</div>`
+  // 동기화 묶음 제안
+  const planItems = withDate.filter(x=>x.basis==='적기');
+  let groupHtml = '';
+  if(planItems.length){
+    const gp = syncGroupPlan(planItems);
+    const chips = ms => ms.map(c=>`<span class="tag-chip sm" data-animal-id="${esc(c.a.animalId)}">${esc(c.a.animalId)}</span>`).join('');
+    groupHtml = `<div class="open-group">
+      <div class="open-group-h">동기화 묶음 제안 <span class="open-group-n">${planItems.length}두 → ${gp.groups.length}회</span></div>
+      <div class="open-group-sub">각 소의 적기(최고 기대치 -5%p 이내)에 가장 많이 겹치는 날부터 묶었어요. 남은 소는 다음 날짜로.</div>
+      ${gp.groups.map((g,i)=>`<div class="open-group-row">
+        <div class="open-group-date"><b>${i+1}차</b> ${fmtShort(g.date)} (${weekdayKr(g.date)}) ${g.k===0?'<span class="open-dd today">오늘</span>':`<span class="open-dd">D-${g.k}</span>`}<span class="open-pai">${g.members.length}두 · 평균 ${g.avg.toFixed(0)}%</span>
+          ${isAdmin()?`<button class="btn small open-group-btn" data-action="openSyncBatchGroup" data-date="${g.date}" data-ids="${esc(g.members.map(c=>c.a.animalId).join('|'))}">⚡ 일괄 입력</button>`:''}</div>
+        <div class="open-group-ids">${chips(g.members)}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+  const mainList = (withDate.length + noInfo.length) ? `${groupHtml}<div class="open-list">${rowsHtml}${noInfoHtml}</div>`
     : `<div class="empty-msg" style="margin:6px 0;">미수정 상태로 관리할 개체가 없어요.</div>`;
 
   return `<div class="open-wrap">
@@ -3121,7 +3194,7 @@ function ovaryInput(label, key, val){
     <input type="text" class="ov-free" id="ovfree_${key}" data-key="${key}" value="${esc(parsed.free)}" placeholder="자유 메모 (예: 15mm로 감소, 찌그러진 형태)">
   </div>`;
 }
-function syncRow(i, type, date){
+function syncRow(i, type, date, dose){
   const opts = SYNC_OPTIONS.map(o => `<option value="${esc(o)}" ${type===o?'selected':''}>${esc(o)}</option>`).join('');
   return `<div class="sync-row">
     <span class="sync-num">${i}</span>
@@ -3131,58 +3204,375 @@ function syncRow(i, type, date){
     </select>
     <input type="date" id="f_sync${i}Date" value="${dateOnly(date)}">
     <input type="time" id="f_sync${i}Time" value="${timeOnly(date)}">
+    <input type="text" class="sync-dose" id="f_sync${i}Dose" value="${esc(dose||'')}" placeholder="용량">
   </div>`;
 }
-/* 프로토콜 버튼: 단계별 type 채우고, 1번 날짜가 있으면 오프셋 날짜 자동 계산 */
+/* ---------- 동기화 템플릿 ----------
+   내장 프로토콜(SYNC_PROTOCOLS) + 사용자 저장 템플릿(DATA.syncTemplates).
+   steps: [{type, offset(1번 기준 일수), time, dose}]
+   · 기록 저장 시 사용한 시간·용량을 그 프로토콜 이름으로 기억 → 다음에 버튼 한 번으로 전부 채움 */
+function syncTemplates(){
+  if(!DATA.syncTemplates) DATA.syncTemplates = {};
+  const out = [];
+  Object.keys(SYNC_PROTOCOLS).forEach(n => {
+    const p = SYNC_PROTOCOLS[n];
+    const saved = DATA.syncTemplates[n];
+    out.push({ name:n, builtin:true, steps: p.steps.map((t,i)=>{
+      const sv = (saved && saved.steps && saved.steps[i]) || {};
+      return { type:t, offset:p.offsets[i], time:sv.time||'', dose:sv.dose||'' };
+    }) });
+  });
+  Object.keys(DATA.syncTemplates).filter(n=>!SYNC_PROTOCOLS[n]).forEach(n => {
+    const t = DATA.syncTemplates[n];
+    if(t && Array.isArray(t.steps) && t.steps.length) out.push({ name:n, builtin:false, steps:t.steps });
+  });
+  return out;
+}
+function getSyncTemplate(name){ return syncTemplates().find(t=>t.name===name) || null; }
+function syncProtoRowHtml(){
+  const tpls = syncTemplates();
+  const hasCustom = tpls.some(t=>!t.builtin);
+  return `<div class="sync-proto-row" id="sync-proto-row">
+        <span class="sync-proto-label">프로토콜:</span>
+        ${tpls.map(t=>`<button type="button" class="sync-proto-btn ${t.builtin?'':'custom'}" data-action="applySyncProtocol" data-name="${esc(t.name)}">${esc(t.name)}</button>`).join('')}
+        <button type="button" class="sync-proto-btn clear" data-action="clearSyncSteps">초기화</button>
+        <button type="button" class="sync-proto-btn clear" data-action="saveSyncTemplate" title="지금 입력한 단계(종류·간격·시간·용량)를 새 템플릿으로 저장">템플릿 저장</button>
+        ${hasCustom?`<button type="button" class="sync-proto-btn clear" data-action="manageSyncTemplates">템플릿 관리</button>`:''}
+      </div>
+      <div class="sync-proto-hint">프로토콜을 누른 뒤 <b>1번 날짜</b>를 넣으면 날짜·시간·용량이 채워져요. 시간·용량은 마지막 저장값을 기억해요.
+        <span class="sync-alltime"><input type="time" id="f_syncAllTime"><button type="button" data-action="syncApplyAllTime">시간 모두 적용</button></span>
+      </div>`;
+}
+function readSyncStepsFromForm(){
+  const steps = [];
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const g = id => document.getElementById(id);
+    const typeEl = g('f_sync'+i+'Type'); if(!typeEl) break;
+    steps.push({ type: typeEl.value, date: (g('f_sync'+i+'Date')||{value:''}).value, time: (g('f_sync'+i+'Time')||{value:''}).value, dose: ((g('f_sync'+i+'Dose')||{value:''}).value||'').trim() });
+  }
+  return steps;
+}
+function syncStepsToTemplate(steps){
+  const used = steps.filter(s=>s.type);
+  if(!used.length) return null;
+  const base = used[0].date || steps.find(s=>s.date)?.date || '';
+  return { steps: used.map(s=>({ type:s.type, offset: (base && s.date) ? daysBetween(base, s.date) : 0, time:s.time||'', dose:s.dose||'' })) };
+}
+/* 기록 저장 시: 적용된 프로토콜(또는 종류 순서가 같은 템플릿)에 시간·용량 기억 */
+function rememberSyncUsage(steps){
+  const used = steps.filter(s=>s.type);
+  if(!used.length) return;
+  let name = UI.activeSyncProtocol;
+  if(!name){
+    const m = syncTemplates().find(t => t.steps.length===used.length && t.steps.every((st,i)=>st.type===used[i].type));
+    if(m) name = m.name;
+  }
+  if(!name) return;
+  const tpl = syncStepsToTemplate(steps); if(!tpl) return;
+  if(!DATA.syncTemplates) DATA.syncTemplates = {};
+  if(SYNC_PROTOCOLS[name]){
+    const p = SYNC_PROTOCOLS[name];
+    if(tpl.steps.length!==p.steps.length || !tpl.steps.every((st,i)=>st.type===p.steps[i])) return;
+    DATA.syncTemplates[name] = { steps: tpl.steps.map((st,i)=>({ type:st.type, offset:p.offsets[i], time:st.time, dose:st.dose })) };
+  } else {
+    DATA.syncTemplates[name] = tpl;
+  }
+}
+/* 프로토콜 버튼: 종류·시간·용량 채우고, 1번 날짜가 있으면 오프셋 날짜 자동 계산 */
 function applySyncProtocol(name){
-  const p = SYNC_PROTOCOLS[name];
-  if(!p) return;
+  const t = getSyncTemplate(name);
+  if(!t) return;
   for(let i=1;i<=SYNC_STEPS;i++){
     const typeEl = document.getElementById('f_sync'+i+'Type');
     const dateEl = document.getElementById('f_sync'+i+'Date');
     const timeEl = document.getElementById('f_sync'+i+'Time');
+    const doseEl = document.getElementById('f_sync'+i+'Dose');
     if(!typeEl) continue;
-    if(i <= p.steps.length){
-      typeEl.value = p.steps[i-1];
+    const st = t.steps[i-1];
+    if(st){
+      typeEl.value = st.type;
+      if(timeEl) timeEl.value = st.time||'';
+      if(doseEl) doseEl.value = st.dose||'';
     } else {
       typeEl.value = '';
       if(dateEl) dateEl.value = '';
       if(timeEl) timeEl.value = '';
+      if(doseEl) doseEl.value = '';
     }
   }
   UI.activeSyncProtocol = name;
   const base = (document.getElementById('f_sync1Date')||{}).value || '';
   if(base) fillSyncProtocolDates(name, base);
-  toast(`${name} 적용 — 1번 날짜를 넣으면 나머지가 자동 계산돼요.`);
+  toast(base ? `${name} 적용` : `${name} 적용 — 1번 날짜를 넣으면 나머지가 자동 계산돼요.`);
 }
 function fillSyncProtocolDates(name, base){
-  const p = SYNC_PROTOCOLS[name];
-  if(!p || !base) return;
-  for(let i=1;i<=p.steps.length;i++){
+  const t = getSyncTemplate(name);
+  if(!t || !base) return;
+  for(let i=1;i<=t.steps.length;i++){
     const dateEl = document.getElementById('f_sync'+i+'Date');
-    if(dateEl) dateEl.value = addDays(base, p.offsets[i-1]);
+    if(dateEl) dateEl.value = addDays(base, t.steps[i-1].offset||0);
   }
 }
 function clearSyncSteps(){
   UI.activeSyncProtocol = null;
   for(let i=1;i<=SYNC_STEPS;i++){
-    const typeEl = document.getElementById('f_sync'+i+'Type');
-    const dateEl = document.getElementById('f_sync'+i+'Date');
-    const timeEl = document.getElementById('f_sync'+i+'Time');
-    if(typeEl) typeEl.value = '';
-    if(dateEl) dateEl.value = '';
-    if(timeEl) timeEl.value = '';
+    ['Type','Date','Time','Dose'].forEach(k=>{ const el=document.getElementById('f_sync'+i+k); if(el) el.value=''; });
   }
   toast('동기화 단계를 모두 비웠어요.');
+}
+function syncApplyAllTime(){
+  const v = (document.getElementById('f_syncAllTime')||{}).value || '';
+  if(!v){ toast('먼저 시간을 고르세요.'); return; }
+  for(let i=1;i<=SYNC_STEPS;i++){
+    const typeEl = document.getElementById('f_sync'+i+'Type');
+    const timeEl = document.getElementById('f_sync'+i+'Time');
+    if(typeEl && typeEl.value && timeEl) timeEl.value = v;
+  }
+}
+function saveSyncTemplateFromForm(){
+  const tpl = syncStepsToTemplate(readSyncStepsFromForm());
+  if(!tpl){ toast('저장할 단계가 없어요. 종류를 먼저 고르세요.'); return; }
+  const name = (prompt('템플릿 이름 (예: GPPG 저녁형)')||'').trim();
+  if(!name) return;
+  if(SYNC_PROTOCOLS[name]){ toast('내장 프로토콜과 같은 이름은 쓸 수 없어요.'); return; }
+  if(!DATA.syncTemplates) DATA.syncTemplates = {};
+  DATA.syncTemplates[name] = tpl;
+  UI.activeSyncProtocol = name;
+  saveState();
+  const row = document.getElementById('sync-proto-row');
+  if(row){ const wrap=document.createElement('div'); wrap.innerHTML=syncProtoRowHtml(); row.parentNode.replaceChild(wrap.firstElementChild, row); const hint=wrap.querySelector('.sync-proto-hint'); const oldHint=document.querySelector('.sync-proto-hint'); if(hint&&oldHint) oldHint.replaceWith(hint); }
+  toast(`템플릿 "${name}" 저장`);
+}
+function openSyncTemplateManage(){
+  const custom = syncTemplates().filter(t=>!t.builtin);
+  openModal(`
+    <div class="modal" style="max-width:460px;">
+      <h2>동기화 템플릿</h2>
+      <div class="modal-sub">내장 프로토콜은 시간·용량만 기억하고, 저장한 템플릿은 여기서 지울 수 있어요.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+        ${custom.length ? custom.map(t=>`<div class="share-card">
+          <div class="share-row"><b>${esc(t.name)}</b><button class="btn secondary small" data-action="deleteSyncTemplate" data-name="${esc(t.name)}" style="margin-left:auto;">삭제</button></div>
+          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">${t.steps.map((s,i)=>`${i+1}) ${esc(s.type)} D+${s.offset||0}${s.time?' '+ampmTime(s.time):''}${s.dose?' '+esc(s.dose):''}`).join(' · ')}</div>
+        </div>`).join('') : '<div class="empty-state">저장한 템플릿이 없어요.</div>'}
+      </div>
+      <div class="modal-actions" style="margin-top:14px;"><button class="btn secondary" data-action="closeModal">닫기</button></div>
+    </div>`);
 }
 function syncSummary(r){
   const parts = [];
   for(let i=1;i<=SYNC_STEPS;i++){
     const type = r['sync'+i+'Type'];
     const date = r['sync'+i+'Date'];
-    if(type) parts.push(`${i}) ${type}${date?' '+fmtShort(date):''}`);
+    const dose = r['sync'+i+'Dose'];
+    if(type) parts.push(`${i}) ${type}${dose?' '+dose:''}${date?' '+fmtShort(date):''}`);
   }
   return parts.join(' · ');
+}
+/* 동기화 단계가 있으면 스케줄에 보이도록 개체 등록 + 기간 확장 */
+function registerSyncSchedule(owner, animalId, rec){
+  const syncDates = [];
+  for(let i=1;i<=SYNC_STEPS;i++){
+    if(rec['sync'+i+'Type'] && rec['sync'+i+'Date']) syncDates.push(dateOnly(rec['sync'+i+'Date']));
+  }
+  if(!syncDates.length) return false;
+  ensureOwnerMeta(owner);
+  if(!DATA.scheduleAnimals[owner].includes(animalId)) DATA.scheduleAnimals[owner].push(animalId);
+  const rng = DATA.scheduleRange[owner];
+  syncDates.forEach(d => { if(d < rng.start) rng.start = d; if(d > rng.end) rng.end = d; });
+  return true;
+}
+function blankRecord(animalId){
+  return { animalId:animalId||'', examDate:null, estrusDate:null, aiDate:null, aiDate2:null, doubleAi:false, aiInterval:'',
+    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', stillbirthDate:null, estrusSign:'', rectalExam:'',
+    ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
+    carcass:'', ribeye:'', backfat:'', marbling:'',
+    estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusMT:'', estrusST:'', estrusOther:'',
+    rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
+    ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
+    uterineDisease:'', uterineResolved:false, ovarianDisease:'',
+    sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
+    sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
+    sync7Type:'', sync7Date:null };
+}
+
+/* ---------- 동기화 일괄 입력 (여러 소 한 번에) ---------- */
+function openSyncBatchModal(owner, preset){
+  UI.activeSyncProtocol = null;
+  preset = preset || {};
+  modalCtx = { type:'syncBatch', owner };
+  const animals = ownerAnimalsFor(owner).filter(a=>!a.fattening).map(a=>{
+    const st = shareAnimalStatus(owner, a);
+    return { id:a.animalId, status:st.status, preg: st.status==='임신중' };
+  }).sort((a,b)=> (a.preg-b.preg) || a.id.localeCompare(b.id));
+  openModal(`
+    <div class="modal">
+      <h2>동기화 일괄 입력</h2>
+      <div class="modal-sub">축주: ${esc(owner)} · 아래 단계가 선택한 소마다 기록 1건씩으로 저장돼요.</div>
+      <div class="fieldset-title">단계</div>
+      ${syncProtoRowHtml()}
+      <div class="sync-list">${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1,'',null,'')).join('')}</div>
+      <div class="fieldset-title">대상 소 <span id="syncbatch_count" style="font-weight:600;color:var(--ink-soft);">(0두 선택)</span></div>
+      <div class="sync-batch-tools">
+        <input type="text" id="syncbatch_q" placeholder="개체번호 검색 (예: 8161)">
+        <button type="button" class="btn secondary small" data-action="syncBatchAll">보이는 것 전체 선택</button>
+        <button type="button" class="btn secondary small" data-action="syncBatchNone">해제</button>
+      </div>
+      <div class="sync-batch-list" id="syncbatch_list">
+        ${animals.map(a=>`<label class="sync-batch-item ${a.preg?'preg':''}" data-id="${esc(a.id.replace(/\s/g,''))}">
+          <input type="checkbox" class="syncbatch-cb" value="${esc(a.id)}">
+          <span class="tag-chip sm">${esc(a.id)}</span>
+          <span class="sb-status">${esc(a.status||'')}</span>
+        </label>`).join('') || '<div class="empty-state">등록된 소가 없어요.</div>'}
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveSyncBatch">저장</button>
+      </div>
+    </div>`);
+  if(preset.date){ const d=document.getElementById('f_sync1Date'); if(d) d.value=preset.date; }
+  if(preset.ids && preset.ids.length){
+    const set = new Set(preset.ids);
+    document.querySelectorAll('.syncbatch-cb').forEach(cb=>{ cb.checked = set.has(cb.value); });
+    syncBatchUpdateCount();
+  }
+}
+function syncBatchUpdateCount(){
+  const n = document.querySelectorAll('.syncbatch-cb:checked').length;
+  const el = document.getElementById('syncbatch_count');
+  if(el) el.textContent = `(${n}두 선택)`;
+}
+function syncBatchFilter(q){
+  const k = (q||'').replace(/\s/g,'');
+  document.querySelectorAll('.sync-batch-item').forEach(el=>{ el.style.display = (!k || el.dataset.id.includes(k)) ? '' : 'none'; });
+}
+function actionSaveSyncBatch(){
+  const owner = modalCtx.owner;
+  const steps = readSyncStepsFromForm();
+  const used = steps.filter(s=>s.type && s.date);
+  if(!used.length){ toast('단계와 날짜를 먼저 넣어주세요.'); return; }
+  const ids = Array.from(document.querySelectorAll('.syncbatch-cb:checked')).map(cb=>cb.value);
+  if(!ids.length){ toast('소를 한 마리 이상 선택해주세요.'); return; }
+  rememberSyncUsage(steps);
+  const first = used[0];
+  ids.forEach(animalId=>{
+    const rec = Object.assign(blankRecord(animalId), { id: uid(owner+'-rec'), owner, animalId, examDate: combineDT(first.date, first.time) });
+    steps.forEach((s,i)=>{
+      rec['sync'+(i+1)+'Type'] = s.type;
+      rec['sync'+(i+1)+'Date'] = s.type ? combineDT(s.date, s.time) : null;
+      rec['sync'+(i+1)+'Dose'] = s.type ? s.dose : '';
+    });
+    ensureAnimalExists(owner, animalId);
+    registerSyncSchedule(owner, animalId, rec);
+    DATA.records.push(rec);
+  });
+  saveState();
+  closeModal();
+  renderMain();
+  toast(`${ids.length}두에 동기화 기록을 넣었어요.`);
+}
+
+/* ---------- 처치 일정 사진 (축주 전송용) ---------- */
+function schedImageRows(owner, days){
+  const today = todayStr();
+  const end = days ? addDays(today, days-1) : '9999-12-31';
+  const syncOnly = UI.schedImgSyncOnly!==false;
+  const rows = scheduleRowsForOwner(owner)
+    .filter(r => r.date >= today && r.date <= end && !r.skipped && (!syncOnly || r.isAuto))
+    .map(r => ({ date:r.date, id:r.aid, note:(r.note||'').replace(/CIDR/gi,'사이더').replace(/\bAI\b/g,'인공수정') }))
+    .filter(r=>r.note);
+  if(!syncOnly) vaccineItemsForOwner(owner).forEach(it=>{ if(it.date>=today && it.date<=end) rows.push({ date:it.date, id:it.animalId, note:`${VAC_LABEL[it.vaccine]} 백신 ${it.dose}` }); });
+  rows.sort((a,b)=> a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  return rows;
+}
+function drawSchedImage(owner, rows){
+  const W = 760, S = 2, PAD = 28;
+  const FONT = '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", sans-serif';
+  const MONO = '"SF Mono", Menlo, Consolas, monospace';
+  const groups = []; let last=null;
+  rows.forEach(r=>{ if(!last || last.date!==r.date){ last={date:r.date, items:[]}; groups.push(last); } last.items.push(r); });
+  const ROW=38, GH=44, GGAP=14, HEAD=112, FOOT=56;
+  const H = HEAD + (groups.length ? groups.reduce((a,g)=>a+GH+g.items.length*ROW+GGAP,0) : 80) + FOOT;
+  const c = document.createElement('canvas'); c.width=W*S; c.height=H*S;
+  const x = c.getContext('2d'); x.scale(S,S);
+  const rr = (px,py,w,h,r,fill,stroke)=>{ x.beginPath(); x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r); x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath(); if(fill){x.fillStyle=fill;x.fill();} if(stroke){x.strokeStyle=stroke;x.lineWidth=1;x.stroke();} };
+  x.fillStyle='#F3F5F6'; x.fillRect(0,0,W,H);
+  // 헤더
+  x.fillStyle='#00A69C'; x.fillRect(0,0,W,HEAD-24);
+  x.fillStyle='#fff'; x.font=`800 26px ${FONT}`; x.textBaseline='middle';
+  x.fillText(`${owner}님 농장 처치 일정`, PAD, 36);
+  x.font=`600 14px ${FONT}`; x.globalAlpha=.9;
+  x.fillText(`기준일 ${fmtShort(todayStr())} (${weekdayKr(todayStr())}) · 날짜에 맞춰 주사·수정을 진행해 주세요`, PAD, 66);
+  x.globalAlpha=1;
+  let y = HEAD;
+  if(!groups.length){
+    rr(PAD,y,W-PAD*2,56,12,'#fff','#E2E5E8'); x.fillStyle='#6B6862'; x.font=`600 15px ${FONT}`; x.textAlign='center'; x.fillText('예정된 처치 일정이 없어요.', W/2, y+28); x.textAlign='left';
+  }
+  groups.forEach(g=>{
+    const gh = GH + g.items.length*ROW;
+    const n = daysBetween(todayStr(), g.date);
+    const isToday = n===0;
+    rr(PAD, y, W-PAD*2, gh, 14, isToday?'#E3F4F1':'#fff', isToday?'#00A69C':'#E2E5E8');
+    const dateTxt = `${fmtShort(g.date)} (${weekdayKr(g.date)})`;
+    x.fillStyle='#23211E'; x.font=`800 19px ${FONT}`;
+    x.fillText(dateTxt, PAD+18, y+23);
+    const dw = x.measureText(dateTxt).width;
+    x.font=`800 14px ${FONT}`; x.fillStyle = isToday ? '#008275' : (n<=2 ? '#C0392B' : '#2E70D6');
+    x.fillText(isToday ? '오늘' : `D-${n}`, PAD+18+dw+12, y+24);
+    x.strokeStyle='#EEF1F3'; x.beginPath(); x.moveTo(PAD+18, y+GH-6); x.lineTo(W-PAD-18, y+GH-6); x.stroke();
+    let ry = y + GH;
+    g.items.forEach((it,i)=>{
+      if(i>0){ x.strokeStyle='#F3F5F6'; x.beginPath(); x.moveTo(PAD+18, ry); x.lineTo(W-PAD-18, ry); x.stroke(); }
+      x.fillStyle='#23211E'; x.font=`700 17px ${MONO}`; x.fillText(it.id, PAD+18, ry+ROW/2);
+      x.font=`800 15px ${FONT}`; const tw = x.measureText(it.note).width + 26;
+      rr(W-PAD-18-tw, ry+6, tw, ROW-12, 8, isToday?'#00A69C':'#F7F9FA', isToday?null:'#E2E5E8');
+      x.fillStyle = isToday ? '#fff' : '#008275'; x.fillText(it.note, W-PAD-18-tw+13, ry+ROW/2);
+      ry += ROW;
+    });
+    y += gh + GGAP;
+  });
+  x.fillStyle='#6B6862'; x.font=`600 12px ${FONT}`; x.textAlign='center';
+  x.fillText('담당 수의사가 공유한 일정입니다 · 날짜·시간 변경은 수의사에게 문의', W/2, H-FOOT/2); x.textAlign='left';
+  return c;
+}
+let _schedImgCanvas = null;
+function openSchedImageModal(){
+  const owner = UI.owner;
+  UI.schedImgDays = UI.schedImgDays===undefined ? 14 : UI.schedImgDays;
+  const rows = schedImageRows(owner, UI.schedImgDays);
+  _schedImgCanvas = drawSchedImage(owner, rows);
+  const url = _schedImgCanvas.toDataURL('image/png');
+  const canShare = !!(navigator.share && navigator.canShare);
+  const seg = [[7,'7일'],[14,'14일'],[30,'30일'],[0,'전체']].map(([d,l])=>`<button class="${UI.schedImgDays===d?'active':''}" data-action="schedImgDays" data-days="${d}">${l}</button>`).join('');
+  openModal(`
+    <div class="modal" style="max-width:520px;">
+      <h2>처치 일정 사진</h2>
+      <div class="modal-sub">${esc(owner)}님 · 오늘부터 ${UI.schedImgDays?UI.schedImgDays+'일':'전체'} · ${rows.length}건 — 저장해서 카톡 등으로 보내세요.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+        <div class="seg">${seg}</div>
+        <div class="seg"><button class="${UI.schedImgSyncOnly!==false?'active':''}" data-action="schedImgScope" data-scope="sync">동기화만</button><button class="${UI.schedImgSyncOnly===false?'active':''}" data-action="schedImgScope" data-scope="all">감정·백신 포함</button></div>
+      </div>
+      <img class="schedimg-prev" id="schedimg_prev" src="${url}" alt="일정 사진 미리보기">
+      <div class="modal-actions">
+        <button class="btn secondary" data-action="closeModal">닫기</button>
+        ${canShare?`<button class="btn secondary" data-action="schedImgShare">${svgIcon('share',14)} 공유</button>`:''}
+        <button class="btn" data-action="schedImgSave">${svgIcon('save',14)} 사진 저장</button>
+      </div>
+    </div>`);
+}
+function schedImgFileName(){ return `${UI.owner}_처치일정_${todayStr()}.png`; }
+function schedImgSave(){
+  if(!_schedImgCanvas) return;
+  const a = document.createElement('a'); a.href=_schedImgCanvas.toDataURL('image/png'); a.download=schedImgFileName(); document.body.appendChild(a); a.click(); a.remove();
+  toast('사진을 저장했어요.');
+}
+async function schedImgShare(){
+  if(!_schedImgCanvas) return;
+  try{
+    const blob = await new Promise(res=>_schedImgCanvas.toBlob(res,'image/png'));
+    const file = new File([blob], schedImgFileName(), {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:`${UI.owner}님 처치 일정`}); }
+    else { schedImgSave(); }
+  }catch(e){ if(e && e.name!=='AbortError'){ console.warn(e); schedImgSave(); } }
 }
 function firstSyncDate(r){
   for(let i=1;i<=SYNC_STEPS;i++){
@@ -3353,17 +3743,7 @@ function openRecordModal(record, owner, presetAnimalId){
       carcass: record?(record.carcass||''):'', ribeye: record?(record.ribeye||''):'',
       backfat: record?(record.backfat||''):'', marbling: record?(record.marbling||''):'',
       rectalHorn: record?(record.rectalHorn||''):'', ultraHorn: record?(record.ultraHorn||''):'' } };
-  const r = record || { animalId:presetAnimalId||'', examDate:null, estrusDate:null, aiDate:null, aiDate2:null, doubleAi:false, aiInterval:'',
-    nextEstrusDate:null, expectedCalving:null, expectedCycle:'', pregnant:'', pregnant2:'', fetalSex:'', calvingDate:null, calfSex:'', stillbirthDate:null, estrusSign:'', rectalExam:'',
-    ultrasound:'', hormoneTreatment:'', notes:'', aiCount:'', recordParity:'', inHouseAiCount:'', farmAiCount:'', kpn:'',
-    carcass:'', ribeye:'', backfat:'', marbling:'',
-    estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusMT:'', estrusST:'', estrusOther:'',
-    rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
-    ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
-    uterineDisease:'', uterineResolved:false, ovarianDisease:'',
-    sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
-    sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
-    sync7Type:'', sync7Date:null };
+  const r = record || blankRecord(presetAnimalId);
   const lockAnimalId = !isNew || !!presetAnimalId;
   const animalIdField = lockAnimalId
     ? `<div class="field"><label>개체번호</label><div style="padding:7px 0;"><span class="tag-chip">${esc(r.animalId)}</span></div></div>`
@@ -3401,17 +3781,9 @@ function openRecordModal(record, owner, presetAnimalId){
       </div>
 
       <div class="fieldset-title">동기화</div>
-      <div class="sync-proto-row">
-        <span class="sync-proto-label">프로토콜 자동입력:</span>
-        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="Ovsynch">Ovsynch</button>
-        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="Ovsynch+CIDR">Ovsynch+CIDR</button>
-        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="GPPG">GPPG</button>
-        <button type="button" class="sync-proto-btn" data-action="applySyncProtocol" data-name="GPPG+CIDR">GPPG+CIDR</button>
-        <button type="button" class="sync-proto-btn clear" data-action="clearSyncSteps">초기화</button>
-      </div>
-      <div class="sync-proto-hint">버튼을 누른 뒤 <b>1번 날짜</b>를 입력하면 나머지 날짜가 자동 계산돼요.</div>
+      ${syncProtoRowHtml()}
       <div class="sync-list">
-        ${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1, r['sync'+(i+1)+'Type'], r['sync'+(i+1)+'Date'])).join('')}
+        ${Array.from({length:SYNC_STEPS}, (_,i)=>syncRow(i+1, r['sync'+(i+1)+'Type'], r['sync'+(i+1)+'Date'], r['sync'+(i+1)+'Dose'])).join('')}
       </div>
 
       <div class="fieldset-title">발정증상</div>
@@ -3596,19 +3968,11 @@ function actionSaveRecord(){
   for(let i=1;i<=SYNC_STEPS;i++){
     rec['sync'+i+'Type'] = g('f_sync'+i+'Type').value;
     rec['sync'+i+'Date'] = combineDT(g('f_sync'+i+'Date').value, g('f_sync'+i+'Time').value);
+    rec['sync'+i+'Dose'] = rec['sync'+i+'Type'] ? ((g('f_sync'+i+'Dose')||{value:''}).value||'').trim() : '';
   }
+  rememberSyncUsage(readSyncStepsFromForm());
   ensureAnimalExists(owner, animalId);
-  // 동기화 단계가 있으면 스케줄에 보이도록 개체 등록 + 기간 확장
-  const syncDates = [];
-  for(let i=1;i<=SYNC_STEPS;i++){
-    if(rec['sync'+i+'Type'] && rec['sync'+i+'Date']) syncDates.push(dateOnly(rec['sync'+i+'Date']));
-  }
-  if(syncDates.length){
-    ensureOwnerMeta(owner);
-    if(!DATA.scheduleAnimals[owner].includes(animalId)) DATA.scheduleAnimals[owner].push(animalId);
-    const rng = DATA.scheduleRange[owner];
-    syncDates.forEach(d => { if(d < rng.start) rng.start = d; if(d > rng.end) rng.end = d; });
-  }
+  registerSyncSchedule(owner, animalId, rec);
   const prevRec = DATA.records.find(x=>x.id===rec.id);
   const oldCalv = prevRec ? dateOnly(prevRec.calvingDate||'') : '';
   const newCalv = dateOnly(rec.calvingDate||'');
@@ -4902,6 +5266,20 @@ const ACTIONS = {
   },
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
   clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
+  syncApplyAllTime: ()=>{ if(!isAdmin()) return noAdminToast(); syncApplyAllTime(); },
+  saveSyncTemplate: ()=>{ if(!isAdmin()) return noAdminToast(); saveSyncTemplateFromForm(); },
+  manageSyncTemplates: ()=>{ if(!isAdmin()) return noAdminToast(); openSyncTemplateManage(); },
+  deleteSyncTemplate: ds=>{ if(!isAdmin()) return noAdminToast(); if(DATA.syncTemplates){ delete DATA.syncTemplates[ds.name]; saveState(); } openSyncTemplateManage(); toast(`템플릿 "${ds.name}" 삭제`); },
+  openSyncBatch: ()=>{ if(!isAdmin()) return noAdminToast(); openSyncBatchModal(UI.owner); },
+  openSyncBatchGroup: (ds,e)=>{ if(e) e.stopPropagation(); if(!isAdmin()) return noAdminToast(); openSyncBatchModal(UI.owner, { date: ds.date, ids: (ds.ids||'').split('|').filter(Boolean) }); },
+  saveSyncBatch: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSyncBatch(); },
+  syncBatchAll: ()=>{ document.querySelectorAll('.sync-batch-item').forEach(el=>{ if(el.style.display!=='none' && !el.classList.contains('preg')){ const cb=el.querySelector('.syncbatch-cb'); if(cb) cb.checked=true; } }); syncBatchUpdateCount(); },
+  syncBatchNone: ()=>{ document.querySelectorAll('.syncbatch-cb').forEach(cb=>cb.checked=false); syncBatchUpdateCount(); },
+  openSchedImage: ()=>{ openSchedImageModal(); },
+  schedImgDays: ds=>{ UI.schedImgDays = parseInt(ds.days,10)||0; openSchedImageModal(); },
+  schedImgScope: ds=>{ UI.schedImgSyncOnly = ds.scope!=='all'; openSchedImageModal(); },
+  schedImgSave: ()=>{ schedImgSave(); },
+  schedImgShare: ()=>{ schedImgShare(); },
   closeModal: ()=>closeModal(),
   goHome: ()=>{ closeModal(); UI.view='animal'; UI.selectedAnimal=null; render(); },
   saveRecord: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveRecord(); },
@@ -4952,6 +5330,7 @@ function initEvents(){
       UI.globalSearch=t.value;
       renderMain();
     }
+    else if(t.id==='syncbatch_q'){ syncBatchFilter(t.value); }
     else if(t.classList && t.classList.contains('ov-free')){
       const key=t.dataset.key; if(ovaryState[key]){ ovaryState[key].free=t.value; const hid=document.getElementById('f_'+key); if(hid) hid.value=ovaryCombined(key); }
     }
@@ -4987,6 +5366,7 @@ function initEvents(){
     else if(t.id==='f_sync1Date' && UI.activeSyncProtocol){
       fillSyncProtocolDates(UI.activeSyncProtocol, t.value);
     }
+    else if(t.classList && t.classList.contains('syncbatch-cb')){ syncBatchUpdateCount(); }
   });
   document.addEventListener('focusin', e=>{
     if(e.target.matches && e.target.matches('.sched-cell input')){
