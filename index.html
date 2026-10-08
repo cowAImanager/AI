@@ -364,17 +364,20 @@ main{flex:1;padding:18px 20px 70px;}
 /* 임신감정 */
 .preg-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
 .preg-summary.five{grid-template-columns:repeat(5,minmax(0,1fr));}
+.preg-summary.preg-five{grid-template-columns:repeat(6,minmax(0,1fr));}
 .preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));}
 @media (max-width:560px){
   .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
   .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));}
   /* 임신감정: 1줄 2칸(대상·임신중) + 2줄 3칸 */
-  .preg-summary.preg-five{grid-template-columns:repeat(6,1fr);}
+  .preg-summary.preg-five{grid-template-columns:repeat(12,1fr);}
   .preg-summary.preg-five > :nth-child(1),
-  .preg-summary.preg-five > :nth-child(2){grid-column:span 3;}
+  .preg-summary.preg-five > :nth-child(2){grid-column:span 6;}
   .preg-summary.preg-five > :nth-child(3),
-  .preg-summary.preg-five > :nth-child(4),
-  .preg-summary.preg-five > :nth-child(5){grid-column:span 2;}
+  .preg-summary.preg-five > :nth-child(4){grid-column:span 4;}
+  .preg-summary.preg-five > :nth-child(5),
+  .preg-summary.preg-five > :nth-child(6){grid-column:span 2;}
+  .preg-summary.preg-five .preg-stat-sub{white-space:normal;line-height:1.2;}
   /* 질환: 5칸 한 줄 */
   .preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
   .preg-summary.disease-three .preg-stat{padding:9px 4px;}
@@ -415,6 +418,7 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.sex{background:var(--estrus-soft);color:var(--estrus-text);}
 .preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
+.preg-tag.oneyear{background:var(--primary);color:#fff;}
 .preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
 .fatten-badge{display:inline-flex;align-items:center;gap:3px;background:#7A3B12;color:#fff;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;letter-spacing:-.01em;}
 .fatten-badge.sm{font-size:9px;padding:2px 5px;border-radius:6px;gap:2px;letter-spacing:-.02em;}
@@ -2559,6 +2563,17 @@ function renderScheduleGrid(){
 /* ============================================================
    임신감정 보기
 ============================================================ */
+/* 1년1산: 임신중 소 중 마지막 분만 → 수태 수정일이 81일 이내 (분만간격 ≤ 366일). base = 분만 기록 있는 임신우 */
+function oneYearStats(pregRows){
+  let n=0, base=0;
+  pregRows.forEach(row => {
+    if(!row.lastCalv || !row.aiDate) return;
+    const d = daysBetween(dateOnly(row.lastCalv), dateOnly(row.aiDate));
+    if(d < 0) return;
+    base++; if(d <= 81) n++;
+  });
+  return { n, base };
+}
 function renderPregCheckView(){
   const today = todayStr();
   const animals = ownerAnimals();
@@ -2642,6 +2657,11 @@ function renderPregCheckView(){
       if(row.calfSex) tags.push(`<span class="preg-tag sex">송아지 ${esc(row.calfSex)}</span>`);
       if(vwp) tags.push(`<span class="preg-tag ${pp<VWP_DAYS?'rechk':'pos'}">${vwp}</span>`);
     } else if(row.isPreg){
+      // 1년1산: 마지막 분만 후 81일 안에 수태(수정) → 분만간격 ≤ 366일
+      if(row.lastCalv && row.aiDate){
+        const pdays = daysBetween(dateOnly(row.lastCalv), dateOnly(row.aiDate));
+        if(pdays >= 0 && pdays <= 81) tags.push(`<span class="preg-tag oneyear" title="분만 후 ${pdays}일에 수태">1년1산</span>`);
+      }
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
         if(dd >= 0){
@@ -2679,7 +2699,7 @@ function renderPregCheckView(){
 
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
-      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.isPreg && !row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="수정 ${row.aiCountCur}회 불수태">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}
+      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${isNotPregnant?'수정<span class="pcd-suffix"> 후</span> ':''}${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
@@ -2759,6 +2779,10 @@ function renderPregCheckView(){
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
           <div class="preg-stat-label">${yearNow}년 출산</div>
         </div>
+        ${(()=>{ const oy = oneYearStats(pregnant); return `<div class="preg-stat ratecol2" title="마지막 분만 후 81일 안에 수태한 임신우 (분만간격 1년 이내)">
+          <div class="preg-stat-num">${oy.n}<span style="font-size:14px;font-weight:700;">두</span></div>
+          <div class="preg-stat-label">1년1산 <span class="preg-stat-sub" title="경산 임신우 중 비율">${oy.base?Math.round(oy.n/oy.base*100):0}% (${oy.n}/${oy.base})</span></div>
+        </div>`; })()}
       </div>
       ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
       ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
