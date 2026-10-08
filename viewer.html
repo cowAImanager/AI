@@ -12,6 +12,7 @@
   --primary:#00A69C; --primary-dark:#008275; --accent:#2E70D6;
   --ink:#23211E; --ink-soft:#6B6862; --line:#E2E5E8; --bg:#F3F5F6; --surface:#FFFFFF; --surface-alt:#F7F9FA;
   --green-soft:#E3F4F1; --preg:#1B9C8E; --notpreg:#C0392B; --fatten:#9C6B3B; --tag-yellow:#F7C843;
+  --vac:#6D4FC2; --vac-soft:#EFEAFB;
 }
 *{box-sizing:border-box;}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard',sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;}
@@ -19,7 +20,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 
 /* 헤더 */
 .v-head{display:flex;align-items:center;gap:9px;padding:6px 2px 14px;}
-.v-logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
 .v-title{font-size:16px;font-weight:800;letter-spacing:-.01em;}
 .v-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
 .v-updated{margin-left:auto;font-size:10.5px;color:var(--ink-soft);text-align:right;line-height:1.4;}
@@ -30,10 +30,14 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-stat .n{font-size:21px;font-weight:800;color:var(--primary-dark);line-height:1;}
 .v-stat .l{font-size:10.5px;color:var(--ink-soft);margin-top:5px;font-weight:600;}
 
-/* 검색 */
-.v-tabs{display:flex;gap:6px;margin:6px 0 12px;background:var(--surface-alt);padding:4px;border-radius:12px;}
-.v-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:800;padding:10px 8px;border:none;border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .12s;}
+/* 탭 */
+.v-tabs{display:flex;gap:4px;margin:6px 0 12px;background:var(--surface-alt);padding:4px;border-radius:12px;}
+.v-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:800;padding:9px 4px;border:none;border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .12s;white-space:nowrap;}
 .v-tab.on{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.v-tab.on[data-tab="vac"]{color:var(--vac);}
+.v-tab .cnt{font-size:10.5px;font-weight:800;background:var(--line);color:var(--ink-soft);border-radius:999px;padding:1px 6px;}
+.v-tab.on .cnt{background:var(--green-soft);color:var(--primary-dark);}
+.v-tab.on[data-tab="vac"] .cnt{background:var(--vac-soft);color:var(--vac);}
 .v-panel{animation:vfade .15s ease;}
 @keyframes vfade{from{opacity:.4;}to{opacity:1;}}
 .v-sortbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 9px;}
@@ -43,10 +47,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:var(--surface);margin-bottom:12px;}
 .v-search:focus{outline:2px solid var(--tag-yellow);}
 
-/* 소 카드 */
-.v-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.05);}
-.v-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* 개체 ID / 배지 */
 .v-id{font-family:'SF Mono',ui-monospace,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:4px 9px;}
+.v-id.oneyear{background:#FFF6D6;border-color:#F0D37A;color:#7A5A00;}
+.v-id.oneyear::before{content:'★ ';color:#E0A800;}
 .v-badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 9px;}
 .v-badge.preg{background:var(--green-soft);color:var(--primary-dark);}
 .v-badge.notpreg{background:#FBE9E7;color:var(--notpreg);}
@@ -55,16 +59,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-badge.calved{background:#EAF2FD;color:var(--accent);}
 .v-badge.fatten{background:#F3E9DD;color:var(--fatten);}
 .v-badge.none{background:var(--surface-alt);color:var(--ink-soft);}
-.v-rows{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
-.v-row{display:flex;gap:8px;align-items:baseline;font-size:12.5px;border-bottom:1px solid var(--bg);padding-bottom:6px;}
-.v-row:last-child{border-bottom:none;padding-bottom:0;}
-.v-row b{color:var(--primary-dark);font-weight:700;min-width:78px;flex-shrink:0;font-size:11.5px;}
+.v-badge.oneyear{background:#FFF6D6;color:#7A5A00;}
+.v-badge.rep{background:#FBE9E7;color:var(--notpreg);}
 .v-dday{font-weight:800;color:var(--accent);}
 .v-dday.soon{color:var(--notpreg);}
-
-/* 섹션 제목 */
-.v-section{font-size:14px;font-weight:800;color:var(--primary-dark);margin:22px 0 4px;display:flex;align-items:center;gap:6px;}
-.v-sched-hint{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;}
 
 /* 오늘 할 일 배너 */
 .v-today{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:13px;padding:14px 16px;margin:4px 0 6px;box-shadow:0 3px 12px rgba(0,166,156,.3);}
@@ -74,7 +72,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-today-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;}
 .v-today-note{margin-left:auto;font-size:14px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:7px;}
 
-/* 처치 일정 — 날짜 그룹 */
+/* 일정 — 날짜 그룹 */
+.v-sched-hint{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;}
 .v-sgroup{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .v-sgroup.today{border-color:var(--primary);background:var(--green-soft);}
 .v-sgroup.past{opacity:.5;}
@@ -85,19 +84,24 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-sched-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink);}
 .v-sched-note{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary-dark);background:var(--surface-alt);padding:4px 12px;border-radius:7px;white-space:nowrap;}
 .v-sgroup.today .v-sched-note{background:var(--primary);color:#fff;}
+/* 백신 탭 색 */
+.v-vac .v-sgroup.today{border-color:var(--vac);background:var(--vac-soft);}
+.v-vac .v-sched-note{color:var(--vac);background:var(--vac-soft);}
+.v-vac .v-sgroup.today .v-sched-note{background:var(--vac);color:#fff;}
+.v-vac .v-dday.today{color:var(--vac);}
 
 .v-dday{font-size:11.5px;font-weight:800;color:var(--accent);}
 .v-dday.soon{color:var(--notpreg);}
 .v-dday.today{color:var(--primary-dark);}
-.v-past-label{font-size:11px;color:var(--ink-soft);font-weight:700;margin:12px 0 6px;}
 .v-empty-sm{font-size:12.5px;color:var(--ink-soft);padding:14px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:11px;}
 
 /* 소별 임신 현황 행 */
-.v-prow{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:5px;flex-wrap:wrap;}
+.v-prow{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:5px;flex-wrap:wrap;}
 .v-calv{font-size:12px;color:var(--ink-soft);margin-left:auto;}
 
 .v-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 0;}
 .v-foot{text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;line-height:1.6;}
+.v-legend{font-size:11px;color:var(--ink-soft);margin:0 0 8px;}
 
 /* 잠금(토큰 오류) 화면 */
 .v-lock{max-width:380px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);}
@@ -111,6 +115,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
   .v-summary{gap:6px;}
   .v-stat .n{font-size:18px;}
   .v-id{font-size:13px;}
+  .v-tab{font-size:12.5px;gap:4px;}
 }
 </style>
 </head>
@@ -122,6 +127,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
    축주 보기앱 (읽기 전용) — 토큰 기반
    - 링크: viewer.html?t=토큰   (농장주 이름은 URL에 없음)
    - Firestore  shared/{토큰}  문서 하나만 읽음 → 다른 농장 접근 불가
+   - data.schedule : 처치(동기화 등) 일정   data.vaccines : 백신 일정 (따로 탭)
    ========================================================= */
 
 const FIREBASE_CONFIG = {
@@ -133,7 +139,6 @@ const FIREBASE_CONFIG = {
   appId: "1:24929299448:web:8259496a583a451a8d040d"
 };
 
-// Firebase 연결 시도 (실패하면 mock 폴백)
 let DB = null;
 async function initFirebase(){
   try{
@@ -151,11 +156,11 @@ const MOCK = {
     owner: "김준규",
     updatedAt: "2026-06-22",
     animals: [
-      { id:"002 1390 8161 6", status:"임신감정 필요", days:38, expectedCalving:null },
-      { id:"002 1932 8629 4", status:"임신중", days:null, expectedCalving:"2026-06-29" },
+      { id:"002 1390 8161 6", status:"임신감정 필요", days:38, expectedCalving:null, aiCount:3 },
+      { id:"002 1932 8629 4", status:"임신중", days:null, expectedCalving:"2026-06-29", oneYear:true },
       { id:"002 1986 7201 1", status:"임신중", days:null, expectedCalving:"2027-03-25" },
       { id:"002 1657 5259 8", status:"감정 대기", days:18, expectedCalving:null },
-      { id:"002 1518 1402 2", status:"비임신", days:45, expectedCalving:null },
+      { id:"002 1518 1402 2", status:"비임신", days:45, expectedCalving:null, aiCount:4 },
       { id:"002 2029 9407 0", status:"미수정", days:null, expectedCalving:null }
     ],
     schedule: [
@@ -168,6 +173,11 @@ const MOCK = {
       { date:"2026-06-23", id:"002 1657 5259 8", note:"GnRH" },
       { date:"2026-06-25", id:"002 1932 9058 2", note:"AI" },
       { date:"2026-06-28", id:"002 1390 8493 6", note:"CIDR + 0567" }
+    ],
+    vaccines: [
+      { date:"2026-06-24", id:"002 1986 7201 1", note:"설사 1차" },
+      { date:"2026-07-15", id:"002 1986 7201 1", note:"설사 2차" },
+      { date:"2026-07-15", id:"002 1932 8629 4", note:"설사 2차" }
     ]
   },
   "z7t1m4": {
@@ -178,19 +188,17 @@ const MOCK = {
   }
 };
 
-// ---- URL 파라미터 (토큰만) ----
 function getToken(){
   const p = new URLSearchParams(location.search);
   return p.get('t') || p.get('token') || '';
 }
 
-// ---- 데이터 로드: Firestore shared/{토큰} ----
 async function loadByToken(token){
   if(DB){
     const snap = await DB.collection('shared').doc(token).get();
     return snap.exists ? snap.data() : null;
   }
-  return MOCK[token] || null;   // 폴백
+  return MOCK[token] || null;
 }
 
 // ---- 날짜 유틸 ----
@@ -223,11 +231,11 @@ function statusBadge(st){
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-/* SVG 아이콘 (선 스타일, currentColor) */
 const ICON_PATHS = {
   lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4h6"/><path d="M9 12l2 2 3.5-3.5"/>',
   calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/>',
+  syringe: '<path d="M18 4l2 2M15 7l2 2M5 19l-2 2M6 14l4 4M9 11l4 4"/><path d="M8 12l6-6 4 4-6 6-4-4z"/>',
   cow: '<ellipse cx="12" cy="13.5" rx="6" ry="5"/><path d="M6.2 9.5C4 7.5 3 8.5 3.6 11M17.8 9.5C20 7.5 21 8.5 20.4 11"/><circle cx="10" cy="14" r="0.9"/><circle cx="14" cy="14" r="0.9"/>'
 };
 function svgIcon(name, size){
@@ -250,27 +258,29 @@ function renderLock(msg){
     </div>`;
 }
 
-/* 날짜별로 그룹핑 */
 function groupByDate(list){
   const m = {};
   list.forEach(s=>{ (m[s.date]=m[s.date]||[]).push(s); });
   return Object.keys(m).sort().map(date=>({date, items:m[date]}));
 }
 
-/* 처치 일정 — 날짜 그룹 한 덩어리 */
+/* 같은 날짜·같은 처치면 번호를 한 줄에 묶음 */
 function schedGroup(g){
   const n = dday(g.date);
   let cls='', dtxt=ddayText(g.date), dcls='v-dday';
   if(n===0){ cls='today'; dcls='v-dday today'; dtxt='오늘'; }
   else if(n>0 && n<=2){ dcls='v-dday soon'; }
   else if(n<0){ cls='past'; }
-  const rows = g.items.slice()
-    .sort((a,b)=> (a.note||'').localeCompare(b.note||'') || (a.id||'').localeCompare(b.id||''))
-    .map(s=>`
+  const byNote = {};
+  g.items.forEach(s=>{ const k=s.note||''; (byNote[k]=byNote[k]||[]).push(s.id); });
+  const rows = Object.keys(byNote).sort().map(note=>{
+    const ids = byNote[note].slice().sort((a,b)=>a.localeCompare(b));
+    return `
     <div class="v-gitem">
-      <span class="v-sched-id">${esc(s.id)}</span>
-      <span class="v-sched-note">${esc(s.note||'')}</span>
-    </div>`).join('');
+      <span class="v-sched-id" style="display:flex;flex-direction:column;gap:3px;">${ids.map(esc).join('<br>')}</span>
+      <span class="v-sched-note">${esc(note)}</span>
+    </div>`;
+  }).join('');
   return `
     <div class="v-sgroup ${cls}">
       <div class="v-sgroup-head">
@@ -283,17 +293,19 @@ function schedGroup(g){
 
 function renderApp(data){
   const animals = data.animals || [];
-  const sched = (data.schedule || []).slice().sort((a,b)=> (a.date<b.date?-1:a.date>b.date?1:0));
+  const byDate = (a,b)=> (a.date<b.date?-1:a.date>b.date?1:0);
+  const sched = (data.schedule || []).slice().sort(byDate);
+  const vacs  = (data.vaccines || []).slice().sort(byDate);
 
-  // 일정: 내일 ~ 미래 전부. 오늘 항목은 위 "오늘 할 일" 배너에서만 보여주고 여기선 중복 표시하지 않음
-  const upcoming = sched.filter(s=>{ const n=dday(s.date); return n!==null && n>=1; });
-  const upGroups = groupByDate(upcoming);
+  const future = s=>{ const n=dday(s.date); return n!==null && n>=1; };
+  const upGroups  = groupByDate(sched.filter(future));
+  const vacGroups = groupByDate(vacs.filter(future));
 
   const cntPreg = animals.filter(a=>a.status==='임신중').length;
   const cntCheck = animals.filter(a=>a.status==='임신감정 필요'||a.status==='감정 대기').length;
 
-  // 오늘 할 일 강조 배너
-  const todayItems = sched.filter(s=>dday(s.date)===0)
+  // 오늘 할 일: 처치 + 백신 모두
+  const todayItems = sched.filter(s=>dday(s.date)===0).concat(vacs.filter(s=>dday(s.date)===0))
     .sort((a,b)=> (a.note||'').localeCompare(b.note||'') || (a.id||'').localeCompare(b.id||''));
   const todayBanner = todayItems.length ? `
     <div class="v-today">
@@ -301,11 +313,14 @@ function renderApp(data){
       ${todayItems.map(s=>`<div class="v-today-row"><span class="v-today-id">${esc(s.id)}</span><span class="v-today-note">${esc(s.note||'')}</span></div>`).join('')}
     </div>` : '';
 
+  const upN  = upGroups.reduce((s,g)=>s+g.items.length,0);
+  const vacN = vacGroups.reduce((s,g)=>s+g.items.length,0);
+
   document.getElementById('app').innerHTML = `
     <div class="v-head">
       <div>
         <div class="v-title">${esc(data.owner)}님 농장</div>
-        <div class="v-sub">번식 현황 · 처치 일정</div>
+        <div class="v-sub">번식 현황 · 처치 · 백신 일정</div>
       </div>
       <div class="v-updated">업데이트<br>${esc(data.updatedAt||'-')}</div>
     </div>
@@ -319,13 +334,19 @@ function renderApp(data){
     ${todayBanner}
 
     <div class="v-tabs">
-      <button class="v-tab on" data-tab="sched">${svgIcon("calendar",15)} 처치 일정</button>
+      <button class="v-tab on" data-tab="sched">${svgIcon("calendar",15)} 처치 ${upN?`<span class="cnt">${upN}</span>`:''}</button>
+      <button class="v-tab" data-tab="vac">${svgIcon("syringe",15)} 백신 ${vacN?`<span class="cnt">${vacN}</span>`:''}</button>
       <button class="v-tab" data-tab="status">${svgIcon("cow",15)} 번식 현황</button>
     </div>
 
     <div id="panel-sched" class="v-panel">
-      <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사 등)를 진행해 주세요.</div>
+      <div class="v-sched-hint">아래 날짜에 맞춰 처치(주사·수정 등)를 진행해 주세요.</div>
       ${upGroups.length ? upGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 처치 일정이 없어요.</div>'}
+    </div>
+
+    <div id="panel-vac" class="v-panel v-vac" style="display:none;">
+      <div class="v-sched-hint">예정된 백신 접종 일정이에요.</div>
+      ${vacGroups.length ? vacGroups.map(schedGroup).join('') : '<div class="v-empty-sm">예정된 백신 일정이 없어요.</div>'}
     </div>
 
     <div id="panel-status" class="v-panel" style="display:none;">
@@ -336,6 +357,7 @@ function renderApp(data){
         <button class="v-sort" data-sort="calv">분만예정일</button>
       </div>
       <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
+      <div class="v-legend">★ 1년1산 : 분만 후 81일 안에 다시 임신한 우수 개체</div>
       <div id="vlist"></div>
     </div>
 
@@ -345,12 +367,11 @@ function renderApp(data){
     </div>`;
 
   // ---- 탭 전환 ----
+  const PANELS = {sched:'panel-sched', vac:'panel-vac', status:'panel-status'};
   document.querySelectorAll('.v-tab').forEach(t=>{
     t.addEventListener('click', ()=>{
       document.querySelectorAll('.v-tab').forEach(x=>x.classList.toggle('on', x===t));
-      const tab = t.dataset.tab;
-      document.getElementById('panel-sched').style.display  = tab==='sched'  ? '' : 'none';
-      document.getElementById('panel-status').style.display = tab==='status' ? '' : 'none';
+      Object.keys(PANELS).forEach(k=>{ document.getElementById(PANELS[k]).style.display = k===t.dataset.tab ? '' : 'none'; });
     });
   });
 
@@ -362,18 +383,20 @@ function renderApp(data){
     if(key==='status'){
       arr.sort((a,b)=>{ const d=(STATUS_ORDER[a.status]??9)-(STATUS_ORDER[b.status]??9); return d!==0?d:third(a).localeCompare(third(b)); });
     } else if(key==='days'){
-      arr.sort((a,b)=>{ const da=a.days==null?-1:a.days, db=b.days==null?-1:b.days; return db-da; });   // 오래된(큰) 순, 없으면 뒤로
+      arr.sort((a,b)=>{ const da=a.days==null?-1:a.days, db=b.days==null?-1:b.days; return db-da; });
     } else if(key==='calv'){
       arr.sort((a,b)=>{ const ca=a.expectedCalving||'9999', cb=b.expectedCalving||'9999'; return ca<cb?-1:ca>cb?1:0; });
     } else {
-      arr.sort((a,b)=> third(a).localeCompare(third(b)));   // 개체번호(3번째)
+      arr.sort((a,b)=> third(a).localeCompare(third(b)));
     }
     return arr;
   }
   function rowHtml(a){
+    const rep = (a.aiCount>=3 && a.status!=='비육전환') ? `<span class="v-badge rep">수정 ${a.aiCount}회</span>` : '';
     return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
-        <span class="v-id">${esc(a.id)}</span>
+        <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
         ${statusBadge(a.status)}
+        ${rep}
         ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)}</span>`:''}
         ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
       </div>`;
@@ -425,7 +448,7 @@ async function init(){
   await initFirebase();
   const token = getToken();
   if(!token){
-    if(!DB){ renderPicker(); }                  // 로컬 테스트(미리보기): 선택 화면
+    if(!DB){ renderPicker(); }
     else { renderLock('링크에 정보가 빠져 있어요.'); }
     return;
   }
