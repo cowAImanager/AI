@@ -433,24 +433,24 @@ main{flex:1;padding:18px 20px 70px;}
 .vcal-legend i.resp,.vcal-dots i.resp{background:#2E70D6;}
 .vcal-legend i.diarrhea,.vcal-dots i.diarrhea{background:#C8791A;}
 .vcal-legend i.done,.vcal-dots i.done{background:var(--line);}
-.vcal-dots i.over{background:var(--notpregnant-bg,#C0392B);}
+.vcal-dots i.over,.vcal-legend i.over{background:#C0392B;}
 .vcal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;}
 .vcal-dow{text-align:center;font-size:11px;font-weight:800;color:var(--ink-soft);padding:2px 0;}
 .vcal-dow.sun{color:var(--notpregnant-bg,#C0392B);}
-.vcal-cell{position:relative;min-height:74px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:3px 4px;display:flex;flex-direction:column;gap:2px;cursor:pointer;overflow:hidden;}
+.vcal-cell{position:relative;min-height:96px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:3px 4px;display:flex;flex-direction:column;gap:2px;cursor:pointer;overflow:hidden;}
 .vcal-cell.empty{background:transparent;border-color:transparent;cursor:default;}
 .vcal-cell.today{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);}
 .vcal-cell.sel{background:var(--green-soft,#E3F4F1);}
 .vcal-cell:not(.has) .vcal-d{color:var(--ink-soft);}
 .vcal-d{font-size:11.5px;font-weight:800;}
 .vcal-cell.today .vcal-d{color:var(--primary-dark);}
-.vcal-chip{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;border-radius:4px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'SF Mono',ui-monospace,Menlo,monospace;letter-spacing:-.01em;}
-.vcal-chip.resp{background:#EAF2FD;color:#2E70D6;}
-.vcal-chip.diarrhea{background:#FFF3E0;color:#C8791A;}
-.vcal-chip.done{background:var(--surface-alt);color:var(--ink-soft);text-decoration:line-through;}
-.vcal-chip.over{background:#FBE9E7;color:var(--notpregnant-bg,#C0392B);}
-.vcal-chip i{font-style:normal;font-family:inherit;font-weight:800;opacity:.75;margin-left:auto;}
-.vcal-more{font-size:10px;color:var(--ink-soft);font-weight:700;}
+.vcal-chip{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;border-radius:4px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;line-height:1.3;border-left:3px solid transparent;}
+.vcal-chip.resp{background:#E3ECFB;color:#1F4FA3;border-left-color:#2E70D6;}
+.vcal-chip.diarrhea{background:#FDEBD3;color:#8A4E0B;border-left-color:#C8791A;}
+.vcal-chip.done{background:var(--surface-alt);color:var(--ink-soft);text-decoration:line-through;border-left-color:var(--line);}
+.vcal-chip.over{background:#F9DAD6;color:#8E1F14;border-left-color:#C0392B;}
+.vcal-chip i{font-style:normal;font-weight:700;font-size:11px;opacity:.85;margin-left:auto;}
+.vcal-more{font-size:11px;color:var(--ink);font-weight:800;}
 .vcal-dots,.vcal-n{display:none;}
 .vcal-sel-h{font-size:13px;font-weight:800;margin:12px 0 6px;color:var(--primary-dark);}
 .vac-row.done{opacity:.6;}
@@ -4132,7 +4132,7 @@ function vacCalendarHtml(items){
   const cell = d => {
     const ds = `${ym}-${String(d).padStart(2,'0')}`;
     const list = (byDate[ds]||[]).concat(d===1 ? overdue.map(it=>({...it, over:true})) : []);
-    const chips = list.slice(0,4).map(it=>`<span class="vcal-chip ${it.vaccine} ${it.done?'done':''} ${it.over?'over':''}" title="${esc(it.animalId)} ${VAC_LABEL[it.vaccine]} ${it.dose}${it.done?' 접종완료':''}${it.over?' (지남 '+fmtShort(it.date)+')':''}">${esc(shortId(it.animalId))}<i>${VAC_LABEL[it.vaccine][0]}${it.dose[0]}</i></span>`).join('')
+    const chips = list.slice(0,4).map(it=>`<span class="vcal-chip ${it.vaccine} ${it.done?'done':''} ${it.over?'over':''}" title="${esc(it.animalId)} ${VAC_LABEL[it.vaccine]} ${it.dose}${it.done?' 접종완료':''}${it.over?' (지남 '+fmtShort(it.date)+')':''}">${esc(shortId(it.animalId))}<i>${VAC_LABEL[it.vaccine]}${it.dose}</i></span>`).join('')
       + (list.length>4 ? `<span class="vcal-more">+${list.length-4}</span>` : '');
     const dots = list.length ? `<span class="vcal-dots">${list.slice(0,6).map(it=>`<i class="${it.vaccine} ${it.done?'done':''} ${it.over?'over':''}"></i>`).join('')}${list.length>6?`<b>+${list.length-6}</b>`:''}</span>` : '';
     return `<div class="vcal-cell ${ds===today?'today':''} ${list.length?'has':''} ${UI.vacDay===ds?'sel':''}" data-action="pickVacDay" data-date="${ds}"><span class="vcal-d">${d}</span>${chips}${dots}${list.length?`<span class="vcal-n">${list.length}</span>`:''}</div>`;
@@ -4147,7 +4147,7 @@ function vacCalendarHtml(items){
       <span class="vcal-title">${y}년 ${m}월</span>
       <button class="iconbtn" data-action="shiftVacMonth" data-dir="1">›</button>
       ${ym!==today.slice(0,7)?`<button class="btn secondary small" data-action="shiftVacMonth" data-dir="0">이번 달</button>`:''}
-      <span class="vcal-legend"><i class="resp"></i>호흡기 <i class="diarrhea"></i>설사 <i class="done"></i>접종완료</span>
+      <span class="vcal-legend"><i class="resp"></i>호흡기 <i class="diarrhea"></i>설사 <i class="over"></i>밀린 예정(1일 칸) <i class="done"></i>접종완료</span>
     </div>
     <div class="vcal-grid">${['일','월','화','수','목','금','토'].map((w,i)=>`<div class="vcal-dow ${i===0?'sun':''}">${w}</div>`).join('')}${cells}</div>
     ${UI.vacDay ? `<div class="vcal-sel-h">${fmtShort(UI.vacDay)} ${selList.length?selList.length+'건':'예정 없음'}</div><div class="disease-list">${selList.map(it=> it.done
