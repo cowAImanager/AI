@@ -422,6 +422,30 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
 .preg-tag.oneyear{background:var(--primary);color:#fff;}
+/* 리피트 자궁처치 통계 줄 */
+.utx-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:6px 11px;margin:-8px 0 12px;font-size:12px;cursor:pointer;}
+.utx-strip .utx-h{font-weight:800;color:var(--ink);}
+.utx-strip b{font-size:14px;color:var(--accent);}
+.utx-sub{color:var(--ink-soft);font-size:11px;}
+.utx-sub.all{margin-left:auto;}
+.utx-chev{color:var(--ink-soft);font-size:11px;}
+.utx-list{display:flex;flex-direction:column;gap:3px;margin:-6px 0 14px;}
+.utx-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:11.5px;}
+.utx-row.dim{opacity:.55;}
+.utx-owner{color:var(--ink-soft);font-size:11px;}
+.utx-info{color:var(--ink-soft);flex:1 1 auto;min-width:0;}
+.utx-out{font-weight:800;color:var(--ink-soft);}
+.utx-out.pos{color:var(--primary-dark);}
+.utx-out.neg{color:var(--notpregnant-bg,#C0392B);}
+.utx-reason{color:var(--ink-soft);font-weight:500;}
+@media (max-width:600px){
+  .utx-strip{font-size:11px;padding:5px 9px;gap:5px;}
+  .utx-sub.all{flex:0 0 100%;margin:0;order:2;}
+  .utx-chev{order:1;margin-left:auto;}
+  .utx-row{flex-wrap:wrap;gap:4px 7px;font-size:11px;}
+  .utx-info{flex:0 0 100%;order:2;}
+  .utx-out{margin-left:auto;order:1;}
+}
 /* 1년1산 소: 귀표 칩을 금색으로 */
 .tag-chip.oneyear{border-color:#D9A400;background:#FFF8DC;color:#5a4500;}
 .tag-chip.oneyear::before{background:#E5B400;}
@@ -2281,6 +2305,7 @@ function renderRecordCard(r){
         ${(r.uterineDisease||'').trim()?`<span class="kv"><b>자궁질환</b> ${esc(r.uterineDisease.trim())}</span>`:''}
         ${(r.ovarianDisease||'').trim()?`<span class="kv"><b>난소질환</b> ${esc(r.ovarianDisease.trim())}</span>`:''}
         ${kv('약물처치', r.hormoneTreatment)}
+        ${r.uterineTx?`<span class="kv"><b>자궁처치</b> ${esc(r.uterineTx)}${r.uterineTxReason?` <span class="utx-reason">(${esc(r.uterineTxReason)})</span>`:''}</span>`:''}
         ${r.doubleAi && r.aiDate2 ? kv('2차 수정일시', fmtShort(r.aiDate2)) : ''}
         ${kv('1차 감정', r.pregnant)}
         ${kv('2차 감정', r.pregnant2)}
@@ -2610,6 +2635,62 @@ function renderScheduleGrid(){
 /* ============================================================
    임신감정 보기
 ============================================================ */
+/* 리피트브리더 자궁처치(메트리큐어 등) 성적
+   · 대상: 자궁처치 기록(uterineTx; 구기록은 약물처치 텍스트의 '메트리큐어'도 인정) 중
+     사유가 '원인불명 리피트'이거나, 사유 미기재 + 처치 당시 수정 3회 이상 + 자궁질환·사산 기재 없음
+   · 결과: 처치 후 첫 수정의 임신감정 (다음 수정이 먼저 오면 X)
+   · 비교군: 같은 범위에서 수정 3회 이상(기록된 수정횟수) 수정 중 60일 내 자궁처치 없던 건의 수태율 */
+function uterineTxStats(owner){
+  const D = s => dateOnly(s||'');
+  const byAnimal = {};
+  DATA.records.filter(r=>!owner || r.owner===owner).forEach(r=>{ const k=r.owner+'|'+r.animalId; (byAnimal[k]=byAnimal[k]||[]).push(r); });
+  const items = [], cmp = { o:0, base:0 };
+  Object.keys(byAnimal).forEach(k=>{
+    const rs = byAnimal[k].slice().sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
+    const [own, aid] = k.split('|');
+    const dOf = r => D(r.examDate || r.aiDate || r.estrusDate);
+    const aiEv = [];   // 모든 수정 이벤트 (aiDate + 동기화 AI)
+    rs.forEach(r=>{
+      if(D(r.aiDate)) aiEv.push({ date:D(r.aiDate), n: parseInt(r.aiCount,10)||0 });
+      for(let i=1;i<=7;i++){ const t=r['sync'+i+'Type']||''; if(/AI/.test(t) && D(r['sync'+i+'Date'])) aiEv.push({ date:D(r['sync'+i+'Date']), n:0 }); }
+    });
+    const aiDates = [...new Set(aiEv.map(e=>e.date))].sort();
+    const outcomeAfter = ai => {   // 해당 수정의 결과
+      const later = aiDates.filter(x=>x>ai);
+      const pregs = rs.filter(r=> (r.pregnant==='O'||r.pregnant==='X') && D(r.examDate)>ai).map(r=>({d:D(r.examDate), v:r.pregnant})).sort((a,b)=>a.d.localeCompare(b.d));
+      if(pregs.length && (!later.length || pregs[0].d < later[0])) return pregs[0].v;
+      if(later.length) return 'X';
+      return '';
+    };
+    const txRecs = rs.filter(r => r.uterineTx || /메트리큐어/.test(r.hormoneTreatment||''));
+    const txDates = txRecs.map(dOf);
+    txRecs.forEach(r=>{
+      const td = dOf(r); if(!td) return;
+      const tx = r.uterineTx || '메트리큐어';
+      const prior = rs.filter(x=> dOf(x) && dOf(x)<=td);
+      const aiN = Math.max(parseInt(lastNonEmpty(prior.slice().reverse(),'aiCount'),10)||0, 0);
+      const nextAi = aiDates.find(x=>x>=td) || '';
+      const out = nextAi ? outcomeAfter(nextAi) : '';
+      let reason = r.uterineTxReason || '';
+      let unexplained;
+      if(reason) unexplained = reason==='원인불명 리피트';
+      else {
+        const hasLesion = prior.slice(-3).some(x=> (x.uterineDisease||'').trim() || x.stillbirthDate || /사산|미이라|저류/.test((x.notes||'')+(x.ultraUterus||'')+(x.uterineDisease||'')));
+        unexplained = aiN>=3 && !hasLesion; reason = unexplained ? '원인불명(추정)' : '사유 미기재';
+      }
+      items.push({ owner:own, animalId:aid, txDate:td, tx, reason, aiN, nextAi, gap: nextAi?daysBetween(td,nextAi):null, out, unexplained });
+    });
+    // 비교군: 수정 3회 이상 수정 중 60일 내 자궁처치 없음
+    aiEv.filter(e=>e.n>=3).forEach(e=>{
+      if(txDates.some(t=> t && t<=e.date && daysBetween(t,e.date)<=60)) return;
+      const o = outcomeAfter(e.date); if(!o) return;
+      cmp.base++; if(o==='O') cmp.o++;
+    });
+  });
+  const target = items.filter(i=>i.unexplained);
+  const decided = target.filter(i=>i.out);
+  return { items, target, n: decided.filter(i=>i.out==='O').length, base: decided.length, pending: target.length-decided.length, cmp };
+}
 /* 1년1산: 올해 분만한 소 중 분만 후 81일 안에 수태(현재 임신중)한 소.
    base = 올해 분만우 중 결과가 난 소 (임신중이거나, 분만 81일이 지났는데 아직 임신 아님). 아직 81일 안 지난 비임신우는 판정 보류 */
 function oneYearStats(yearCalvings, pregRows){
@@ -2836,6 +2917,22 @@ function renderPregCheckView(){
           <div class="preg-stat-label">1년1산 <span class="preg-stat-sub">${oy.base?Math.round(oy.n/oy.base*100):0}% (${oy.n}/${oy.base})${oy.pending?` · 보류 ${oy.pending}`:''}</span></div>
         </div>`; })()}
       </div>
+      ${(()=>{ const u = uterineTxStats(UI.owner), A = uterineTxStats('');
+        if(!A.items.length) return '';
+        const pct = (n,b)=> b?Math.round(n/b*100)+'%':'—';
+        const rows = (UI.showUtx ? A.items : []).sort((x,y)=> y.txDate.localeCompare(x.txDate)).map(i=>`
+          <div class="utx-row ${i.unexplained?'':'dim'}">
+            <span class="tag-chip sm" data-animal-id="${esc(i.animalId)}">${esc(i.animalId)}</span>
+            <span class="utx-owner">${esc(i.owner)}</span>
+            <span class="utx-info">${fmtYmdShort(i.txDate)} ${esc(i.tx)} · ${esc(i.reason)} · 수정 ${i.aiN}회${i.nextAi?` → ${fmtYmdShort(i.nextAi)} (+${i.gap}일)`:' → 수정 전'}</span>
+            <span class="utx-out ${i.out==='O'?'pos':(i.out==='X'?'neg':'')}">${i.out||'대기'}</span>
+          </div>`).join('');
+        return `<div class="utx-strip" data-action="toggleUtx">
+          <span class="utx-h">리피트 자궁처치 후 수태</span>
+          <b>${u.n}/${u.base}</b> <span class="utx-sub">${pct(u.n,u.base)}${u.pending?` · 대기 ${u.pending}`:''}</span>
+          <span class="utx-sub all">전체 ${A.n}/${A.base} (${pct(A.n,A.base)}) · 미처치 리피트 수태 ${A.cmp.o}/${A.cmp.base} (${pct(A.cmp.o,A.cmp.base)})</span>
+          <span class="utx-chev">${UI.showUtx?'▴':'▾'}</span>
+        </div>${UI.showUtx?`<div class="utx-list">${rows||'<div class="empty-state">기록 없음</div>'}</div>`:''}`; })()}
       ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
       ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
       <div class="pregcheck-list">${activeHtml}</div>`:''}
@@ -3712,7 +3809,7 @@ function blankRecord(animalId){
     estrusVulvar:'', estrusMucus:'', estrusContraction:'', estrusMT:'', estrusST:'', estrusOther:'',
     rectalUterus:'', rectalHorn:'', rectalOvaryL:'', rectalOvaryR:'',
     ultraUterus:'', ultraHorn:'', ultraOvaryL:'', ultraOvaryR:'',
-    uterineDisease:'', uterineResolved:false, ovarianDisease:'',
+    uterineDisease:'', uterineResolved:false, ovarianDisease:'', uterineTx:'', uterineTxReason:'',
     sync1Type:'', sync1Date:null, sync2Type:'', sync2Date:null, sync3Type:'', sync3Date:null,
     sync4Type:'', sync4Date:null, sync5Type:'', sync5Date:null, sync6Type:'', sync6Date:null,
     sync7Type:'', sync7Date:null };
@@ -4152,6 +4249,10 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="fieldset-title">약물 처치</div>
       <div class="form-grid">
         ${textField('약물 처치','hormoneTreatment',r.hormoneTreatment)}
+        <div class="field"><label>자궁 처치</label>
+          <select id="f_uterineTx">${['','메트리큐어','자궁세척','기타'].map(v=>`<option value="${v}" ${(r.uterineTx||'')===v?'selected':''}>${v||'없음'}</option>`).join('')}</select></div>
+        <div class="field"><label>처치 사유</label>
+          <select id="f_uterineTxReason">${['','원인불명 리피트','자궁내막염','사산·유산 후','미이라','기타'].map(v=>`<option value="${v}" ${(r.uterineTxReason||'')===v?'selected':''}>${v||'선택'}</option>`).join('')}</select></div>
       </div>
 
       <div class="fieldset-title">진료 메모</div>
@@ -4276,6 +4377,8 @@ function actionSaveRecord(){
     rectalExam: modalCtx.legacy.rectalExam,
     ultrasound: modalCtx.legacy.ultrasound,
     hormoneTreatment: g('f_hormoneTreatment').value.trim(),
+    uterineTx: (g('f_uterineTx')||{value:''}).value,
+    uterineTxReason: (g('f_uterineTxReason')||{value:''}).value,
     notes: g('f_notes').value.trim(),
     recordParity: modalCtx.legacy.recordParity,
     aiCount: g('f_aiCount').value.trim(),
@@ -5465,6 +5568,7 @@ const ACTIONS = {
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
   setPregFilter: ds=>{ UI.pregFilter = (UI.pregFilter===ds.filter)?'all':ds.filter; renderMain(); },
+  toggleUtx: ()=>{ UI.showUtx = !UI.showUtx; renderMain(); },
   shiftCalvYear: ds=>{
     const dir = parseInt(ds.dir,10);
     const thisYear = todayStr().slice(0,4);
@@ -5869,7 +5973,7 @@ function exportExcel(){
     '직장검사(자궁)','직장검사(좌난소)','직장검사(우난소)',
     '초음파(자궁)','초음파(좌난소)','초음파(우난소)',
     '자궁질환','난소질환',
-    '약물처치','수정횟수','내수정횟수','KPN','진료메모',
+    '약물처치','수정횟수','내수정횟수','KPN','진료메모','자궁처치','처치사유',
     '동기화1','동기화1날짜','동기화2','동기화2날짜','동기화3','동기화3날짜',
     '동기화4','동기화4날짜','동기화5','동기화5날짜','동기화6','동기화6날짜',
     '동기화7','동기화7날짜',
@@ -5888,7 +5992,7 @@ function exportExcel(){
       r.ultraUterus || '', r.ultraOvaryL || '', r.ultraOvaryR || '',
       r.uterineDisease || '', r.ovarianDisease || '',
       r.hormoneTreatment || '', r.aiCount || '', r.inHouseAiCount || '',
-      r.kpn || '', r.notes || '',
+      r.kpn || '', r.notes || '', r.uterineTx || '', r.uterineTxReason || '',
     ];
     for(let i=1;i<=7;i++){
       row.push(r['sync'+i+'Type']||'');
