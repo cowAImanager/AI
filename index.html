@@ -1271,7 +1271,7 @@ const SYNC_PROTOCOLS = {
   'GPPG':         { steps:['GnRH','PGF2α','PGF2α','GnRH','AI'],         offsets:[0,5,6,7,8] },
   'GPPG+CIDR':    { steps:['CIDR+GnRH','CIDR제거+PGF2α','PGF2α','GnRH','AI'], offsets:[0,5,6,7,8] },
   /* Modified Fastback: 수정 후 5~19일 유치 → 수정 초기 P4 보강 + 재발정 집중 (리피트 브리더에 유리). 1번 = 수정일 */
-  'M.Fastback':   { steps:['AI','CIDR','CIDR제거','발정관찰','발정관찰'],   offsets:[0,5,19,21,22] },
+  'M.Fastback':   { steps:['AI','CIDR','CIDR제거'],                      offsets:[0,5,19] },
 };
 
 let DATA = null;   // { owners, animals, records, schedule, scheduleAnimals, scheduleRange }
