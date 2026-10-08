@@ -2828,7 +2828,6 @@ function renderPregCheckView(){
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
       if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
       if(sexIcon(row.fsex)) tags.push(`<span class="preg-tag sex" title="태아 성별">${sexIcon(row.fsex)}</span>`);
-      if(row.oneYear) tags.push(`<span class="preg-tag oy" title="분만 후 81일 내 수태">1년1산</span>`);
     }
 
     let badge = '';
