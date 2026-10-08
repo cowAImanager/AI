@@ -2972,7 +2972,7 @@ function renderPregCheckView(){
           <div class="utx-row ${i.unexplained?'':'dim'}">
             <span class="tag-chip sm" data-animal-id="${esc(i.animalId)}">${esc(i.animalId)}</span>
             <span class="utx-owner">${esc(i.owner)}</span>
-            <span class="utx-info">처치일 ${fmtYmdShort(i.txDate)} ${esc(i.tx)} · ${esc(i.reason)} · 수정 ${i.aiN}회${i.nextAi?` → 수정 ${fmtYmdShort(i.nextAi)} (처치 후 ${i.gap}일 경과)`:' → 아직 수정 전'}</span>
+            <span class="utx-info">처치일 ${fmtYmdShort(i.txDate)} (${daysBetween(i.txDate, todayStr())}일 경과) ${esc(i.tx)} · ${esc(i.reason)} · 수정 ${i.aiN}회${i.nextAi?'':' · 아직 수정 전'}</span>
             <span class="utx-out ${i.out==='O'?'pos':(i.out==='X'?'neg':'')}">${i.out||'대기'}</span>
           </div>`).join('');
         return `<div class="utx-strip" data-action="toggleUtx">
