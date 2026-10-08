@@ -61,7 +61,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-badge.none{background:var(--surface-alt);color:var(--ink-soft);}
 .v-badge.oneyear{background:#FFF6D6;color:#7A5A00;}
 .v-badge.rep{background:#FBE9E7;color:var(--notpreg);}
-.v-badge.kpn{background:#EAF2FD;color:var(--accent);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;}
+.v-badge.kpn{background:#EAF2FD;color:var(--accent);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;padding:3px 5px;}
+#panel-preg .v-prow{gap:4px;}
+#panel-preg .v-calv{font-size:11px;}
+#panel-preg .v-badge.rep{padding:3px 5px;letter-spacing:-.02em;}
 .v-dday{font-weight:800;color:var(--accent);}
 .v-dday.soon{color:var(--notpreg);}
 
@@ -367,7 +370,7 @@ function renderApp(data){
     </div>
 
     <div id="panel-preg" class="v-panel" style="display:none;">
-      <div class="v-sched-hint">임신 확인된 소예요. (${pregAnimals.length}두) · KPN = 임신된 수정의 정액 번호 · 우측 = 분만예정일과 남은 일수 · N회 = 수정 횟수</div>
+      <div class="v-sched-hint">임신 확인된 소예요. (${pregAnimals.length}두) · 파란 숫자 = 정액(KPN) 번호 · 우측 = 분만예정일과 남은 일수</div>
       <div class="v-sortbar">
         <button class="v-sort on" data-sort="calv" data-list="preg">분만예정일</button>
         <button class="v-sort" data-sort="id" data-list="preg">개체번호</button>
@@ -417,10 +420,10 @@ function renderApp(data){
       </div>`;
   }
   function pregRowHtml(a){
-    const rep = a.aiCount>=3 ? `<span class="v-badge rep">${a.aiCount}회</span>` : '';
+    const rep = a.aiCount>=3 ? `<span class="v-badge rep">수정${a.aiCount}회</span>` : '';
     return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
         <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
-        ${a.kpn?`<span class="v-badge kpn">KPN ${esc(a.kpn)}</span>`:''}
+        ${a.kpn?`<span class="v-badge kpn" title="정액 번호">${esc(a.kpn)}</span>`:''}
         ${rep}
         ${a.expectedCalving?`<span class="v-calv">${fmtYmdShort(a.expectedCalving)} <b class="v-dday${(dday(a.expectedCalving)??99)<=14?' soon':''}">${ddayText(a.expectedCalving)}</b></span>`:''}
       </div>`;
