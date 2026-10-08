@@ -374,30 +374,18 @@ main{flex:1;padding:18px 20px 70px;}
   .preg-summary.preg-five > :nth-child(1),
   .preg-summary.preg-five > :nth-child(2){grid-column:span 6;}
   .preg-summary.preg-five > :nth-child(3),
-  .preg-summary.preg-five > :nth-child(4),
+  .preg-summary.preg-five > :nth-child(4){grid-column:span 4;}
   .preg-summary.preg-five > :nth-child(5),
-  .preg-summary.preg-five > :nth-child(6){grid-column:span 6;}
-  .preg-summary.preg-five > :nth-child(1) .preg-stat-label,
-  .preg-summary.preg-five > :nth-child(2) .preg-stat-label{min-height:0;}
-  .preg-summary.preg-five > :nth-child(5) .preg-stat-label,
-  .preg-summary.preg-five > :nth-child(6) .preg-stat-label{min-height:27px;}
-  .preg-summary.preg-five{gap:4px;margin-bottom:6px;}
-  .preg-summary.preg-five .preg-stat{padding:6px 4px 5px;}
-  .preg-summary.preg-five .preg-stat-num{height:22px;line-height:22px;font-size:18px;}
-  .preg-summary.preg-five .preg-stat-label{min-height:40px;line-height:14px;font-size:9.5px;margin-top:2px;white-space:nowrap;}
-  .preg-summary.preg-five .preg-stat-sub{height:12px;line-height:12px;font-size:8.5px;margin-top:1px;}
+  .preg-summary.preg-five > :nth-child(6){grid-column:span 2;}
+  .preg-summary.preg-five .preg-stat-sub{white-space:normal;line-height:1.2;}
+
   /* 질환: 5칸 한 줄 */
   .preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
   .preg-summary.disease-three .preg-stat{padding:9px 4px;}
   .preg-summary.disease-three .preg-stat-num{font-size:18px;}
   .preg-summary.disease-three .preg-stat-label{font-size:10px;line-height:1.2;letter-spacing:-.02em;}
 }
-.preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
-/* 임신감정 타일: 숫자 / 라벨 / 보조1 / 보조2 줄 높이를 고정해 타일끼리 줄이 맞게 */
-.preg-summary.preg-five .preg-stat{padding:10px 8px 8px;}
-.preg-summary.preg-five .preg-stat-num{height:28px;line-height:28px;white-space:nowrap;}
-.preg-summary.preg-five .preg-stat-label{margin-top:4px;min-height:48px;line-height:16px;}
-.preg-summary.preg-five .preg-stat-sub{height:14px;line-height:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.preg-stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;}
 .calv-title{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .calv-year-nav{display:inline-flex;align-items:center;gap:4px;}
 .calv-year-nav .iconbtn{font-size:12px;font-weight:800;padding:3px 8px;min-width:auto;}
@@ -458,6 +446,19 @@ main{flex:1;padding:18px 20px 70px;}
 .btn.small.fatten-btn,.btn.fatten-btn{background:#7A3B12;color:#fff;border:none;}
 .btn.fatten-btn:hover{opacity:.88;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
+/* PC: 칸을 고정해 줄마다 같은 위치에 (귀표 | 리피트 | 수정일 | 경과 | 감정 태그 | 배지 | 버튼) */
+@media (min-width:601px){
+  .pregcheck-list{gap:3px;}
+  .pregcheck-row{display:grid;grid-template-columns:auto 64px 205px 125px minmax(0,1fr) auto 28px;gap:0 12px;padding:5px 12px;align-items:center;}
+  .pregcheck-row .open-repeat{margin:0;justify-self:start;}
+  .pregcheck-row .open-repeat.empty{visibility:hidden;}
+  .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pregcheck-mid .pregcheck-days{white-space:nowrap;}
+  .pregcheck-mid .preg-tags{min-width:0;}
+  .pregcheck-end{justify-self:end;}
+  .pregcheck-row .sched-add-btn{justify-self:end;}
+  .pregcheck-row.fattened .open-repeat,.fatten-list .pc-badge.fatten{}
+}
 .pregcheck-mid{display:contents;}
 .pregcheck-row:hover{background:var(--surface-alt);}
 .pregcheck-row.overdue{background:var(--accent-soft);border-color:var(--accent);}
@@ -1551,6 +1552,7 @@ function fmtYmd(str){
   const [y,m,d] = date.split('-');
   return `${y}/${m}/${d}` + (time ? ' '+ampmTime(time) : '');
 }
+function fmtYmdShort(str){ const t = fmtYmd(str); return t==='—' ? t : t.replace(/^\d{2}(\d{2}\/)/, '$1'); }
 function ageMonths(birth){
   if(!birth) return '—';
   const [y,m,d] = birth.split('-').map(Number);
@@ -2720,9 +2722,9 @@ function renderPregCheckView(){
 
     return `
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
-      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}
+      <span class="tag-chip" data-animal-id="${esc(row.animalId)}">${esc(row.animalId)}</span>${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:'<span class="open-repeat empty"></span>'}
       <span class="pregcheck-mid">
-        <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmd(row.aiDate)):'수정기록 없음'}</span>
+        <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmdShort(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${isNotPregnant?'수정<span class="pcd-suffix"> 후</span> ':''}${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
         <span class="preg-tags">${tags.join('')}</span>
       </span>
@@ -2771,11 +2773,11 @@ function renderPregCheckView(){
     <div class="pregcheck-row" data-action="${recordId?'editRecord':'gotoAnimalDetail'}" data-id="${esc(recordId||animalId)}">
       <span class="tag-chip" data-animal-id="${esc(animalId)}">${esc(animalId)}</span>
       <span class="pregcheck-mid">
-        <span class="pregcheck-date"><span class="pcd-prefix">분만일 </span>${fmtYmd(calvDate)}</span>
+        <span class="pregcheck-date"><span class="pcd-prefix">분만일 </span>${fmtYmdShort(calvDate)}</span>
         <span class="pregcheck-days">${daysBetween(calvDate, today)}일 경과</span>
         <span class="preg-tags">${calfSex?`<span class="preg-tag sex">송아지 ${esc(calfSex)}</span>`:''}</span>
       </span>
-    </div>`).join('') || `<div class="empty-state">${yearNow.slice(2)}년 출산 기록이 없어요.</div>`;
+    </div>`).join('') || `<div class="empty-state">${yearNow}년 출산 기록이 없어요.</div>`;
 
   return `
     <div class="panel">
@@ -2798,14 +2800,14 @@ function renderPregCheckView(){
         </div>
         <div class="preg-stat clickable ${pf==='calvings'?'sel':''}" data-action="setPregFilter" data-filter="calvings">
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
-          <div class="preg-stat-label">${yearNow.slice(2)}년 출산</div>
+          <div class="preg-stat-label">${yearNow}년 출산</div>
         </div>
         ${(()=>{ const oy = oneYearStats(yearCalvings, pregnant); return `<div class="preg-stat ratecol2" title="올해 분만우 중 분만 후 81일 안에 수태한 소. 분모는 결과가 난 소(임신중 또는 81일 경과), 아직 81일 안 지난 비임신우 ${oy.pending}두는 보류">
           <div class="preg-stat-num">${oy.n}<span style="font-size:14px;font-weight:700;">두</span></div>
           <div class="preg-stat-label">1년1산 <span class="preg-stat-sub">${oy.base?Math.round(oy.n/oy.base*100):0}% (${oy.n}/${oy.base})${oy.pending?` · 보류 ${oy.pending}`:''}</span></div>
         </div>`; })()}
       </div>
-      ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow.slice(2)+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
+      ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
       ${showActive?`<div class="section-title"><span>임신감정 대상 (${active.length}두)</span></div>
       <div class="pregcheck-list">${activeHtml}</div>`:''}
       ${(pf==='all' && waiting.length)?`<div class="section-title" style="margin-top:26px;"><span>수정대기 (${waiting.length}두)</span></div>
@@ -2815,7 +2817,7 @@ function renderPregCheckView(){
       ${showPreg?`<div class="section-title" ${showActive?'style="margin-top:26px;"':''}><span>🐄 임신중 (${pregnant.length}두)</span></div>
       <div class="pregcheck-list">${pregnantHtml}</div>`:''}
       ${showCalv?`<div class="section-title calv-title" style="margin-top:26px;">
-        <span>🐣 ${yearNow.slice(2)}년 출산 (${yearCalvings.length}두)</span>
+        <span>🐣 ${yearNow}년 출산 (${yearCalvings.length}두)</span>
         <span class="calv-year-nav">
           <button class="iconbtn" data-action="shiftCalvYear" data-dir="-1" title="이전 해">‹</button>
           ${yearNow!==thisYear?`<button class="iconbtn" data-action="shiftCalvYear" data-dir="0" title="올해로">${thisYear}</button>`:''}
