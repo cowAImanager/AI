@@ -2563,16 +2563,24 @@ function renderScheduleGrid(){
 /* ============================================================
    임신감정 보기
 ============================================================ */
-/* 1년1산: 임신중 소 중 마지막 분만 → 수태 수정일이 81일 이내 (분만간격 ≤ 366일). base = 분만 기록 있는 임신우 */
-function oneYearStats(pregRows){
-  let n=0, base=0;
-  pregRows.forEach(row => {
-    if(!row.lastCalv || !row.aiDate) return;
-    const d = daysBetween(dateOnly(row.lastCalv), dateOnly(row.aiDate));
-    if(d < 0) return;
-    base++; if(d <= 81) n++;
+/* 1년1산: 올해 분만한 소 중 분만 후 81일 안에 수태(현재 임신중)한 소.
+   base = 올해 분만우 중 결과가 난 소 (임신중이거나, 분만 81일이 지났는데 아직 임신 아님). 아직 81일 안 지난 비임신우는 판정 보류 */
+function oneYearStats(yearCalvings, pregRows){
+  const today = todayStr();
+  const pregBy = {}; pregRows.forEach(r => { pregBy[r.animalId] = r; });
+  const seen = new Set();
+  let n=0, base=0, pending=0;
+  yearCalvings.forEach(c => {
+    if(seen.has(c.animalId)) return; seen.add(c.animalId);
+    const p = pregBy[c.animalId];
+    if(p && p.aiDate && dateOnly(p.aiDate) > c.calvDate){
+      base++;
+      if(daysBetween(c.calvDate, dateOnly(p.aiDate)) <= 81) n++;
+    } else if(daysBetween(c.calvDate, today) > 81){
+      base++;            // 81일 넘었는데 임신 아님 → 1년1산 실패
+    } else pending++;    // 아직 기회 있음
   });
-  return { n, base };
+  return { n, base, pending };
 }
 function renderPregCheckView(){
   const today = todayStr();
@@ -2779,9 +2787,9 @@ function renderPregCheckView(){
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
           <div class="preg-stat-label">${yearNow}년 출산</div>
         </div>
-        ${(()=>{ const oy = oneYearStats(pregnant); return `<div class="preg-stat ratecol2" title="마지막 분만 후 81일 안에 수태한 임신우 (분만간격 1년 이내)">
+        ${(()=>{ const oy = oneYearStats(yearCalvings, pregnant); return `<div class="preg-stat ratecol2" title="올해 분만우 중 분만 후 81일 안에 수태한 소. 분모는 결과가 난 소(임신중 또는 81일 경과), 아직 81일 안 지난 비임신우 ${oy.pending}두는 보류">
           <div class="preg-stat-num">${oy.n}<span style="font-size:14px;font-weight:700;">두</span></div>
-          <div class="preg-stat-label">1년1산 <span class="preg-stat-sub" title="경산 임신우 중 비율">${oy.base?Math.round(oy.n/oy.base*100):0}% (${oy.n}/${oy.base})</span></div>
+          <div class="preg-stat-label">1년1산 <span class="preg-stat-sub">${oy.base?Math.round(oy.n/oy.base*100):0}% (${oy.n}/${oy.base})${oy.pending?` · 보류 ${oy.pending}`:''}</span></div>
         </div>`; })()}
       </div>
       ${pf!=='all'?`<div class="filter-note">‘${pf==='active'?'임신감정 대상':(pf==='pregnant'?'임신중':yearNow+'년 출산')}’만 보는 중 · <button class="filter-clear" data-action="setPregFilter" data-filter="all">전체 보기</button></div>`:''}
