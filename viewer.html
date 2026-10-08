@@ -367,7 +367,7 @@ function renderApp(data){
     </div>
 
     <div id="panel-preg" class="v-panel" style="display:none;">
-      <div class="v-sched-hint">임신 확인된 소예요. (${pregAnimals.length}두) · KPN은 임신된 수정의 정액 번호</div>
+      <div class="v-sched-hint">임신 확인된 소예요. (${pregAnimals.length}두) · KPN = 임신된 수정의 정액 번호 · 우측 = 분만예정일과 남은 일수 · N회 = 수정 횟수</div>
       <div class="v-sortbar">
         <button class="v-sort on" data-sort="calv" data-list="preg">분만예정일</button>
         <button class="v-sort" data-sort="id" data-list="preg">개체번호</button>
@@ -413,16 +413,16 @@ function renderApp(data){
         <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
         ${statusBadge(a.status)}
         ${rep}
-        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일</span>`:''}
+        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">${a.basis==='calv'?'분만 후':'수정 후'} ${a.days}일</span>`:''}
       </div>`;
   }
   function pregRowHtml(a){
-    const rep = a.aiCount>=3 ? `<span class="v-badge rep">수정 ${a.aiCount}회</span>` : '';
+    const rep = a.aiCount>=3 ? `<span class="v-badge rep">${a.aiCount}회</span>` : '';
     return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
         <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
         ${a.kpn?`<span class="v-badge kpn">KPN ${esc(a.kpn)}</span>`:''}
         ${rep}
-        ${a.expectedCalving?`<span class="v-calv">분만 ${fmtYmdShort(a.expectedCalving)}</span>`:''}
+        ${a.expectedCalving?`<span class="v-calv">${fmtYmdShort(a.expectedCalving)} <b class="v-dday${(dday(a.expectedCalving)??99)<=14?' soon':''}">${ddayText(a.expectedCalving)}</b></span>`:''}
       </div>`;
   }
   const lists = {

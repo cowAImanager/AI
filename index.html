@@ -4971,7 +4971,7 @@ function shareAnimalStatus(owner, a){
   if(calvedAfterPregnancy(recs)){                       // 분만 후 아직 재수정(새 AI) 전 → 임신감정 대상 아님(재수정 대기)
     const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     const openDays = calv ? Math.floor((new Date(todayStr()+'T00:00') - new Date(calv+'T00:00'))/86400000) : null;
-    return { status:'비임신', days: openDays };
+    return { status:'비임신', days: openDays, basis:'calv' };
   }
   const aiRecs = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
   if(!aiRecs.length) return { status:'미수정', days:null };
@@ -4986,12 +4986,12 @@ function shareAnimalStatus(owner, a){
     const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
     const base = calv || aiD;                                                 // 비임신 경과일은 마지막 분만일 기준(분만 이력 없으면 수정일)
     const openDays = Math.floor((new Date(todayStr()+'T00:00') - new Date(base+'T00:00'))/86400000);
-    return { status:'비임신', days: openDays };
+    return { status:'비임신', days: openDays, basis: calv?'calv':'ai' };
   }
   if(preg==='O') return calvedAfterPregnancy(recs)
     ? { status:'분만', days:null }      // O 떴지만 이미 분만 → 임신중 아님
     : { status:'임신중', days:null };
-  return { status: days>=30 ? '임신감정 필요' : '감정 대기', days };
+  return { status: days>=30 ? '임신감정 필요' : '감정 대기', days, basis:'ai' };
 }
 /* 개체 표시용 플래그: 1년1산(임신중 + 마지막 분만 후 81일 안에 수태), 수정횟수(현재) */
 function animalFlags(owner, a){
@@ -5034,7 +5034,7 @@ function buildSharePayload(owner){
         const aiRecs = recordsOf(owner,a.animalId).filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
         kpn = String((aiRecs[0]||{}).kpn||'').trim();
       }
-      return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN, kpn };
+      return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN, kpn, basis:s.basis||'ai' };
     });
   // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
   const cutoff = addDays(todayStr(), -7);
