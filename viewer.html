@@ -50,7 +50,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 /* 개체 ID / 배지 */
 .v-id{font-family:'SF Mono',ui-monospace,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:4px 9px;}
 .v-id.oneyear{background:#FFF6D6;border-color:#F0D37A;color:#7A5A00;}
-.v-id.oneyear::before{content:'★ ';color:#E0A800;}
 .v-badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 9px;}
 .v-badge.preg{background:var(--green-soft);color:var(--primary-dark);}
 .v-badge.notpreg{background:#FBE9E7;color:var(--notpreg);}
@@ -101,7 +100,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 
 .v-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 0;}
 .v-foot{text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;line-height:1.6;}
-.v-legend{font-size:11px;color:var(--ink-soft);margin:0 0 8px;}
+.v-legend{font-size:11.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.7;background:#FFFBEA;border:1px solid #F0D37A;border-radius:8px;padding:7px 10px;}
 
 /* 잠금(토큰 오류) 화면 */
 .v-lock{max-width:380px;margin:60px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);}
@@ -357,7 +356,7 @@ function renderApp(data){
         <button class="v-sort" data-sort="calv">분만예정일</button>
       </div>
       <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
-      <div class="v-legend">★ 1년1산 : 분만 후 81일 안에 다시 임신한 우수 개체</div>
+      <div class="v-legend"><span class="v-id oneyear" style="font-size:11px;padding:1px 6px;">노란색 번호</span> = 분만 후 81일 이내에 다시 임신한 <b>1년1산</b> 암소예요. 번식 성적이 우수한 소입니다.</div>
       <div id="vlist"></div>
     </div>
 
@@ -396,6 +395,7 @@ function renderApp(data){
     return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
         <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
         ${statusBadge(a.status)}
+        ${a.oneYear?'<span class="v-badge oneyear">1년1산</span>':''}
         ${rep}
         ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)}</span>`:''}
         ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}

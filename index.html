@@ -424,7 +424,7 @@ main{flex:1;padding:18px 20px 70px;}
 /* 1년1산 소: 귀표 칩을 금색으로 */
 .tag-chip.oneyear{border-color:#D9A400;background:#FFF8DC;color:#5a4500;}
 .tag-chip.oneyear::before{background:#E5B400;}
-.tag-chip .oy-star{font-style:normal;color:#D9A400;margin-right:4px;font-size:.9em;}
+.preg-tag.oy{background:#FFF6D6;color:#7A5A00;border:1px solid #F0D37A;}
 .oy-badge{display:inline-block;font-size:11px;font-weight:800;color:#5a4500;background:#FFE9A8;border:1px solid #E5B400;border-radius:6px;padding:2px 7px;}
 html[data-theme="dark"] .tag-chip.oneyear{background:#3a3010;color:#ffe08a;border-color:#a57f00;}
 .preg-tag.overdue{background:#F7C1C1;color:#791F1F;}
@@ -2118,7 +2118,7 @@ function animalListData(){
     const badge = `<span class="pc-badge ${meta.cls} list-status">${esc(status)}${dayTxt}</span>`;
     return `
     <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''} ${a.fattening?'fattened':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
-      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span>${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'sm')+(f.repeat?`<span class="open-repeat">리피트<span class="rp-suffix"> </span>${f.aiN}<span class="rp-suffix">회</span></span>`:''); })()}${badge}</span>
+      <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span>${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'sm'); })()}${badge}</span>
       <span class="animal-meta">
         <span>산차 ${esc(a.parity||'—')}</span>
         <span>${ageMonths(a.birth)}</span>
@@ -2687,6 +2687,7 @@ function renderPregCheckView(){
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
       if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
       if(sexIcon(row.fsex)) tags.push(`<span class="preg-tag sex" title="태아 성별">${sexIcon(row.fsex)}</span>`);
+      if(row.oneYear) tags.push(`<span class="preg-tag oy" title="분만 후 81일 내 수태">1년1산</span>`);
     }
 
     let badge = '';
@@ -5011,7 +5012,7 @@ function sexIcon(v){
 }
 function idChip(a, flags, cls){
   const f = flags || {};
-  return `<span class="tag-chip ${cls||''} ${f.oneYear?'oneyear':''}" data-animal-id="${esc(a.animalId)}" ${f.oneYear?'title="1년1산"':''}>${f.oneYear?'<i class="oy-star">★</i>':''}${esc(a.animalId)}</span>`;
+  return `<span class="tag-chip ${cls||''} ${f.oneYear?'oneyear':''}" data-animal-id="${esc(a.animalId)}" ${f.oneYear?'title="1년1산"':''}>${esc(a.animalId)}</span>`;
 }
 function shareExpCalving(owner, a){
   const recs = recordsOf(owner, a.animalId);
