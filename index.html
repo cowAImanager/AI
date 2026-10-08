@@ -341,6 +341,7 @@ main{flex:1;padding:18px 20px 70px;}
 .open-repeat{display:inline-block;margin-left:5px;font-size:9.5px;font-weight:800;color:var(--notpregnant-bg);background:var(--notpregnant-soft,#FBE9E7);border-radius:4px;padding:1px 5px;vertical-align:2px;letter-spacing:0;}
 .open-date{display:inline-flex;align-items:center;gap:6px;margin-left:auto;white-space:nowrap;}
 .open-row.oneline .open-due{margin-left:auto;}
+.open-sync-tag.manual{background:var(--surface-alt);color:var(--ink-soft);border:1px solid var(--line);}
 .open-group-meta{font-size:12px;font-weight:800;color:var(--accent);}
 .open-group-alt{font-size:11px;color:var(--ink-soft);margin-top:4px;}
 .open-group-alt b{color:var(--ink);font-weight:800;}
@@ -1127,6 +1128,18 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .sync-spark i.now{background:var(--ink-soft);}
 .sync-spark i.best{background:var(--accent);}
 .open-row.oneline .open-due{flex-wrap:wrap;row-gap:2px;}
+/* PC: 공태관리 줄을 칸으로 정렬 (귀표 | 구분 | 날짜·D-day·% | 근거 | ›) */
+@media (min-width:601px){
+  .open-list{gap:3px;}
+  .open-row.oneline{display:grid;grid-template-columns:150px 86px 215px minmax(0,1fr) 18px;gap:0 10px;padding:5px 12px;align-items:center;}
+  .open-row.oneline .open-name{display:none;}
+  .open-row.oneline .open-due{display:contents;}
+  .open-row.oneline .open-sync-tag{justify-self:start;margin:0;}
+  .open-row.oneline .open-date{margin:0;justify-self:start;}
+  .open-row.oneline .open-basis{justify-self:start;border:none;padding:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .open-row.oneline .open-chev{justify-self:end;}
+  .open-row.oneline.noinfo .open-due{display:block;grid-column:2/5;justify-self:start;}
+  .open-id .open-repeat{margin-left:6px;}
 .open-st.unbred{color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);}
 
 /* 공태관리 — 모바일 글자 밀도 (다른 뷰와 동일하게) */
@@ -3089,7 +3102,7 @@ function renderOpenView(){
     const rt = repeatTag(a, recs);
     if(basis==='동기화') due = `<span class="open-sync-tag">동기화 수정</span><span class="open-date">${fmtShort(date)} ${ddLabel(dd)}</span>${plan?` <span class="open-basis">${rt}적기 ${plan.win.open?fmtShort(plan.win.from)+'~':fmtRange(plan.win.from, plan.win.to)} ${plan.best.p.toFixed(0)}% · 오늘 ${plan.today.p.toFixed(0)}%</span>`:''}`;
     else if(basis==='적기') due = `<span class="open-sync-tag plan">시작<span class="pcd-suffix"> </span>적기</span><span class="open-date">${plan.win.open?fmtShort(plan.win.from)+'~':fmtRange(plan.win.from, plan.win.to)} ${ddLabel(dd)} <span class="open-pai">${plan.best.p.toFixed(0)}%</span></span><span class="open-basis">${rt}오늘 시작 ${plan.today.p.toFixed(0)}% · 주기 ${plan.est.lo===plan.est.hi?plan.est.lo:plan.est.lo+'~'+plan.est.hi}일째 (${fmtShort(plan.est.baseDate)} ${plan.est.fromEstrus?'발정 기준':'초음파'})</span>`;
-    else due = `<span class="open-basis">${esc(basis)}</span><span class="open-date">발정 ${fmtShort(date)} ${ddLabel(dd)}</span>`;
+    else due = `<span class="open-sync-tag manual">${esc(basis)}</span><span class="open-date">발정 ${fmtShort(date)} ${ddLabel(dd)}</span>`;
     return `
     <div class="open-row oneline ${(basis==='적기'||(basis==='동기화'&&plan))?'plan':''} ${basis==='적기'&&plan.est.stale?'stale':''}" data-action="gotoAnimalDetail" data-id="${esc(a.animalId)}">
       <div class="open-id">${esc(a.animalId)}${plan?'':rt}</div>
