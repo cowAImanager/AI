@@ -4127,7 +4127,7 @@ function vacCalendarHtml(items){
   items.forEach(it=>{ (byDate[it.date]=byDate[it.date]||[]).push({...it, done:false}); });
   (DATA.vaccineLogs||[]).filter(v=>v.owner===UI.owner && (v.date||'').slice(0,7)===ym).forEach(v=>{ (byDate[v.date]=byDate[v.date]||[]).push({ animalId:v.animalId, vaccine:v.vaccine, dose:v.dose, date:v.date, done:true }); });
   // 이번 달 이전에 밀린 예정은 1일 칸에 몰아서 표시
-  const overdue = ym===today.slice(0,7) ? items.filter(it=> it.date < first) : [];   // 밀린 예정은 이번 달 1일에만
+  const overdue = [];   // 밀린 예정은 달력에 표시 안 함(목록 보기에서 확인)
   const shortId = id => { const p=String(id).trim().split(/\s+/); return p.length>=3 ? p[2]+' '+(p[3]||'') : id; };
   const cell = d => {
     const ds = `${ym}-${String(d).padStart(2,'0')}`;
@@ -4147,7 +4147,7 @@ function vacCalendarHtml(items){
       <span class="vcal-title">${y}년 ${m}월</span>
       <button class="iconbtn" data-action="shiftVacMonth" data-dir="1">›</button>
       ${ym!==today.slice(0,7)?`<button class="btn secondary small" data-action="shiftVacMonth" data-dir="0">이번 달</button>`:''}
-      <span class="vcal-legend"><i class="resp"></i>호흡기 <i class="diarrhea"></i>설사 <i class="over"></i>밀린 예정(1일 칸) <i class="done"></i>접종완료</span>
+      <span class="vcal-legend"><i class="resp"></i>호흡기 <i class="diarrhea"></i>설사 <i class="done"></i>접종완료</span>
     </div>
     <div class="vcal-grid">${['일','월','화','수','목','금','토'].map((w,i)=>`<div class="vcal-dow ${i===0?'sun':''}">${w}</div>`).join('')}${cells}</div>
     ${UI.vacDay ? `<div class="vcal-sel-h">${fmtShort(UI.vacDay)} ${selList.length?selList.length+'건':'예정 없음'}</div><div class="disease-list">${selList.map(it=> it.done
