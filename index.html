@@ -412,7 +412,8 @@ main{flex:1;padding:18px 20px 70px;}
 .disease-tag.ovary{background:var(--estrus-soft);color:var(--estrus-text);}
 .disease-tag.improved{background:var(--green-soft);color:var(--primary-dark);}
 .disease-tag.activecyst{background:var(--notpregnant-bg,#F7C1C1);color:#791F1F;}
-.preg-tags{display:inline-flex;gap:5px;flex-wrap:wrap;}
+.preg-tags{display:inline-flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.preg-tags .open-repeat{vertical-align:baseline;margin:0;}
 .preg-tag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:7px;white-space:nowrap;}
 .preg-tag.pos{background:var(--green-soft);color:var(--primary-dark);}
 .preg-tag.neg{background:var(--notpregnant-row-bg);color:var(--notpregnant-bg);}
@@ -460,7 +461,7 @@ html[data-theme="dark"] .tag-chip.oneyear{background:#3a3010;color:#ffe08a;borde
   .pregcheck-row .open-repeat{margin:0;}
   .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pregcheck-mid .pregcheck-days{white-space:nowrap;}
-  .pregcheck-mid .preg-tags{min-width:0;}
+  .pregcheck-mid .preg-tags{min-width:0;justify-self:end;justify-content:flex-end;}
   .pregcheck-end{justify-self:end;}
   .pregcheck-row .sched-add-btn{justify-self:end;}
   .pregcheck-row.fattened .open-repeat,.fatten-list .pc-badge.fatten{}
@@ -2743,9 +2744,9 @@ function renderPregCheckView(){
       <span class="pregcheck-mid">
         <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmdShort(row.aiDate)):'수정기록 없음'}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${isNotPregnant?'수정<span class="pcd-suffix"> 후</span> ':''}${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
-        <span class="preg-tags">${tags.join('')}</span>
+        <span class="preg-tags">${tags.join('')}${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}</span>
       </span>
-      <span class="pregcheck-end ${syncTag?'has-sync':''}">${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}${syncTag}${badge}${diagSum}${subTag}</span>
+      <span class="pregcheck-end ${syncTag?'has-sync':''}">${syncTag}${badge}${diagSum}${subTag}</span>
       <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>
     </div>
   `;
