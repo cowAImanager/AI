@@ -422,6 +422,53 @@ main{flex:1;padding:18px 20px 70px;}
 .preg-tag.calf{background:var(--accent-soft);color:var(--ai-text);}
 .preg-tag.due{background:var(--green-soft);color:var(--primary-dark);}
 .preg-tag.oneyear{background:var(--primary);color:#fff;}
+/* 백신 달력 */
+.vac-mode{margin-left:auto;display:inline-flex;background:var(--surface-alt);border:1px solid var(--line);border-radius:8px;padding:2px;}
+.v-seg{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:800;padding:4px 10px;border-radius:6px;color:var(--ink-soft);cursor:pointer;}
+.v-seg.on{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.vcal-head{display:flex;align-items:center;gap:8px;margin:4px 0 8px;}
+.vcal-title{font-size:15px;font-weight:800;}
+.vcal-legend{margin-left:auto;font-size:11px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:4px;}
+.vcal-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-left:6px;}
+.vcal-legend i.resp,.vcal-dots i.resp{background:#2E70D6;}
+.vcal-legend i.diarrhea,.vcal-dots i.diarrhea{background:#C8791A;}
+.vcal-legend i.done,.vcal-dots i.done{background:var(--line);}
+.vcal-dots i.over{background:var(--notpregnant-bg,#C0392B);}
+.vcal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;}
+.vcal-dow{text-align:center;font-size:11px;font-weight:800;color:var(--ink-soft);padding:2px 0;}
+.vcal-dow.sun{color:var(--notpregnant-bg,#C0392B);}
+.vcal-cell{position:relative;min-height:74px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:3px 4px;display:flex;flex-direction:column;gap:2px;cursor:pointer;overflow:hidden;}
+.vcal-cell.empty{background:transparent;border-color:transparent;cursor:default;}
+.vcal-cell.today{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);}
+.vcal-cell.sel{background:var(--green-soft,#E3F4F1);}
+.vcal-cell:not(.has) .vcal-d{color:var(--ink-soft);}
+.vcal-d{font-size:11.5px;font-weight:800;}
+.vcal-cell.today .vcal-d{color:var(--primary-dark);}
+.vcal-chip{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;border-radius:4px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'SF Mono',ui-monospace,Menlo,monospace;letter-spacing:-.01em;}
+.vcal-chip.resp{background:#EAF2FD;color:#2E70D6;}
+.vcal-chip.diarrhea{background:#FFF3E0;color:#C8791A;}
+.vcal-chip.done{background:var(--surface-alt);color:var(--ink-soft);text-decoration:line-through;}
+.vcal-chip.over{background:#FBE9E7;color:var(--notpregnant-bg,#C0392B);}
+.vcal-chip i{font-style:normal;font-family:inherit;font-weight:800;opacity:.75;margin-left:auto;}
+.vcal-more{font-size:10px;color:var(--ink-soft);font-weight:700;}
+.vcal-dots,.vcal-n{display:none;}
+.vcal-sel-h{font-size:13px;font-weight:800;margin:12px 0 6px;color:var(--primary-dark);}
+.vac-row.done{opacity:.6;}
+@media (max-width:600px){
+  .vcal-head{gap:5px;margin:2px 0 6px;}
+  .vcal-title{font-size:13.5px;}
+  .vcal-legend{font-size:10px;flex:0 0 100%;margin:0;}
+  .vcal-head{flex-wrap:wrap;}
+  .vcal-grid{gap:2px;}
+  .vcal-cell{min-height:46px;padding:2px 3px;border-radius:5px;}
+  .vcal-d{font-size:10.5px;}
+  .vcal-chip,.vcal-more{display:none;}
+  .vcal-dots{display:flex;flex-wrap:wrap;gap:2px;}
+  .vcal-dots i{display:inline-block;width:7px;height:7px;border-radius:2px;}
+  .vcal-dots b{font-size:9px;color:var(--ink-soft);}
+  .vcal-n{display:block;position:absolute;right:2px;top:2px;font-size:9px;font-weight:800;color:var(--ink-soft);}
+  .vac-mode .v-seg{font-size:11px;padding:3px 8px;}
+}
 /* 리피트 자궁처치 통계 줄 */
 .utx-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:6px 11px;margin:-8px 0 12px;font-size:12px;cursor:pointer;}
 .utx-strip .utx-h{font-weight:800;color:var(--ink);}
@@ -2637,7 +2684,7 @@ function renderScheduleGrid(){
 ============================================================ */
 /* 리피트브리더 자궁처치(메트리큐어 등) 성적
    · 대상: 자궁처치 기록(uterineTx; 구기록은 약물처치 텍스트의 '메트리큐어'도 인정) 중
-     사유가 '원인불명 리피트'이거나, 사유 미기재 + 처치 당시 수정 3회 이상 + 자궁질환·사산 기재 없음
+     수정 3회 이상 + 사유 '자궁내막염'(잠재형 포함), 또는 사유 미기재 + 수정 3회 이상 + 사산·미이라·저류 기재 없음
    · 결과: 처치 후 첫 수정의 임신감정 (다음 수정이 먼저 오면 X)
    · 비교군: 같은 범위에서 수정 3회 이상(기록된 수정횟수) 수정 중 60일 내 자궁처치 없던 건의 수태율 */
 function uterineTxStats(owner){
@@ -2673,10 +2720,11 @@ function uterineTxStats(owner){
       const out = nextAi ? outcomeAfter(nextAi) : '';
       let reason = r.uterineTxReason || '';
       let unexplained;
-      if(reason) unexplained = reason==='원인불명 리피트';
+      // 통계 대상 = 리피트브리더(수정 3회↑) + 자궁내막염(잠재형 포함) 사유. 구기록은 사산·미이라·저류 기재 없으면 자궁내막염(추정)
+      if(reason) unexplained = reason==='자궁내막염' && aiN>=3;
       else {
         const hasLesion = prior.slice(-3).some(x=> (x.uterineDisease||'').trim() || x.stillbirthDate || /사산|미이라|저류/.test((x.notes||'')+(x.ultraUterus||'')+(x.uterineDisease||'')));
-        unexplained = aiN>=3 && !hasLesion; reason = unexplained ? '원인불명(추정)' : '사유 미기재';
+        unexplained = aiN>=3 && !hasLesion; reason = unexplained ? '자궁내막염(추정)' : '사유 미기재';
       }
       items.push({ owner:own, animalId:aid, txDate:td, tx, reason, aiN, nextAi, gap: nextAi?daysBetween(td,nextAi):null, out, unexplained });
     });
@@ -2924,11 +2972,11 @@ function renderPregCheckView(){
           <div class="utx-row ${i.unexplained?'':'dim'}">
             <span class="tag-chip sm" data-animal-id="${esc(i.animalId)}">${esc(i.animalId)}</span>
             <span class="utx-owner">${esc(i.owner)}</span>
-            <span class="utx-info">${fmtYmdShort(i.txDate)} ${esc(i.tx)} · ${esc(i.reason)} · 수정 ${i.aiN}회${i.nextAi?` → ${fmtYmdShort(i.nextAi)} (+${i.gap}일)`:' → 수정 전'}</span>
+            <span class="utx-info">처치일 ${fmtYmdShort(i.txDate)} ${esc(i.tx)} · ${esc(i.reason)} · 수정 ${i.aiN}회${i.nextAi?` → 수정 ${fmtYmdShort(i.nextAi)} (처치 후 ${i.gap}일 경과)`:' → 아직 수정 전'}</span>
             <span class="utx-out ${i.out==='O'?'pos':(i.out==='X'?'neg':'')}">${i.out||'대기'}</span>
           </div>`).join('');
         return `<div class="utx-strip" data-action="toggleUtx">
-          <span class="utx-h">리피트 자궁처치 후 수태</span>
+          <span class="utx-h">리피트브리더 자궁처치 후 수태</span>
           <b>${u.n}/${u.base}</b> <span class="utx-sub">${pct(u.n,u.base)}${u.pending?` · 대기 ${u.pending}`:''}</span>
           <span class="utx-sub all">전체 ${A.n}/${A.base} (${pct(A.n,A.base)}) · 미처치 리피트 수태 ${A.cmp.o}/${A.cmp.base} (${pct(A.cmp.o,A.cmp.base)})</span>
           <span class="utx-chev">${UI.showUtx?'▴':'▾'}</span>
@@ -4067,9 +4115,64 @@ function vaccineItemsForOwner(owner){
   items.sort((x,y)=> (x.date||'').localeCompare(y.date||''));
   return items;
 }
+/* 백신 달력 (월 단위) — 예정 + 접종 완료 기록 표시 */
+function vacCalendarHtml(items){
+  const today = todayStr();
+  const ym = UI.vacMonth || today.slice(0,7);
+  const [y,m] = ym.split('-').map(Number);
+  const first = `${ym}-01`;
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const startDow = new Date(y, m-1, 1).getDay();
+  const byDate = {};
+  items.forEach(it=>{ (byDate[it.date]=byDate[it.date]||[]).push({...it, done:false}); });
+  (DATA.vaccineLogs||[]).filter(v=>v.owner===UI.owner && (v.date||'').slice(0,7)===ym).forEach(v=>{ (byDate[v.date]=byDate[v.date]||[]).push({ animalId:v.animalId, vaccine:v.vaccine, dose:v.dose, date:v.date, done:true }); });
+  // 이번 달 이전에 밀린 예정은 1일 칸에 몰아서 표시
+  const overdue = ym===today.slice(0,7) ? items.filter(it=> it.date < first) : [];   // 밀린 예정은 이번 달 1일에만
+  const shortId = id => { const p=String(id).trim().split(/\s+/); return p.length>=3 ? p[2]+' '+(p[3]||'') : id; };
+  const cell = d => {
+    const ds = `${ym}-${String(d).padStart(2,'0')}`;
+    const list = (byDate[ds]||[]).concat(d===1 ? overdue.map(it=>({...it, over:true})) : []);
+    const chips = list.slice(0,4).map(it=>`<span class="vcal-chip ${it.vaccine} ${it.done?'done':''} ${it.over?'over':''}" title="${esc(it.animalId)} ${VAC_LABEL[it.vaccine]} ${it.dose}${it.done?' 접종완료':''}${it.over?' (지남 '+fmtShort(it.date)+')':''}">${esc(shortId(it.animalId))}<i>${VAC_LABEL[it.vaccine][0]}${it.dose[0]}</i></span>`).join('')
+      + (list.length>4 ? `<span class="vcal-more">+${list.length-4}</span>` : '');
+    const dots = list.length ? `<span class="vcal-dots">${list.slice(0,6).map(it=>`<i class="${it.vaccine} ${it.done?'done':''} ${it.over?'over':''}"></i>`).join('')}${list.length>6?`<b>+${list.length-6}</b>`:''}</span>` : '';
+    return `<div class="vcal-cell ${ds===today?'today':''} ${list.length?'has':''} ${UI.vacDay===ds?'sel':''}" data-action="pickVacDay" data-date="${ds}"><span class="vcal-d">${d}</span>${chips}${dots}${list.length?`<span class="vcal-n">${list.length}</span>`:''}</div>`;
+  };
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += '<div class="vcal-cell empty"></div>';
+  for(let d=1; d<=daysInMonth; d++) cells += cell(d);
+  const selList = UI.vacDay ? (byDate[UI.vacDay]||[]).concat(UI.vacDay===first ? overdue : []) : [];
+  return `
+    <div class="vcal-head">
+      <button class="iconbtn" data-action="shiftVacMonth" data-dir="-1">‹</button>
+      <span class="vcal-title">${y}년 ${m}월</span>
+      <button class="iconbtn" data-action="shiftVacMonth" data-dir="1">›</button>
+      ${ym!==today.slice(0,7)?`<button class="btn secondary small" data-action="shiftVacMonth" data-dir="0">이번 달</button>`:''}
+      <span class="vcal-legend"><i class="resp"></i>호흡기 <i class="diarrhea"></i>설사 <i class="done"></i>접종완료</span>
+    </div>
+    <div class="vcal-grid">${['일','월','화','수','목','금','토'].map((w,i)=>`<div class="vcal-dow ${i===0?'sun':''}">${w}</div>`).join('')}${cells}</div>
+    ${UI.vacDay ? `<div class="vcal-sel-h">${fmtShort(UI.vacDay)} ${selList.length?selList.length+'건':'예정 없음'}</div><div class="disease-list">${selList.map(it=> it.done
+      ? `<div class="disease-row vac-row done"><span class="tag-chip" data-animal-id="${esc(it.animalId)}">${esc(it.animalId)}</span><span class="disease-tags vac-tags"><span class="disease-tag ${it.vaccine==='resp'?'uterine':'ovary'}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span><span class="vac-date">접종완료</span></div>`
+      : vacRowHtml(it)).join('')}</div>` : ''}`;
+}
+function vacRowHtml(it){
+  const today = todayStr();
+  const dd = daysBetween(today, it.date);
+  const ddText = dd===0 ? '오늘' : (dd>0 ? `D-${dd}` : `<span class="vac-over">${-dd}일 지남</span><span class="vac-over-s">+${-dd}일</span>`);
+  const ddColor = dd<0 ? 'var(--overdue-days-text)' : (dd<=3 ? 'var(--accent)' : 'var(--primary-dark)');
+  const vcls = it.vaccine==='resp' ? 'uterine' : 'ovary';
+  return `
+    <div class="disease-row vac-row">
+      <span class="tag-chip" data-animal-id="${esc(it.animalId)}">${esc(it.animalId)}</span>
+      <span class="disease-tags vac-tags"><span class="disease-tag ${vcls}">${VAC_LABEL[it.vaccine]} ${it.dose}</span></span>
+      <span class="vac-date">${fmtShort(it.date)}</span>
+      <span class="vac-dd" style="color:${ddColor};">${ddText}</span>
+      ${isAdmin()?`<button class="btn secondary small vac-btn" data-action="logVaccineDose" data-id="${esc(it.animalId)}" data-vac="${it.vaccine}" data-dose="${it.dose}" data-stop="1">접종<span class="vac-btn-s"> 기록</span></button>`:''}
+    </div>`;
+}
 function renderVaccineView(){
   const items = vaccineItemsForOwner(UI.owner);
   const today = todayStr();
+  const mode = UI.vacMode || 'cal';
   const rows = items.map(it=>{
     const dd = daysBetween(today, it.date);
     const ddText = dd===0 ? '오늘' : (dd>0 ? `D-${dd}` : `<span class="vac-over">${-dd}일 지남</span><span class="vac-over-s">+${-dd}일</span>`);
@@ -4086,9 +4189,10 @@ function renderVaccineView(){
   }).join('') || `<div class="empty-state">예정된 백신이 없어요. 호흡기 1차는 아래 버튼으로 시작하세요.</div>`;
   return `
     <div class="panel">
-      <div class="open-head"><h2>백신관리</h2><span class="open-count">${items.length}건 예정</span></div>
+      <div class="open-head"><h2>백신관리</h2><span class="open-count">${items.length}건 예정</span>
+        <span class="vac-mode"><button class="v-seg ${mode==='cal'?'on':''}" data-action="setVacMode" data-mode="cal">달력</button><button class="v-seg ${mode==='list'?'on':''}" data-action="setVacMode" data-mode="list">목록</button></span></div>
       ${isAdmin()?`<div style="margin:6px 0 8px;"><button class="btn small" data-action="openVaccineLog">+ 백신 접종 기록</button></div>`:''}
-      <div class="disease-list">${rows}</div>
+      ${mode==='cal' ? vacCalendarHtml(items) : `<div class="disease-list">${rows}</div>`}
       <div style="margin-top:14px;font-size:12px;color:var(--ink-soft);line-height:1.7;">
         호흡기: 1차(수동) → 2주 후 2차 → 이후 매년 보강(마지막 접종 +365일).<br>
         설사: 첫 임신우는 분만예정 −7주(1차)·−4주(2차), 이후 임신은 분만예정 −4주 보강.
@@ -4250,9 +4354,9 @@ function openRecordModal(record, owner, presetAnimalId){
       <div class="form-grid">
         ${textField('약물 처치','hormoneTreatment',r.hormoneTreatment)}
         <div class="field"><label>자궁 처치</label>
-          <select id="f_uterineTx">${['','메트리큐어','자궁세척','기타'].map(v=>`<option value="${v}" ${(r.uterineTx||'')===v?'selected':''}>${v||'없음'}</option>`).join('')}</select></div>
+          <select id="f_uterineTx">${['','메트리큐어','기타'].map(v=>`<option value="${v}" ${(r.uterineTx||'')===v?'selected':''}>${v||'없음'}</option>`).join('')}</select></div>
         <div class="field"><label>처치 사유</label>
-          <select id="f_uterineTxReason">${['','원인불명 리피트','자궁내막염','사산·유산 후','미이라','기타'].map(v=>`<option value="${v}" ${(r.uterineTxReason||'')===v?'selected':''}>${v||'선택'}</option>`).join('')}</select></div>
+          <select id="f_uterineTxReason">${['','자궁내막염','사산·유산','미이라','기타'].map(v=>`<option value="${v}" ${(r.uterineTxReason||'')===v?'selected':''}>${v||'선택'}</option>`).join('')}</select></div>
       </div>
 
       <div class="fieldset-title">진료 메모</div>
@@ -5569,6 +5673,9 @@ const ACTIONS = {
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
   setPregFilter: ds=>{ UI.pregFilter = (UI.pregFilter===ds.filter)?'all':ds.filter; renderMain(); },
   toggleUtx: ()=>{ UI.showUtx = !UI.showUtx; renderMain(); },
+  setVacMode: ds=>{ UI.vacMode = ds.mode; renderMain(); },
+  shiftVacMonth: ds=>{ const t=todayStr().slice(0,7); if(ds.dir==='0'){ UI.vacMonth=t; } else { const [y,m]=(UI.vacMonth||t).split('-').map(Number); const d=new Date(y, m-1+parseInt(ds.dir,10), 1); UI.vacMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; } UI.vacDay=null; renderMain(); },
+  pickVacDay: ds=>{ UI.vacDay = (UI.vacDay===ds.date)?null:ds.date; renderMain(); },
   shiftCalvYear: ds=>{
     const dir = parseInt(ds.dir,10);
     const thisYear = todayStr().slice(0,4);
