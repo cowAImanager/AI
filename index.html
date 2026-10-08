@@ -413,7 +413,7 @@ main{flex:1;padding:18px 20px 70px;}
 .disease-tag.improved{background:var(--green-soft);color:var(--primary-dark);}
 .disease-tag.activecyst{background:var(--notpregnant-bg,#F7C1C1);color:#791F1F;}
 .preg-tags{display:inline-flex;gap:5px;flex-wrap:wrap;align-items:center;}
-.preg-tags .open-repeat{vertical-align:baseline;margin:0;}
+.pregcheck-date .open-repeat{vertical-align:1px;margin-left:6px;}
 .preg-tag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:7px;white-space:nowrap;}
 .preg-tag.pos{background:var(--green-soft);color:var(--primary-dark);}
 .preg-tag.neg{background:var(--notpregnant-row-bg);color:var(--notpregnant-bg);}
@@ -901,7 +901,10 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .pregcheck-row .tag-chip{font-size:11px;}
   .pregcheck-row .tag-chip{flex:0 0 auto;}
   .pregcheck-mid{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;flex:1 1 auto;min-width:0;overflow:hidden;}
-  .pregcheck-mid .pregcheck-date{display:none;}
+  .pregcheck-mid .pregcheck-date .pcd-prefix,.pregcheck-mid .pregcheck-date .pcd-val{display:none;}
+  .pregcheck-mid .pregcheck-date{flex:0 0 auto;order:2;}
+  .pregcheck-mid .pregcheck-date .open-repeat{margin-left:0;}
+  .pregcheck-mid .pregcheck-date:not(:has(.open-repeat)){display:none;}
   .pregcheck-mid .pregcheck-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .pregcheck-mid .pregcheck-days{flex:0 0 auto;}
   .pregcheck-mid .preg-tags{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;}
@@ -2684,7 +2687,7 @@ function renderPregCheckView(){
     else if(needsCheck) rowClass='overdue';
 
     const tags = [];
-    if(row.preg1) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);
+    if(row.preg1 && !(isNotPregnant && p1==='X')) tags.push(`<span class="preg-tag ${p1==='O'?'pos':(p1==='X'?'neg':'rechk')}">1차 ${esc(row.preg1)}</span>`);   // 수정대기(비임신) 행의 '1차 X'는 중복이라 생략
     if(p1!=='X'){   // 1차 X면 2차·성감정은 의미 없으니 숨김
       if(row.preg2) tags.push(`<span class="preg-tag ${p2==='O'?'pos':(p2==='X'?'neg':'rechk')}">2차 ${esc(row.preg2)}</span>`);
       if(sexIcon(row.fsex)) tags.push(`<span class="preg-tag sex" title="태아 성별">${sexIcon(row.fsex)}</span>`);
@@ -2742,9 +2745,9 @@ function renderPregCheckView(){
     <div class="pregcheck-row ${rowClass} ${row.fattening?'fattened':''}" data-action="${row.record?'editRecord':'addRecord'}" data-id="${esc(row.record?row.record.id:row.animalId)}">
       ${idChip({animalId:row.animalId}, {oneYear:row.oneYear}, '')}
       <span class="pregcheck-mid">
-        <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span>'+fmtYmdShort(row.aiDate)):'수정기록 없음'}</span>
+        <span class="pregcheck-date">${(row.aiDate && !row.calved)?('<span class="pcd-prefix">수정일 </span><span class="pcd-val">'+fmtYmdShort(dateOnly(row.aiDate))+'</span>'):'<span class="pcd-val">수정기록 없음</span>'}${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}</span>
         ${row.calved && row.calvDate?`<span class="pregcheck-days">${row.isStillbirthEnd?'사산':'분만'} ${daysBetween(row.calvDate, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(isNotPregnant && row.lastCalv?`<span class="pregcheck-days">분만 ${daysBetween(row.lastCalv, todayStr())}일<span class="pcd-suffix"> 경과</span></span>`:(row.days!=null && !row.calved?`<span class="pregcheck-days">${isNotPregnant?'수정<span class="pcd-suffix"> 후</span> ':''}${row.days}일<span class="pcd-suffix"> 경과</span></span>`:''))}
-        <span class="preg-tags">${tags.join('')}${(!row.calved && row.aiCountCur>=3)?`<span class="open-repeat" title="${row.isPreg?'수정 '+row.aiCountCur+'회 만에 수태':'수정 '+row.aiCountCur+'회 불수태'}">리피트<span class="rp-suffix"> </span>${row.aiCountCur}<span class="rp-suffix">회</span></span>`:''}</span>
+        <span class="preg-tags">${tags.join('')}</span>
       </span>
       <span class="pregcheck-end ${syncTag?'has-sync':''}">${syncTag}${badge}${diagSum}${subTag}</span>
       <button class="iconbtn sched-add-btn" data-action="editSchedItem" data-aid="${esc(row.animalId)}" data-date="${todayStr()}" data-stop="1" title="스케줄에 날짜·내용 바로 입력">${svgIcon('calendar',14)}</button>

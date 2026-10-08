@@ -48,9 +48,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-search:focus{outline:2px solid var(--tag-yellow);}
 
 /* 개체 ID / 배지 */
-.v-id{font-family:'SF Mono',ui-monospace,monospace;font-size:14px;font-weight:700;letter-spacing:.02em;background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding:4px 9px;}
+.v-id,.v-sched-id,.v-today-id{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;font-weight:700;letter-spacing:.02em;line-height:1.3;}
+.v-id{background:var(--surface-alt);border:1px solid var(--line);border-radius:6px;padding:3px 7px;}
 .v-id.oneyear{background:#FFF6D6;border-color:#F0D37A;color:#7A5A00;}
-.v-badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 9px;}
+.v-badge{font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;}
 .v-badge.preg{background:var(--green-soft);color:var(--primary-dark);}
 .v-badge.notpreg{background:#FBE9E7;color:var(--notpreg);}
 .v-badge.check{background:#FFF3E0;color:#C8791A;}
@@ -68,8 +69,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-today-h{font-size:13px;font-weight:800;margin-bottom:8px;opacity:.95;}
 .v-today-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.22);}
 .v-today-row:first-of-type{border-top:none;}
-.v-today-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;}
-.v-today-note{margin-left:auto;font-size:14px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:7px;}
+.v-today-id{}
+.v-today-note{margin-left:auto;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:7px;}
 
 /* 일정 — 날짜 그룹 */
 .v-sched-hint{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;}
@@ -77,11 +78,11 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-sgroup.today{border-color:var(--primary);background:var(--green-soft);}
 .v-sgroup.past{opacity:.5;}
 .v-sgroup-head{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--bg);}
-.v-sched-md{font-size:13.5px;font-weight:800;color:var(--ink);}
+.v-sched-md{font-size:13px;font-weight:800;color:var(--ink);}
 .v-gitem{display:flex;align-items:center;gap:9px;padding:6px 0;}
 .v-gitem+.v-gitem{border-top:1px solid var(--bg);}
-.v-sched-id{font-family:'SF Mono',ui-monospace,monospace;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink);}
-.v-sched-note{margin-left:auto;font-size:13px;font-weight:800;color:var(--primary-dark);background:var(--surface-alt);padding:4px 12px;border-radius:7px;white-space:nowrap;}
+.v-sched-id{color:var(--ink);}
+.v-sched-note{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--primary-dark);background:var(--surface-alt);padding:4px 12px;border-radius:7px;white-space:nowrap;}
 .v-sgroup.today .v-sched-note{background:var(--primary);color:#fff;}
 /* 백신 탭 색 */
 .v-vac .v-sgroup.today{border-color:var(--vac);background:var(--vac-soft);}
@@ -113,7 +114,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 @media (max-width:420px){
   .v-summary{gap:6px;}
   .v-stat .n{font-size:18px;}
-  .v-id{font-size:13px;}
   .v-tab{font-size:12.5px;gap:4px;}
 }
 </style>
