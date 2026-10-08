@@ -5027,7 +5027,15 @@ function shareExpCalving(owner, a){
 function buildSharePayload(owner){
   const animals = DATA.animals.filter(a=>a.owner===owner)
     .sort((a,b)=>a.animalId.localeCompare(b.animalId))
-    .map(a=>{ const s=shareAnimalStatus(owner,a); const f=animalFlags(owner,a); return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN }; });
+    .map(a=>{
+      const s=shareAnimalStatus(owner,a); const f=animalFlags(owner,a);
+      let kpn='';
+      if(s.status==='임신중'){   // 임신한 수정(가장 최근 AI)의 KPN
+        const aiRecs = recordsOf(owner,a.animalId).filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+        kpn = String((aiRecs[0]||{}).kpn||'').trim();
+      }
+      return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN, kpn };
+    });
   // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
   const cutoff = addDays(todayStr(), -7);
   const schedule = scheduleRowsForOwner(owner)

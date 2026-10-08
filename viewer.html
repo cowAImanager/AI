@@ -32,7 +32,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 
 /* 탭 */
 .v-tabs{display:flex;gap:4px;margin:6px 0 12px;background:var(--surface-alt);padding:4px;border-radius:12px;}
-.v-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:800;padding:9px 4px;border:none;border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.v-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12.5px;font-weight:800;padding:9px 2px;border:none;border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .12s;white-space:nowrap;}
 .v-tab.on{background:var(--surface);color:var(--primary-dark);box-shadow:0 1px 4px rgba(0,0,0,.08);}
 .v-tab.on[data-tab="vac"]{color:var(--vac);}
 .v-tab .cnt{font-size:10.5px;font-weight:800;background:var(--line);color:var(--ink-soft);border-radius:999px;padding:1px 6px;}
@@ -61,6 +61,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-badge.none{background:var(--surface-alt);color:var(--ink-soft);}
 .v-badge.oneyear{background:#FFF6D6;color:#7A5A00;}
 .v-badge.rep{background:#FBE9E7;color:var(--notpreg);}
+.v-badge.kpn{background:#EAF2FD;color:var(--accent);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;}
 .v-dday{font-weight:800;color:var(--accent);}
 .v-dday.soon{color:var(--notpreg);}
 
@@ -96,8 +97,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
 .v-empty-sm{font-size:12.5px;color:var(--ink-soft);padding:14px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:11px;}
 
 /* 소별 임신 현황 행 */
-.v-prow{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 11px;margin-bottom:5px;flex-wrap:wrap;}
-.v-calv{font-size:12px;color:var(--ink-soft);margin-left:auto;}
+.v-prow{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:5px;flex-wrap:nowrap;overflow:hidden;}
+.v-prow .v-id{flex:0 0 auto;}
+.v-prow .v-badge{flex:0 0 auto;padding:3px 6px;font-size:10.5px;white-space:nowrap;}
+.v-calv{font-size:11.5px;color:var(--ink-soft);margin-left:auto;white-space:nowrap;flex:0 0 auto;}
 
 .v-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 0;}
 .v-foot{text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;line-height:1.6;}
@@ -242,6 +245,7 @@ function svgIcon(name, size){
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;flex-shrink:0;">${ICON_PATHS[name]||''}</svg>`;
 }
 
+function fmtYmdShort(s){ const m=/^(\d{2})(\d{2})-(\d{2})-(\d{2})/.exec(s||''); return m ? `${m[2]}/${m[3]}/${m[4]}` : esc(s); }
 const WEEK = ['일','월','화','수','목','금','토'];
 function fmtDate(s){
   const d=parseD(s); if(!d) return esc(s);
@@ -300,7 +304,9 @@ function renderApp(data){
   const upGroups  = groupByDate(sched.filter(future));
   const vacGroups = groupByDate(vacs.filter(future));
 
-  const cntPreg = animals.filter(a=>a.status==='임신중').length;
+  const pregAnimals = animals.filter(a=>a.status==='임신중');
+  const openAnimals = animals.filter(a=>a.status!=='임신중');
+  const cntPreg = pregAnimals.length;
   const cntCheck = animals.filter(a=>a.status==='임신감정 필요'||a.status==='감정 대기').length;
 
   // 오늘 할 일: 처치 + 백신 모두
@@ -319,7 +325,7 @@ function renderApp(data){
     <div class="v-head">
       <div>
         <div class="v-title">${esc(data.owner)}님 농장</div>
-        <div class="v-sub">번식 현황 · 처치 · 백신 일정</div>
+        <div class="v-sub">처치 · 백신 · 공태 · 임신 현황</div>
       </div>
       <div class="v-updated">업데이트<br>${esc(data.updatedAt||'-')}</div>
     </div>
@@ -335,7 +341,8 @@ function renderApp(data){
     <div class="v-tabs">
       <button class="v-tab on" data-tab="sched">${svgIcon("calendar",15)} 처치 ${upN?`<span class="cnt">${upN}</span>`:''}</button>
       <button class="v-tab" data-tab="vac">${svgIcon("syringe",15)} 백신 ${vacN?`<span class="cnt">${vacN}</span>`:''}</button>
-      <button class="v-tab" data-tab="status">${svgIcon("cow",15)} 번식 현황</button>
+      <button class="v-tab" data-tab="status">${svgIcon("cow",15)} 공태</button>
+      <button class="v-tab" data-tab="preg">${svgIcon("cow",15)} 임신</button>
     </div>
 
     <div id="panel-sched" class="v-panel">
@@ -349,15 +356,25 @@ function renderApp(data){
     </div>
 
     <div id="panel-status" class="v-panel" style="display:none;">
+      <div class="v-sched-hint">임신 확인 전이거나 비임신인 소예요. (${openAnimals.length}두)</div>
       <div class="v-sortbar">
         <button class="v-sort on" data-sort="id">개체번호</button>
         <button class="v-sort" data-sort="status">상태별</button>
         <button class="v-sort" data-sort="days">수정 경과일</button>
-        <button class="v-sort" data-sort="calv">분만예정일</button>
       </div>
       <input class="v-search" id="vsearch" placeholder="개체번호 검색 (예: 8161)">
-      <div class="v-legend"><span class="v-id oneyear" style="font-size:11px;padding:1px 6px;">노란색 번호</span> = 분만 후 81일 이내에 다시 임신한 <b>1년1산</b> 암소예요. 번식 성적이 우수한 소입니다.</div>
       <div id="vlist"></div>
+    </div>
+
+    <div id="panel-preg" class="v-panel" style="display:none;">
+      <div class="v-sched-hint">임신 확인된 소예요. (${pregAnimals.length}두) · KPN은 임신된 수정의 정액 번호</div>
+      <div class="v-sortbar">
+        <button class="v-sort on" data-sort="calv" data-list="preg">분만예정일</button>
+        <button class="v-sort" data-sort="id" data-list="preg">개체번호</button>
+      </div>
+      <input class="v-search" id="vsearch2" placeholder="개체번호 검색">
+      <div class="v-legend"><span class="v-id oneyear" style="font-size:11px;padding:1px 6px;">노란색 번호</span> = 분만 후 81일 이내에 다시 임신한 <b>1년1산</b> 암소예요. 번식 성적이 우수한 소입니다.</div>
+      <div id="vlist2"></div>
     </div>
 
     <div class="v-foot">
@@ -366,7 +383,7 @@ function renderApp(data){
     </div>`;
 
   // ---- 탭 전환 ----
-  const PANELS = {sched:'panel-sched', vac:'panel-vac', status:'panel-status'};
+  const PANELS = {sched:'panel-sched', vac:'panel-vac', status:'panel-status', preg:'panel-preg'};
   document.querySelectorAll('.v-tab').forEach(t=>{
     t.addEventListener('click', ()=>{
       document.querySelectorAll('.v-tab').forEach(x=>x.classList.toggle('on', x===t));
@@ -377,8 +394,8 @@ function renderApp(data){
   // ---- 번식 현황 정렬/검색 ----
   const third = x => { const p=(x.id||'').trim().split(/\s+/); return p[2]||x.id; };
   const STATUS_ORDER = {'임신감정 필요':0,'감정 대기':1,'비임신':2,'미수정':3,'임신중':4,'분만완료':5,'비육전환':6};
-  function sortAnimals(key){
-    const arr = animals.slice();
+  function sortAnimals(key, src){
+    const arr = src.slice();
     if(key==='status'){
       arr.sort((a,b)=>{ const d=(STATUS_ORDER[a.status]??9)-(STATUS_ORDER[b.status]??9); return d!==0?d:third(a).localeCompare(third(b)); });
     } else if(key==='days'){
@@ -396,27 +413,41 @@ function renderApp(data){
         <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
         ${statusBadge(a.status)}
         ${rep}
-        ${a.status==='임신중'&&a.expectedCalving?`<span class="v-calv">분만예정 ${esc(a.expectedCalving)}</span>`:''}
-        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일 경과</span>`:''}
+        ${(a.status==='임신감정 필요'||a.status==='감정 대기'||a.status==='비임신')&&(a.days!=null)?`<span class="v-calv">수정 ${a.days}일</span>`:''}
       </div>`;
   }
-  let curSort = 'id', curQuery = '';
-  function renderVlist(){
-    const q = curQuery.replace(/\s/g,'');
-    const list = sortAnimals(curSort).filter(a => !q || a.id.replace(/\s/g,'').includes(q));
-    document.getElementById('vlist').innerHTML = list.length ? list.map(rowHtml).join('') : '<div class="v-empty-sm">해당하는 소가 없어요.</div>';
+  function pregRowHtml(a){
+    const rep = a.aiCount>=3 ? `<span class="v-badge rep">수정 ${a.aiCount}회</span>` : '';
+    return `<div class="v-prow" data-id="${esc(a.id.replace(/\s/g,''))}">
+        <span class="v-id${a.oneYear?' oneyear':''}">${esc(a.id)}</span>
+        ${a.kpn?`<span class="v-badge kpn">KPN ${esc(a.kpn)}</span>`:''}
+        ${rep}
+        ${a.expectedCalving?`<span class="v-calv">분만 ${fmtYmdShort(a.expectedCalving)}</span>`:''}
+      </div>`;
   }
-  renderVlist();
+  const lists = {
+    open: { sort:'id', q:'', src:openAnimals, el:'vlist', row:rowHtml },
+    preg: { sort:'calv', q:'', src:pregAnimals, el:'vlist2', row:pregRowHtml }
+  };
+  function renderVlist(k){
+    const L = lists[k]; const q = L.q.replace(/\s/g,'');
+    const list = sortAnimals(L.sort, L.src).filter(a => !q || a.id.replace(/\s/g,'').includes(q));
+    document.getElementById(L.el).innerHTML = list.length ? list.map(L.row).join('') : '<div class="v-empty-sm">해당하는 소가 없어요.</div>';
+  }
+  renderVlist('open'); renderVlist('preg');
 
   document.querySelectorAll('.v-sort').forEach(b=>{
     b.addEventListener('click', ()=>{
-      curSort = b.dataset.sort;
-      document.querySelectorAll('.v-sort').forEach(x=>x.classList.toggle('on', x===b));
-      renderVlist();
+      const k = b.dataset.list==='preg' ? 'preg' : 'open';
+      lists[k].sort = b.dataset.sort;
+      b.parentElement.querySelectorAll('.v-sort').forEach(x=>x.classList.toggle('on', x===b));
+      renderVlist(k);
     });
   });
   const si = document.getElementById('vsearch');
-  si.addEventListener('input', ()=>{ curQuery = si.value; renderVlist(); });
+  si.addEventListener('input', ()=>{ lists.open.q = si.value; renderVlist('open'); });
+  const si2 = document.getElementById('vsearch2');
+  si2.addEventListener('input', ()=>{ lists.preg.q = si2.value; renderVlist('preg'); });
 }
 
 function renderPicker(){
