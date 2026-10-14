@@ -370,14 +370,9 @@ main{flex:1;padding:18px 20px 70px;}
 @media (max-width:560px){
   .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
   .preg-summary.five{grid-template-columns:repeat(2,minmax(0,1fr));}
-  /* 임신감정: 1줄 2칸(대상·임신중) + 2줄 3칸 */
-  .preg-summary.preg-five{grid-template-columns:repeat(12,1fr);}
-  .preg-summary.preg-five > :nth-child(1),
-  .preg-summary.preg-five > :nth-child(2){grid-column:span 6;}
-  .preg-summary.preg-five > :nth-child(3),
-  .preg-summary.preg-five > :nth-child(4){grid-column:span 4;}
-  .preg-summary.preg-five > :nth-child(5),
-  .preg-summary.preg-five > :nth-child(6){grid-column:span 2;}
+  /* 임신감정: 2칸씩 3줄 (대상·임신중 / 첫수정 수태율·수태당 수정횟수 / 출산·1년1산) */
+  .preg-summary.preg-five{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .preg-summary.preg-five > .preg-stat{grid-column:auto;justify-content:center;}
   .preg-summary.preg-five .preg-stat-sub{white-space:normal;line-height:1.2;}
 
   /* 질환: 5칸 한 줄 */
