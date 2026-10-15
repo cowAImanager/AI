@@ -287,8 +287,8 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-help summary{cursor:pointer;font-weight:700;color:var(--primary-dark);}
 .cab-help-body{margin-top:6px;padding:8px 12px;background:var(--surface-alt);border-radius:9px;line-height:1.55;color:var(--ink);}
 .cab-help-body p{margin:4px 0;}
-.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px minmax(236px,1fr) minmax(172px,1fr) 92px;gap:8px;align-items:center;}
-.cab-row{grid-template-areas:"id reg tr conf prog rec kpn";}
+.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px minmax(236px,1fr) 92px;gap:8px;align-items:center;}
+.cab-row{grid-template-areas:"id reg tr conf prog kpn";}
 .cab-l1,.cab-l3{display:contents;}
 .cab-id{grid-area:id;} .cab-reg{grid-area:reg;} .cab-traits{grid-area:tr;} .cab-memo{grid-area:conf;} .cab-progs{grid-area:prog;} .cab-rec{grid-area:rec;} .cab-kpn{grid-area:kpn;}
 .cab-head{font-size:11px;font-weight:700;color:var(--ink-soft);padding:0 8px 4px;position:sticky;top:0;background:var(--bg);z-index:1;}
@@ -312,7 +312,7 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-g{flex:0 0 28px;width:28px;padding:0;font-size:11.5px;font-weight:900;text-align:center;color:var(--ink-soft);appearance:none;-webkit-appearance:none;}
 .cab-g.gA{color:#fff;background:var(--primary);border-color:var(--primary);} .cab-g.gB{color:#fff;background:#C9A227;border-color:#C9A227;} .cab-g.gC{color:#fff;background:#8A9299;border-color:#8A9299;} .cab-g.gD{color:#fff;background:#C0392B;border-color:#C0392B;}
 .cab-memo,.cab-conf{width:100%;font-weight:700;text-align:center;}
-.cab-kpn{width:100%;font-weight:800;text-align:center;}
+.cab-kpn{width:100%;font-weight:700;text-align:center;height:30px;line-height:18px;}
 .cab-progs{display:flex;flex-wrap:wrap;gap:3px;}
 .cab-pg{display:inline-flex;gap:1px;}
 .cab-progs .cab-prog{font-size:11.5px;font-weight:800;text-align:center;padding:0 0;appearance:none;-webkit-appearance:none;color:var(--ink-soft);}
@@ -330,7 +330,7 @@ main{flex:1;padding:18px 20px 70px;}
   .cab-l1,.cab-l3{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
   .cab-l1 .cab-id{flex:1 1 auto;min-width:0;justify-content:flex-start;}
   .cab-l1 .cab-reg{width:92px;} .cab-l1 .cab-memo{width:56px;flex:0 0 56px;}
-  .cab-l3 .cab-kpn{width:84px;flex:0 0 84px;margin-left:auto;}
+  .cab-l3 .cab-kpn{width:110px;flex:0 0 110px;margin-left:auto;}
   .cab-l3 .cab-progs{flex:0 1 auto;} .cab-l3 .cab-rec{flex:1 1 auto;}
   .cab-traits label{position:relative;}
   .cab-traits label::before{content:attr(data-t);position:absolute;left:5px;top:-1px;font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;pointer-events:none;}
@@ -2669,7 +2669,6 @@ function abilityUpdate(owner,aid,field,value,el){
   const row=el&&el.closest('.cab-row');
   if(field==='reg'){ if(row) row.className='cab-row reg-'+(value||'none'); const sum=document.getElementById('cabSummary'); if(sum) sum.innerHTML=abilitySummaryHtml(owner); }
   if(/^(cw|ema|bf|ms)G$/.test(field)&&el){ el.className='cab-in cab-g g'+(value||''); }
-  if(/^(cw|ema|bf|ms)G?$/.test(field)&&row){ const rc=row.querySelector('.cab-rec'); if(rc) rc.innerHTML=abilityRecHtml(abilityGet(owner,aid), DATA.animals.find(x=>x.owner===owner&&x.animalId===aid)); }
 }
 function abilitySummaryHtml(owner){
   const cnt={}; ABILITY_REGS.forEach(r=>cnt[r]=0);
@@ -2726,16 +2725,15 @@ function renderAbilityView(owner){
       <div class="cab-traits">${ABILITY_TRAITS.map(t=>`<label data-t="${t[1]}">${inp(t[0],'—')}</label>`).join('')}</div>
       <div class="cab-l3">
         <div class="cab-progs">${prog}</div>
-        <div class="cab-rec">${abilityRecHtml(v,a)}</div>
         <input type="text" ${D('kpn')} class="cab-in cab-kpn" list="semenKpnList" value="${esc(v.kpn||'')}" placeholder="KPN" title="고려 KPN">
       </div>
     </div>`;
   }).join('');
   return `<div class="cab-panel">
     <div class="aiplan-title">🧬 암소능력</div>
-    <div class="aiplan-sub">암소별 유전능력(육종가·EPD, 값 또는 등급)·등록구분·외모심사·후대 도축등급을 적어두고, 보유 정액 중 약한 형질을 보완하는 KPN을 추천받는 곳. 숫자는 농협 한우개량사업소·한우리 조회값 그대로.</div>
+    <div class="aiplan-sub">암소별 유전능력(육종가·EPD, 값 또는 등급)·등록구분·외모심사·후대 도축등급·고려 KPN을 적어두는 곳. 숫자는 농협 한우개량사업소·한우리 조회값 그대로.</div>
     <div class="cab-summary" id="cabSummary">${abilitySummaryHtml(owner)}</div>
-    <details class="cab-help"><summary>등록구분 기준 (종축개량협회, 2026.3 개편) · 추천 방식</summary>
+    <details class="cab-help"><summary>등록구분 기준 (종축개량협회, 2026.3 개편)</summary>
       <div class="cab-help-body">
         <p><b>기초</b> — 부모 불명. 혈통의 출발점.</p>
         <p><b>혈통</b> — 부모 모두 등록우, 인공수정 산자, 외모심사 실격 결점 없음.</p>
@@ -2743,11 +2741,10 @@ function renderAbilityView(owner){
         <p><b>우량</b> — 2계대 이상, 외모심사 80점 이상, 친자일치, 후대축 1++(8~9점)·육량 B 이상·<b>도체중 500kg 이상·등심단면적 120㎠ 이상</b>. (유전능력 B 이상 2개 기준은 삭제. 2026년 1월 도축성적부터, 선정은 2026년 3월부터. 기존 선정우는 유지.)<br>※ 유전체 우량암소 신설: 혈통등록 이상·친자일치·유전체사업 참여 개체 중 유전평가 상위 1%(선발지수 도체 8 : 체형 2), 연 2회(3·9월) 선정.</p>
         <p><b>초우량</b> — 변경된 우량암소 기준(도체중 500kg·등심 120㎠)을 2회 이상 충족.</p>
         <p><b>유전능력 등급</b> — 상위 20% 이하 A, 45% 이하 B, 70% 이하 C, 그 외 D. 값과 등급 중 하나만 넣어도 됨(둘 다 있으면 값 우선).</p>
-        <p><b>추천 KPN</b> — 보유 정액(없으면 목록 전체) 각각의 EPD를 형질별 표준편차로 나눠 점수화하되, 암소 유전능력이 평균 아래인 형질에 가중치를 더 줘 합산. 상위 3개와 그 KPN이 가장 보태주는 형질을 표시. 암소 값이 비어 있으면 종합 상위. 암소의 부·외조부·외증조부 KPN이 수소 자신·부·외조부와 겹치면 ⚠근친으로 표시하고 뒤로 보냄.</p>
       </div>
     </details>
     <datalist id="semenKpnList">${(DATA.semenStock||[]).map(x=>`<option value="${esc(x.kpn)}">`).join('')}</datalist>
-    <div class="cab-head"><span>개체</span><span>등록구분</span><span class="cab-head-tr">${ABILITY_TRAITS.map(t=>`<b>${t[1]}<i>${t[2]}</i></b>`).join('')}</span><span>외모심사</span><span>혈통도축(산차별)</span><span>추천 KPN</span><span>고려 KPN</span></div>
+    <div class="cab-head"><span>개체</span><span>등록구분</span><span class="cab-head-tr">${ABILITY_TRAITS.map(t=>`<b>${t[1]}<i>${t[2]}</i></b>`).join('')}</span><span>외모심사</span><span>혈통도축(산차별)</span><span>고려 KPN</span></div>
     <div class="cab-list">${rows||'<div class="empty-state">개체가 없어요.</div>'}</div>
   </div>`;
 }
