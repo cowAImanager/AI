@@ -328,7 +328,10 @@ main{flex:1;padding:18px 20px 70px;}
 @media (min-width:761px){ .info-row.ped-six{grid-template-columns:repeat(6,minmax(0,1fr));} .info-row.abl-one{grid-template-columns:repeat(6,minmax(0,1fr));} .abl-one .abl-trf{grid-column:3/7;} .abl-trf .val{gap:6px;} }
 .abl-one{grid-template-columns:minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.6fr);}
 .abl-row .val.abl-traits{gap:3px;}
-@media (max-width:560px){ .abl-one{grid-template-columns:1fr 1fr;} .abl-trf{grid-column:1/3;} .abl-row .val.abl-traits{flex-wrap:wrap;} }
+@media (max-width:560px){ .abl-one{grid-template-columns:1fr 1fr;} .abl-trf{grid-column:1/3;}
+  .abl-row .val.abl-traits{flex-wrap:nowrap;gap:2px;overflow:hidden;}
+  .abl-t{font-size:9.5px;padding:1px 3px;gap:1px;border-radius:5px;flex:1 1 0;min-width:0;justify-content:center;} .abl-t i{font-size:8.5px;}
+  .abl-t .cab-g-badge{font-size:9px;min-width:11px;padding:0 2px;} }
 .abl-reg{font-weight:800;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-alt);}
 .abl-reg.reg-우량,.abl-reg.reg-초우량{color:#fff;background:var(--primary);border-color:var(--primary);} .abl-reg.reg-고등{background:#C9A227;color:#fff;border-color:#C9A227;}
 .abl-kpn{font-weight:800;color:var(--primary-dark);background:var(--surface-alt);border:1px solid var(--line);border-radius:6px;padding:1px 7px;}
