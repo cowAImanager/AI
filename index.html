@@ -2652,7 +2652,7 @@ function renderAiPlanPanel(owner){
 /* ============================================================
    암소능력 (유전능력 입력 + 등록구분 + 혈통도축 + KPN 추천)
 ============================================================ */
-const ABILITY_REGS=['','기초','혈통','고등','우량','초우량'];
+const ABILITY_REGS=['','미등록','기초','혈통','고등','우량','초우량'];
 const ABILITY_TRAITS=[['cw','도체중','kg'],['ema','등심','cm²'],['bf','등지방','mm'],['ms','근내','점']];
 const ABILITY_SD=[14,3.4,1.0,0.4]; // 형질별 EPD 표준편차(gongsu 모델과 동일) — 암소·수소 값을 같은 자로 재기 위함
 function abilityKey(owner,aid){ return `${owner}|${aid}`; }
