@@ -287,7 +287,7 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-help summary{cursor:pointer;font-weight:700;color:var(--primary-dark);}
 .cab-help-body{margin-top:6px;padding:8px 12px;background:var(--surface-alt);border-radius:9px;line-height:1.55;color:var(--ink);}
 .cab-help-body p{margin:4px 0;}
-.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px minmax(236px,1fr) 92px;gap:8px;align-items:center;}
+.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px minmax(236px,1fr) 150px;gap:8px;align-items:center;}
 .cab-row{grid-template-areas:"id reg tr conf prog kpn";}
 .cab-l1,.cab-l3{display:contents;}
 .cab-id{grid-area:id;} .cab-reg{grid-area:reg;} .cab-traits{grid-area:tr;} .cab-memo{grid-area:conf;} .cab-progs{grid-area:prog;} .cab-rec{grid-area:rec;} .cab-kpn{grid-area:kpn;}
@@ -312,7 +312,7 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-g{flex:0 0 28px;width:28px;padding:0;font-size:11.5px;font-weight:900;text-align:center;color:var(--ink-soft);appearance:none;-webkit-appearance:none;}
 .cab-g.gA{color:#fff;background:var(--primary);border-color:var(--primary);} .cab-g.gB{color:#fff;background:#C9A227;border-color:#C9A227;} .cab-g.gC{color:#fff;background:#8A9299;border-color:#8A9299;} .cab-g.gD{color:#fff;background:#C0392B;border-color:#C0392B;}
 .cab-memo,.cab-conf{width:100%;font-weight:700;text-align:center;}
-.cab-kpn{width:100%;font-weight:700;text-align:center;height:30px;line-height:18px;}
+.cab-kpn{width:100%;font-weight:700;text-align:left;height:30px;line-height:18px;}
 .cab-progs{display:flex;flex-wrap:wrap;gap:3px;}
 .cab-pg{display:inline-flex;gap:1px;}
 .cab-progs .cab-prog{font-size:11.5px;font-weight:800;text-align:center;padding:0 0;appearance:none;-webkit-appearance:none;color:var(--ink-soft);}
@@ -324,20 +324,28 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-reck i{font-style:normal;font-size:9.5px;font-weight:600;color:var(--ink-soft);}
 .cab-reck.inbred{color:#C0392B;border-color:#C0392B;opacity:.85;} .cab-reck.inbred i{color:#C0392B;}
 .cab-dim{font-size:11px;color:var(--ink-soft);}
+.abl-row .val{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.abl-reg{font-weight:800;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-alt);}
+.abl-reg.reg-우량,.abl-reg.reg-초우량{color:#fff;background:var(--primary);border-color:var(--primary);} .abl-reg.reg-고등{background:#C9A227;color:#fff;border-color:#C9A227;}
+.abl-kpn{font-weight:800;color:var(--primary-dark);background:var(--surface-alt);border:1px solid var(--line);border-radius:6px;padding:1px 7px;}
+.abl-t{display:inline-flex;align-items:center;gap:3px;font-weight:700;background:var(--surface-alt);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12px;}
+.abl-t i{font-style:normal;font-weight:600;color:var(--ink-soft);font-size:11px;}
+.cab-g-badge{display:inline-block;min-width:14px;padding:0 4px;border-radius:4px;font-size:10.5px;font-weight:800;color:#fff;text-align:center;}
+.cab-g-badge.gA{background:var(--primary);} .cab-g-badge.gB{background:#C9A227;} .cab-g-badge.gC{background:#8A9299;} .cab-g-badge.gD{background:#C0392B;}
 @media (max-width:1250px){
   .cab-head{display:none;}
   .cab-row{display:flex;flex-direction:column;gap:4px;padding:6px 7px;}
   .cab-l1,.cab-l3{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
   .cab-l1 .cab-id{flex:1 1 auto;min-width:0;justify-content:flex-start;}
   .cab-l1 .cab-reg{width:92px;} .cab-l1 .cab-memo{width:56px;flex:0 0 56px;}
-  .cab-l3 .cab-kpn{width:110px;flex:0 0 110px;margin-left:auto;}
+  .cab-l3 .cab-kpn{width:150px;flex:0 0 150px;margin-left:auto;}
   .cab-l3 .cab-progs{flex:0 1 auto;} .cab-l3 .cab-rec{flex:1 1 auto;}
   .cab-traits label{position:relative;}
   .cab-traits label::before{content:attr(data-t);position:absolute;left:5px;top:-1px;font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;pointer-events:none;}
   .cab-traits input{padding-top:8px;font-size:11.5px;}
 }
 @media (max-width:560px){
-  .cab-l1 .cab-reg{width:82px;} .cab-l3 .cab-kpn{width:96px;flex-basis:96px;}
+  .cab-l1 .cab-reg{width:82px;} .cab-l3 .cab-kpn{width:140px;flex-basis:140px;}
   .cab-id .tag-chip{font-size:10px;padding:1px 5px 1px 8px;letter-spacing:0;}
   .cab-parity{font-size:11.5px;}
   .cab-g{flex-basis:26px;width:26px;font-size:11px;}
@@ -2365,6 +2373,7 @@ function renderAnimalView(){
               <div class="field"><label>출생</label><div class="val">${esc(a.birth)||'—'}</div></div>
               <div class="field"><label>개월령</label><div class="val">${ageMonths(a.birth)}</div></div>
             </div>
+            ${abilityDetailHtml(UI.owner,a)}
           </div>
           <div class="info-panel breeding">
             <div class="info-panel-title">${svgIcon('clipboard',16)} 번식 정보</div>
@@ -2704,6 +2713,19 @@ function abilityRecHtml(v,a){
   if(!r.list.length) return `<span class="cab-dim">보유 정액 없음</span>`;
   return r.list.map(x=>`<span class="cab-reck ${x.inbred?'inbred':''}" title="${x.inbred?('근친 주의: '+x.inbred):(r.has?x.why+' 보완':'종합 상위')}">${x.inbred?'⚠':''}${esc(x.kpn)}<i>${x.inbred?'근친':(r.has?x.why:'종합')}</i></span>`).join('')+(r.fromStock?'':'<span class="cab-dim"> (목록 전체)</span>');
 }
+/* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
+function abilityDetailHtml(owner,a){
+  const v=abilityGet(owner,a.animalId);
+  const has=v.reg||v.conf!=null||['cw','ema','bf','ms'].some(k=>v[k]!=null||v[k+'G']);
+  if(!has) return '';
+  const G=(g)=>g?`<span class="cab-g-badge g${g}">${g}</span>`:'';
+  const tr=ABILITY_TRAITS.map(t=>{ const val=v[t[0]], g=v[t[0]+'G']; if(val==null&&!g) return ''; return `<span class="abl-t"><i>${t[1]}</i> ${val!=null?val:''}${G(g)}</span>`; }).filter(Boolean).join('');
+  return `<div class="info-row cols2 abl-row">
+      <div class="field"><label>등록구분</label><div class="val">${v.reg?`<span class="abl-reg reg-${esc(v.reg)}">${esc(v.reg)}</span>`:'—'}</div></div>
+      <div class="field"><label>외모심사</label><div class="val">${v.conf!=null?esc(String(v.conf))+'점':'—'}</div></div>
+    </div>
+    <div class="info-row abl-row"><div class="field"><label>유전능력</label><div class="val abl-traits">${tr||'—'}</div></div></div>`;
+}
 function renderAbilityView(owner){
   const animals=ownerAnimals().filter(a=>!a.fattening);
   const rows=animals.map(a=>{
@@ -2725,7 +2747,7 @@ function renderAbilityView(owner){
       <div class="cab-traits">${ABILITY_TRAITS.map(t=>`<label data-t="${t[1]}">${inp(t[0],'—')}</label>`).join('')}</div>
       <div class="cab-l3">
         <div class="cab-progs">${prog}</div>
-        <input type="text" ${D('kpn')} class="cab-in cab-kpn" list="semenKpnList" value="${esc(v.kpn||'')}" placeholder="KPN" title="고려 KPN">
+        <input type="text" ${D('kpn')} class="cab-in cab-kpn" list="semenKpnList" value="${esc(v.kpn||'')}" placeholder="KPN, KPN" title="고려 KPN — 여러 개는 쉼표로">
       </div>
     </div>`;
   }).join('');
@@ -2744,7 +2766,7 @@ function renderAbilityView(owner){
       </div>
     </details>
     <datalist id="semenKpnList">${(DATA.semenStock||[]).map(x=>`<option value="${esc(x.kpn)}">`).join('')}</datalist>
-    <div class="cab-head"><span>개체</span><span>등록구분</span><span class="cab-head-tr">${ABILITY_TRAITS.map(t=>`<b>${t[1]}<i>${t[2]}</i></b>`).join('')}</span><span>외모심사</span><span>혈통도축(산차별)</span><span>고려 KPN</span></div>
+    <div class="cab-head"><span>개체</span><span>등록구분</span><span class="cab-head-tr">${ABILITY_TRAITS.map(t=>`<b>${t[1]}<i>${t[2]}</i></b>`).join('')}</span><span>외모심사</span><span>혈통도축(산차별)</span><span>고려 KPN (쉼표로 여러 개)</span></div>
     <div class="cab-list">${rows||'<div class="empty-state">개체가 없어요.</div>'}</div>
   </div>`;
 }
