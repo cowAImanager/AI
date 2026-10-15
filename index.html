@@ -325,6 +325,7 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-reck.inbred{color:#C0392B;border-color:#C0392B;opacity:.85;} .cab-reck.inbred i{color:#C0392B;}
 .cab-dim{font-size:11px;color:var(--ink-soft);}
 .abl-row .val{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:22px;}
+@media (min-width:761px){ .info-row.ped-six{grid-template-columns:repeat(6,minmax(0,1fr));} .info-row.abl-one{grid-template-columns:repeat(6,minmax(0,1fr));} .abl-one .abl-trf{grid-column:3/7;} .abl-trf .val{gap:6px;} }
 .abl-one{grid-template-columns:minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.6fr);}
 .abl-row .val.abl-traits{gap:3px;}
 @media (max-width:560px){ .abl-one{grid-template-columns:1fr 1fr;} .abl-trf{grid-column:1/3;} .abl-row .val.abl-traits{flex-wrap:wrap;} }
@@ -2366,12 +2367,10 @@ function renderAnimalView(){
         <div class="info-groups">
           <div class="info-panel pedigree">
             <div class="info-panel-title">${svgIcon('dna',16)} 혈통 · 기본정보</div>
-            <div class="info-row cols3">
+            <div class="info-row cols3 ped-six">
               <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
               <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
               <div class="field"><label>외외증조부</label><div class="val">${esc(a.damDamSire)||'—'}</div></div>
-            </div>
-            <div class="info-row cols3">
               <div class="field"><label>품종</label><div class="val">${breedIcon(a.breed)} ${esc(a.breed)||'한우'}</div></div>
               <div class="field"><label>출생</label><div class="val">${esc(a.birth)||'—'}</div></div>
               <div class="field"><label>개월령</label><div class="val">${ageMonths(a.birth)}</div></div>
