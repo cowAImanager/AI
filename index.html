@@ -338,10 +338,12 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-g-badge.gA{background:var(--primary);} .cab-g-badge.gB{background:#C9A227;} .cab-g-badge.gC{background:#8A9299;} .cab-g-badge.gD{background:#C0392B;}
 @media (max-width:1250px){
   .cab-head{display:none;}
-  .cab-row{display:flex;flex-direction:column;gap:4px;padding:6px 7px;}
+  .cab-row{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px 7px;}
+  .cab-l1,.cab-l3{width:100%;}
   .cab-l1,.cab-l3{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
   .cab-l1 .cab-id{flex:1 1 auto;min-width:0;justify-content:flex-start;}
-  .cab-l1 .cab-reg{width:92px;} .cab-l1 .cab-memo{width:56px;flex:0 0 56px;}
+  .cab-l1 .cab-reg{width:92px;flex:0 0 92px;} .cab-l1 .cab-memo{width:56px;max-width:56px;flex:0 0 56px;}
+  .cab-g{-webkit-appearance:none;appearance:none;}
   .cab-l3 .cab-kpn{width:150px;flex:0 0 150px;margin-left:auto;}
   .cab-l3 .cab-progs{flex:0 1 auto;} .cab-l3 .cab-rec{flex:1 1 auto;}
   .cab-traits label{position:relative;}
@@ -349,7 +351,7 @@ main{flex:1;padding:18px 20px 70px;}
   .cab-traits input{padding-top:8px;font-size:11.5px;}
 }
 @media (max-width:560px){
-  .cab-l1 .cab-reg{width:82px;} .cab-l3 .cab-kpn{width:140px;flex-basis:140px;}
+  .cab-l1 .cab-reg{width:82px;flex-basis:82px;} .cab-l3 .cab-kpn{width:140px;max-width:140px;flex-basis:140px;}
   .cab-id .tag-chip{font-size:10px;padding:1px 5px 1px 8px;letter-spacing:0;}
   .cab-parity{font-size:11.5px;}
   .cab-g{flex-basis:26px;width:26px;font-size:11px;}
