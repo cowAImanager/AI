@@ -328,7 +328,10 @@ main{flex:1;padding:18px 20px 70px;}
 @media (min-width:761px){ .info-row.ped-six{grid-template-columns:repeat(6,minmax(0,1fr));} .info-row.abl-one{grid-template-columns:repeat(6,minmax(0,1fr));} .abl-one .abl-trf{grid-column:3/7;} .abl-trf .val{gap:6px;} }
 .abl-one{grid-template-columns:minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.6fr);}
 .abl-row .val.abl-traits{gap:3px;}
-@media (max-width:560px){ .abl-one{grid-template-columns:1fr 1fr;} .abl-trf{grid-column:1/3;}
+@media (max-width:560px){
+  .cab-summary{flex-wrap:nowrap;gap:3px;} .cab-sum{flex:1 1 0;min-width:0;text-align:center;font-size:9.5px;padding:3px 2px;white-space:nowrap;border-radius:7px;} .cab-sum b{margin-left:1px;}
+  .aiplan-sub{font-size:10.5px;}
+  .abl-one{grid-template-columns:1fr 1fr;} .abl-trf{grid-column:1/3;}
   .abl-row .val.abl-traits{flex-wrap:nowrap;gap:2px;overflow:hidden;}
   .abl-t{font-size:9.5px;padding:1px 3px;gap:1px;border-radius:5px;flex:1 1 0;min-width:0;justify-content:center;} .abl-t i{font-size:8.5px;}
   .abl-t .cab-g-badge{font-size:9px;min-width:11px;padding:0 2px;} }
