@@ -5375,6 +5375,52 @@ function handleImportFile(file){
   };
   reader.readAsText(file);
 }
+/* 개체 일괄 추가: 한 줄에 "개체번호 [출생일]" — 이력제 출력물에서 복사해 붙여넣기 */
+function openBulkAddModal(){
+  const owners=DATA.owners.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+  openModal(`
+    <div class="modal" style="max-width:520px;">
+      <h2>개체 일괄 추가</h2>
+      <div class="modal-sub" style="margin-bottom:10px;">한 줄에 한 마리. <b>개체번호</b>(띄어쓰기 있어도 됨) 뒤에 <b>출생일</b>(yy.mm.dd 또는 yyyy-mm-dd)을 적으면 같이 들어가요. 이미 있는 번호는 건너뜀.</div>
+      <div class="form-grid full">
+        <div class="field"><label>축주</label>
+          <div style="display:flex;gap:6px;"><select id="bulk_owner" style="flex:1;">${owners}</select><input type="text" id="bulk_owner_new" placeholder="새 축주 이름" style="flex:1;"></div>
+        </div>
+        <div class="field"><label>개체 목록</label><textarea id="bulk_text" rows="10" placeholder="002 2193 1276 2  26.02.17&#10;002 2193 1275 4  26.02.17" style="font-family:ui-monospace,monospace;font-size:12.5px;"></textarea></div>
+      </div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="bulkAddApply">추가</button>
+      </div>
+    </div>
+  `);
+}
+function bulkAddApply(){
+  if(!isAdmin()) return noAdminToast();
+  const newName=(document.getElementById('bulk_owner_new').value||'').trim();
+  const owner=newName||document.getElementById('bulk_owner').value;
+  if(!owner){ toast('축주를 고르거나 입력하세요.'); return; }
+  const lines=(document.getElementById('bulk_text').value||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ toast('개체 목록이 비어 있어요.'); return; }
+  if(!DATA.owners.includes(owner)){ DATA.owners.push(owner); ensureOwnerMeta(owner); }
+  const have=new Set(DATA.animals.filter(a=>a.owner===owner).map(a=>a.animalId.replace(/\s+/g,'')));
+  let added=0, skipped=0, bad=0;
+  lines.forEach(line=>{
+    const m=line.match(/(\d{3})\s*(\d{4})\s*(\d{4})\s*(\d)/);
+    if(!m){ bad++; return; }
+    const id=`${m[1]} ${m[2]} ${m[3]} ${m[4]}`;
+    if(have.has(id.replace(/\s+/g,''))){ skipped++; return; }
+    let birth=null; const rest=line.slice(m.index+m[0].length);
+    const d=rest.match(/(\d{2,4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    if(d){ let y=parseInt(d[1],10); if(y<100) y+=2000; birth=`${y}-${String(d[2]).padStart(2,'0')}-${String(d[3]).padStart(2,'0')}`; }
+    DATA.animals.push({animalId:id, owner, breed:'한우', sire:'', damSire:'', damDamSire:'', birth, parity:'', lastCalving:null});
+    have.add(id.replace(/\s+/g,'')); added++;
+  });
+  saveState();
+  UI.owner=owner; UI.view='animal'; UI.selectedAnimal=null;
+  closeModal(); render();
+  toast(`${owner}: ${added}두 추가${skipped?` · 중복 ${skipped}`:''}${bad?` · 인식 실패 ${bad}`:''}`);
+}
 function openBackupModal(){
   const st = storageStatusLabel();
   openModal(`
@@ -5388,6 +5434,7 @@ function openBackupModal(){
       <div style="display:flex;flex-direction:column;gap:10px;">
         <button class="btn" data-action="exportData">${svgIcon('arrowDown',15)} 백업 내보내기 (JSON 다운로드)</button>
         <button class="btn secondary" data-action="importData">${svgIcon('arrowUp',15)} 백업 가져오기 (현재 데이터 교체)</button>
+        <button class="btn secondary" data-action="openBulkAdd">＋ 개체 일괄 추가 (번호·출생일 붙여넣기)</button>
       </div>
       <input id="import-file-input" type="file" accept="application/json,.json" style="display:none;">
       <div class="modal-actions" style="margin-top:16px;">
@@ -6018,6 +6065,8 @@ const ACTIONS = {
   logoutAdmin: ()=>logoutAdmin(),
   exportExcel: ()=>exportExcel(),
   openBackup: ()=>{ if(!isAdmin()) return noAdminToast(); openBackupModal(); },
+  openBulkAdd: ()=>{ if(!isAdmin()) return noAdminToast(); openBulkAddModal(); },
+  bulkAddApply: ()=>bulkAddApply(),
   exportData: ()=>exportData(),
   importData: ()=>document.getElementById('import-file-input')?.click(),
   openAllSchedule: ()=>openAllSchedule(),
