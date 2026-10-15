@@ -2729,7 +2729,9 @@ function abilityDetailHtml(owner,a){
     </div>`;
 }
 function renderAbilityView(owner){
-  const animals=ownerAnimals().filter(a=>!a.fattening);
+  // 개체번호 세 번째 묶음(4자리)·네 번째 순으로 정렬 (예: 002 1390 8161 6 → 8161)
+  const k3=(id)=>{ const p=(id||'').trim().split(/\s+/); return p.length>=3 ? (p[2]+' '+(p[3]||'')) : id; };
+  const animals=ownerAnimals().filter(a=>!a.fattening).sort((a,b)=>k3(a.animalId).localeCompare(k3(b.animalId)));
   const rows=animals.map(a=>{
     const v=abilityGet(owner,a.animalId); const f=animalFlags(owner,a);
     const D=(field)=>`data-owner="${esc(owner)}" data-aid="${esc(a.animalId)}" data-field="${field}"`;
