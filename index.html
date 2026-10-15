@@ -287,7 +287,7 @@ main{flex:1;padding:18px 20px 70px;}
 .cab-help summary{cursor:pointer;font-weight:700;color:var(--primary-dark);}
 .cab-help-body{margin-top:6px;padding:8px 12px;background:var(--surface-alt);border-radius:9px;line-height:1.55;color:var(--ink);}
 .cab-help-body p{margin:4px 0;}
-.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px 236px minmax(172px,1fr) 74px;gap:8px;align-items:center;}
+.cab-head,.cab-row{display:grid;grid-template-columns:164px 76px 316px 46px minmax(236px,1fr) minmax(172px,1fr) 92px;gap:8px;align-items:center;}
 .cab-row{grid-template-areas:"id reg tr conf prog rec kpn";}
 .cab-l1,.cab-l3{display:contents;}
 .cab-id{grid-area:id;} .cab-reg{grid-area:reg;} .cab-traits{grid-area:tr;} .cab-memo{grid-area:conf;} .cab-progs{grid-area:prog;} .cab-rec{grid-area:rec;} .cab-kpn{grid-area:kpn;}
@@ -2727,7 +2727,7 @@ function renderAbilityView(owner){
       <div class="cab-l3">
         <div class="cab-progs">${prog}</div>
         <div class="cab-rec">${abilityRecHtml(v,a)}</div>
-        <input type="text" ${D('kpn')} class="cab-in cab-kpn" list="semenKpnList" value="${esc(v.kpn||'')}" placeholder="고려 KPN">
+        <input type="text" ${D('kpn')} class="cab-in cab-kpn" list="semenKpnList" value="${esc(v.kpn||'')}" placeholder="KPN" title="고려 KPN">
       </div>
     </div>`;
   }).join('');
