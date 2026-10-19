@@ -186,6 +186,7 @@ function num(id){var v=$(id).value;if(v===''||v==null)return null;var n=parseFlo
 function r(x,d){var m=Math.pow(10,d||0);return Math.round(x*m)/m;}
 function f(x,d){return r(x,d).toLocaleString('ko-KR');}
 function src(s){return '';}
+function bicMix(bp,mmol,conc,f){var L=mmol/conc;if(bp==='powder')return '주사용수 '+f(L,1)+' L에 중조 분말 '+f(mmol/12,0)+' g (1L당 '+f(conc/12,1)+' g)';var bc=parseFloat(bp),nm=bc>=1?'8.4%':bc>0.7?'7%':'5%',pv=mmol/bc,per=conc/bc;if(per>=1000)return nm+' 중조 그대로 '+f(pv,0)+' mL';return nm+' 중조 '+f(pv,0)+' mL + 주사용수 '+f(L*1000-pv,0)+' mL = '+f(L,1)+' L (1L당 '+nm+' '+f(per,0)+' mL + 주사용수 '+f(1000-per,0)+' mL)';}
 function baseK(n){return /하트만|링거/.test(n||'')?4:/Plasma/.test(n||'')?5:0;}
 function flag(c,t){return '<div class="flag '+c+'">'+t+'</div>';}
 var calf=function(){return type!=='ad';};
@@ -324,7 +325,7 @@ function calc(){
       if(respAcid)ind=flag('w','호흡성 산증(pCO₂ 상승)이 있으면 중조는 CO₂를 더 쌓을 수 있다. 환기 불량 송아지에는 쓰지 말라는 기술이 있다'+src('LAIM, Bovine Reproduction')+'. 자발호흡에선 영향이 작다는 기술도 있다'+src('Constable'));
       if(!metAcid){ind+=flag('i','대사성 산증이 아니라 중조 적응이 아니다. 중조는 대사성 산증에만 쓴다'+src('Blackwell')+'.');}
       else if(bicIVgas){bicGive=true;ind+=flag('w','중조 정맥 적응: '+(ph!=null&&ph<7.20?'pH '+ph+' < 7.20'+src('LAIM, Constable')+' ':'')+(bd>10?'염기결손 '+f(bd,1)+' > 10'+src(C?'Rebhun':'Blackwell'):'')+(C?'':'. 성우 pH 7.15 미만 기준도 있다'+src('Rebhun')));}
-      else if(!C){ind+=flag('i','염기결손 10 미만: 기본 수액(하트만에 KCl·칼슘 첨가)으로 충분하다'+src('Blackwell')+'. 재수화만으로 산증이 풀릴 수 있다'+src('Rebhun')+'.');}
+      else if(!C){ind+=flag('i','염기결손 10 미만: 기본 수액(하트만에 KCl, iCa가 낮으면 칼슘 첨가)으로 충분하다'+src('Blackwell')+'. 재수화만으로 산증이 풀릴 수 있다'+src('Rebhun')+'.');}
       else if(bd>0){bicGive=iv;ind+=flag('i','염기결손 '+f(bd,1)+': '+(iv?'수액에 알칼리화제를 넣어 교정한다':'경구 전해질의 알칼리화제로 교정한다'+src('Blackwell'))+'. pH 7.25~7.45면 완전 교정이 꼭 필요하지 않다'+src('LAIM'));}
     }else if(C&&bd>0){bicGive=iv;ind+=flag('i','혈액가스 없이 상태로 추정한 값이다. 패혈 송아지는 산염기가 들쭉날쭉해 이 표가 맞지 않는다'+src('Blackwell')+(iv?'':'. 경구면 알칼리화제(아세트산·프로피온산·중탄산) 50~80 mmol/L 든 경구 전해질로 교정한다'+src('Blackwell')));}
     B.push(ind);
@@ -348,7 +349,7 @@ function calc(){
     B.push('<p class="small">경구 중조: 1g/kg(이 체중 '+f(bw,0)+' g)을 물 10L에 타서 위관, 이어 0.5g/kg을 물 5L에 6시간마다 2~3회'+src('Periparturient')+'. 3회까지 다 주면 합계 2.5g/kg = '+f(bw*2.5,0)+' g인데, 성우에게 2.5g/kg 경구는 심한 대사성 알칼리증을 만든다'+src('Constable')+(iv?'. 정맥 중조와 같이 쓰면 줄이거나 하나만 고른다':'')+'.</p>');
   }
   if(!C&&!gas&&dis==='diar')B.push('<p class="small">성우 설사는 하트만 같은 균형 전해질액으로 대부분 충분하다. 정맥 중조가 꼭 필요한 건 심한 제1위 산증, 대장균 등 D-젖산이 많이 생기는 장 감염뿐이다'+src('Rebhun')+'.</p>');
-  if(!C&&!gas&&(dis==='sep'||dis==='etc'))B.push('<p class="small">검사 없이 성우 중조 양을 정할 근거가 없다. 산염기 방향을 모르면 중조를 넣지 않는다.</p>');
+  if(!C&&!gas&&(dis==='sep'||dis==='etc'))B.push('<p class="small">검사 없이 성우 중조 양을 정할 근거가 없다. 산염기 방향을 모르면 중조를 넣지 않는다. 곡류과식이면 질병에서 곡류과식을 고르면 고정 처방(5% 중조 → 1.3% 중조)이 나오고, 혈액가스를 넣으면 염기결손으로 계산한다.</p>');
   $('oBic').innerHTML=B.join('');
 
   /* ---------- 수액량 ---------- */
@@ -396,12 +397,13 @@ function calc(){
     else if(!C){base='링거액';bnote='링거액이 성우 반추수 표준 수액이다. 굶는 성우는 알칼리혈증으로 가기 쉽다'+src('Constable')+'. 탈수 성우 대부분은 알칼리증이다'+src('LAIM')+'. 링거액이 없으면 생리식염수 + KCl로 쓴다.';}
     else if(bicGive){base='생리식염수';bnote='생리식염수에 중조를 섞는다. 생리식염수와 등장 중조 등량 혼합(+5% 포도당)을 권하는 기술이 있다'+src('Constable 표 5-2')+'. 권장 조성 Na 150, K 5, 중탄산·전구체 약 50 mmol/L'+src('Constable')+'.';}
     else{base='하트만';bnote='하트만은 신생우 표준'+src('Constable')+'. 흡입반사 없으면 생리식염수 + 필요 시 중탄산·포도당, 재수화 뒤 하트만'+src('Blackwell')+'.';}
-    if(grainFixed){P.push('<p><span class="k">1단계</span>5% 중조 '+f(fix5,1)+' L → 1.3% 중조 '+f(fix13,1)+' L (중탄산 칸 고정 처방). 칼슘 함유액과 같은 라인 금지'+src('LAIM, Constable')+'.</p>');}
+    if(grainFixed){P.push('<h3>1단계 기본액 — 5% 중조 → 1.3% 중조</h3>'+'<p><span class="k">① 5% 중조 '+f(fix5,1)+' L</span>'+bicMix(bp,fix5*600,600,f)+'. 약 30분에 정맥.</p>'+'<p><span class="k">② 1.3% 중조 '+f(fix13,1)+' L</span>'+bicMix(bp,fix13*155,155,f)+'. 이어서 '+hrs+'시간에 정맥.</p>'+'<p class="small">중탄산 합계 '+f(fix5*600+fix13*155,0)+' mmol. 1.3%는 1L 주사용수 백에서 넣을 양만큼 빼고 중조를 넣으면 된다'+src('LAIM')+'. 생리식염수에 타면 Na가 겹쳐 고장액(1L당 8.4% 155 mL면 약 530 mOsm/L)이 된다. 하트만·링거액·하트만덱스·칼슘제와 섞거나 같은 라인에 걸지 않는다(탄산칼슘 침전'+src('LAIM, Constable')+').</p>');}
     else{
       if(C&&glu!=null&&glu<36&&base==='하트만')base='하트만덱스 (포도당 5%)';
       if(!C&&glu!=null&&glu<45&&!alkRoute){base='Plasma-Lyte A';bnote='저혈당 성우는 지방간·케토시스를 의심해 하트만을 피하고 Plasma-Lyte 같은 등장액에 포도당을 더한다'+src('LAIM')+'. 간이 젖산을 못 치운다. Plasma-Lyte A가 없으면 생리식염수 + KCl로 쓴다.'+(bicGive?' Plasma-Lyte A는 칼슘이 없어 중조와 침전이 생기지 않는다.':'');}
-      P.push('<p><span class="k">1단계 기본액</span>'+base+'</p><p class="small">'+bnote+'</p>');
+      P.push('<h3>1단계 기본액 — '+base+' ('+hrs+'시간, '+f(r1,0)+' mL/h)</h3><p class="small">'+bnote+'</p>');
       var rows=[];
+      var bicMixNote=(bicGive&&bicMmol>0&&!C)?'<p><span class="k">1.3% 중조 만들기</span>'+bicMix(bp,bicMmol,155,f)+'. 중탄산 '+f(bicMmol,0)+' mmol.</p>':'';
       if(bicGive&&bicMmol>0&&!C)rows.push(['1.3% 등장 중조 (먼저, 따로)','-',f(bicVolA,1)+' L']);
       else if(bicGive&&bicMmol>0&&nb){
         if(bp==='powder')rows.push(['중조 분말',f(bicMmol/12/nb,1)+' g/백',f(bicMmol/12,1)+' g']);
@@ -425,23 +427,26 @@ function calc(){
         if(C&&bicGive&&bicMmol/155>deficitL&&deficitL>0)P.push(flag('i','중탄산을 1.3% 등장액으로 주면 '+f(bicMmol/155,1)+' L로 결손량보다 많다. 교정 시간을 늘리거나(이상적으로 24시간, 4시간도 무방'+src('LAIM')+') 절반 후 재평가한다'+src('Blackwell')+'.'));
         if(!C&&bicVolA>deficitL&&deficitL>0)P.push(flag('i','1.3% 중조 '+f(bicVolA,1)+' L가 결손량보다 많다. 교정 시간을 늘리거나 절반 후 재평가한다'+src('Blackwell')+'.'));
       }else if(deficitL>0&&bicVolA>=deficitL){P.push('<p class="small">결손량을 1.3% 중조가 다 채운다.</p>');}
+      if(bicMixNote)P.push(bicMixNote);
       if(!C&&bicVolA>0&&base==='하트만')P.push(flag('w','순서: 1.3% 중조 '+f(bicVolA,1)+' L를 먼저 다 주고 하트만으로 넘어간다. 하트만에는 칼슘이 들어 있어 중조와 섞이면 침전이 생길 수 있다'+src('LAIM')+'. 한 카테터에 Y자로 동시에 걸지 말고, 바꿀 때 생리식염수로 라인을 씻는다.'));
       if(dexPct===1)P.push('<p class="small">혈당을 모르는 송아지 첫 시간 수액은 포도당 1%(50% 포도당 20mL/L)'+src('Blackwell')+'.</p>');
       if(!hyperK&&(!C||hypoK)&&k1===0&&r1>0)P.push('<p class="small">1단계 속도가 빨라 칼륨 상한(0.5 mEq/kg/h) 안에서는 넣을 수 없다. 1단계에는 칼륨 없음.</p>');
       if(k1>0)P.push('<p class="small">칼륨 상한 0.5 mEq/kg/h'+src('LAIM, Blackwell, Constable')+'. 허용 농도 = 체중 × 0.5 ÷ 시간당 주입량(L)'+src('Blackwell')+'. K·Ca 함유액은 볼루스 금지'+src('LAIM')+'.</p>');
     }
     /* 2단계 */
-    var p2=['<h3>2단계 유지액 ('+h2+'시간, '+f(r2,0)+' mL/h)</h3>'];
+    var p2=[''];
     var base2=alkRoute?'생리식염수':(C||metAcid||dis==='diar')?'하트만':'링거액', g2=0;
     if(!C&&glu!=null&&glu<45&&!alkRoute)base2='Plasma-Lyte A';
     if(!C&&glu!=null&&glu<45){g2=(bw*1.5*60/(r2*10))>=3.75?5:2.5;}
     else if(C&&glu!=null&&glu<36)g2=5;
     var g2add=g2;
     if(g2===5&&base2==='하트만'){base2='하트만덱스 (포도당 5%)';g2add=0;}
+    p2[0]='<h3>2단계 유지액 — '+base2+' ('+h2+'시간, '+f(r2,0)+' mL/h)</h3>';
     var nb2=maintL>0?Math.max(1,Math.ceil(maintL/bag)):0, rows2=[], k2=0;
     if(!hyperK)k2=Math.max(0,Math.min(C?20:40,Math.floor((0.5*bw/(r2/1000)-baseK(base2))/5)*5));
     if(k2>0)rows2.push(['KCl '+k2+' mEq/L',kStr(k2,bag)+'/백',kStr(k2,bag*nb2)]);
-    if(!C&&metAcid)rows2.push(['23% 글루콘산칼슘 25mL/L',f(25*bag,0)+' mL/백',f(25*bag*nb2,0)+' mL']);
+    var caAdd=!C&&ica!=null&&ica<1.0;
+    if(caAdd)rows2.push(['23% 글루콘산칼슘 25mL/L',f(25*bag,0)+' mL/백',f(25*bag*nb2,0)+' mL']);
     if(g2add)rows2.push(['50% 포도당 (최종 '+g2add+'%)',f(bag*1000*g2add/50,0)+' mL/백',f(bag*1000*g2add/50*nb2,0)+' mL']);
     if(!C&&glu!=null&&glu<45)p2.push(flag('w','먼저 50% 포도당 250~500mL를 따로 천천히 정맥'+src('Blackwell')+', 이어서 아래 유지액.'));
     if(nb2){var t2='<table><tr><th>'+nb2+'백 × '+(bag*1000)+'mL '+base2+'</th><th>백당</th><th>합계</th></tr>';
@@ -454,7 +459,8 @@ function calc(){
       if(!C&&k==null)p2.push('<p class="small">칼륨을 재지 않았어도 식욕부진 반추수는 KCl 20~40 mEq/L를 넣는다'+src('LAIM')+'. K 값을 모르면 0.5 mEq/kg/h 미만으로'+src('LAIM')+'.</p>');
     }
     if(hyperK)p2.push('<p class="small">고칼륨이라 칼륨을 넣지 않는다. 혈액량·신기능·산증이 회복되고 칼륨이 정상으로 내려오면 칼륨 든 액을 쓴다'+src('Constable, Rebhun')+'.</p>');
-    if(!C&&metAcid)p2.push('<p class="small">칼슘은 중조가 다 들어간 뒤 시작하고 중조액과 섞지 않는다(탄산칼슘 침전'+src('Constable')+').</p>');
+    if(caAdd)p2.push('<p class="small">iCa '+ica+' mmol/L로 낮아 유지액에 칼슘을 넣는다. 과산증 소는 저칼슘혈증이 흔하다'+src('LAIM')+'.'+((bicGive||grainFixed)?' 칼슘은 중조가 다 들어간 뒤 시작하고 중조액과 섞지 않는다(탄산칼슘 침전'+src('Constable')+').':'')+'</p>');
+    else if(!C&&metAcid)p2.push('<p class="small">iCa를 넣으면 1.0 mmol/L 미만일 때 유지액에 23% 글루콘산칼슘 25mL/L를 넣는다'+src('LAIM')+'.</p>');
     if(g2){var mk=r2*g2*10/(bw*60);p2.push('<p class="small">포도당 '+g2+'% × '+f(r2,0)+' mL/h = '+f(mk,1)+' mg/kg/분'+(C?' (송아지 저혈당은 최종 2.5~5%'+src('LAIM')+')':' (목표 1~2 mg/kg/분'+src('LAIM')+', 0.1~0.2 g/kg/h = 1.7~3.3 mg/kg/분까지'+src('Constable')+')')+'. 1단계 고속액에는 넣지 않는다(0.3 g/kg/h에서 고혈당·저인혈증'+src('Constable')+'). 혈당 80~110 mg/dL 유지'+src('LAIM')+'.</p>');}
     if(!C&&!hypoK)p2.push('<p class="small">반추위가 움직이고 경구가 되면 경구 KCl이 주 경로다: 1회 0.2g/kg = '+f(bw*0.2,0)+' g씩 12시간 간격 2회, 하루 0.4g/kg 넘기지 않음'+src('Constable')+'. 제4위 전위는 50~100g 하루 2회 3~5일'+src('Rebhun')+'.</p>');
     P.push(p2.join(''));
