@@ -2060,6 +2060,8 @@ function animalSortGroup(id){
   const n = parseInt(g,10);
   return isNaN(n) ? Infinity : n;
 }
+/* 개체번호 세 번째 숫자 묶음 기준 비교 (002 1390 8161 6 → 8161, 같으면 네 번째, 그다음 전체) */
+function byThirdId(a,b){const x=String(a||'').trim().split(/\s+/),y=String(b||'').trim().split(/\s+/);const p=parseInt(x[2],10),q=parseInt(y[2],10);if(!isNaN(p)&&!isNaN(q)&&p!==q)return p-q;const r=parseInt(x[3],10),t=parseInt(y[3],10);if(!isNaN(r)&&!isNaN(t)&&r!==t)return r-t;return String(a||'').localeCompare(String(b||''));}
 function sortScheduleIds(ids, owner, auto){
   const mode = DATA.scheduleSortMode || 'date';
   const asc = (DATA.scheduleSortDir||'asc') !== 'desc';
@@ -2078,13 +2080,13 @@ function sortScheduleIds(ids, owner, auto){
       if(ka!==kb) return ka<kb?-1:1;
       const ga=animalSortGroup(a), gb=animalSortGroup(b);
       if(ga!==gb) return ga-gb;
-      return String(a).localeCompare(String(b));
+      return byThirdId(a,b);
     });
   }
   return ids.slice().sort((a,b)=>{
     const ka=animalSortGroup(a), kb=animalSortGroup(b);
     if(ka!==kb) return asc ? ka-kb : kb-ka;
-    return asc ? String(a).localeCompare(String(b)) : String(b).localeCompare(String(a));
+    return asc ? byThirdId(a,b) : byThirdId(b,a);
   });
 }
 function lastRecordDate(animalId){
@@ -2813,7 +2815,7 @@ function scheduleRowsForOwner(owner){
       rows.push({ aid, date:d, note, done:isCellDone(owner,aid,d), skipped:isCellSkipped(owner,aid,d), isAuto: !manual && !!autoEntries.length, manual: !!manual });
     });
   });
-  rows.sort((a,b)=> a.date.localeCompare(b.date) || a.aid.localeCompare(b.aid));
+  rows.sort((a,b)=> a.date.localeCompare(b.date) || byThirdId(a.aid,b.aid));
   return rows;
 }
 

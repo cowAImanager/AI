@@ -264,6 +264,8 @@ function renderLock(msg){
     </div>`;
 }
 
+/* 개체번호 세 번째 숫자 묶음 기준 정렬 (예: 002 1657 5259 8 → 5259) */
+function byThird(a,b){const x=String(a||'').trim().split(/\s+/),y=String(b||'').trim().split(/\s+/);const p=parseInt(x[2],10),q=parseInt(y[2],10);if(!isNaN(p)&&!isNaN(q)&&p!==q)return p-q;return String(a||'').localeCompare(String(b||''));}
 function groupByDate(list){
   const m = {};
   list.forEach(s=>{ (m[s.date]=m[s.date]||[]).push(s); });
@@ -280,7 +282,7 @@ function schedGroup(g){
   const byNote = {};
   g.items.forEach(s=>{ const k=s.note||''; (byNote[k]=byNote[k]||[]).push(s.id); });
   const rows = Object.keys(byNote).sort().map(note=>{
-    const ids = byNote[note].slice().sort((a,b)=>a.localeCompare(b));
+    const ids = byNote[note].slice().sort(byThird);
     return `
     <div class="v-gitem">
       <span class="v-sched-id" style="display:flex;flex-direction:column;gap:3px;">${ids.map(esc).join('<br>')}</span>
@@ -314,7 +316,7 @@ function renderApp(data){
 
   // 오늘 할 일: 처치 + 백신 모두
   const todayItems = sched.filter(s=>dday(s.date)===0).concat(vacs.filter(s=>dday(s.date)===0))
-    .sort((a,b)=> (a.note||'').localeCompare(b.note||'') || (a.id||'').localeCompare(b.id||''));
+    .sort((a,b)=> (a.note||'').localeCompare(b.note||'') || byThird(a.id,b.id));
   const todayBanner = todayItems.length ? `
     <div class="v-today">
       <div class="v-today-h">${svgIcon("clipboard",16)} 오늘 할 일</div>
