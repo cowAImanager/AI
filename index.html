@@ -1236,6 +1236,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .header-actions .btn-label{display:none;}
   .global-search-bar{flex:1 1 130px;width:auto;min-width:110px;}
   .header-actions .btn.small{padding:5px 9px;font-size:14px;}
+  .header-actions .btn.small.nav-link{font-size:12px;padding:5px 8px;}
   .status-badge .btn-label{display:none;}
   .status-badge{font-size:13px;padding:4px 8px;}
   .header-actions .theme-toggle{width:28px;height:28px;font-size:13px;}
@@ -1867,10 +1868,10 @@ function render(){
             ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">${svgIcon('lockOpen')}<span class="btn-label">관리자 (로그아웃)</span></button>`
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">로그인</span></button>`
           }
-          <a class="btn secondary small" href="vet.html" title="번식학" style="text-decoration:none;">${svgIcon('stethoscope')}<span class="btn-label">번식학</span></a>
-          <a class="btn secondary small" href="care.html" title="사양 및 처치" style="text-decoration:none;">${svgIcon('leaf')}<span class="btn-label">사양·처치</span></a>
-          <a class="btn secondary small" href="medicine.html" title="내과학" style="text-decoration:none;">${svgIcon('stethoscope')}<span class="btn-label">내과학</span></a>
-          <a class="btn secondary small" href="gongsu.html" title="공수의 및 기타" style="text-decoration:none;">${svgIcon('clipboard')}<span class="btn-label">공수의·기타</span></a>
+          <a class="btn secondary small nav-link" href="vet.html" title="번식학" style="text-decoration:none;"><span>번식학</span></a>
+          <a class="btn secondary small nav-link" href="medicine.html" title="내과학" style="text-decoration:none;"><span>내과학</span></a>
+          <a class="btn secondary small nav-link" href="care.html" title="사양관리" style="text-decoration:none;"><span>사양관리</span></a>
+          <a class="btn secondary small nav-link" href="gongsu.html" title="업무" style="text-decoration:none;"><span>업무</span></a>
           <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
           ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
           ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}

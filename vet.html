@@ -1250,9 +1250,9 @@ function render(){
       <div><h1 class="vet-site-title">${svgIcon('stethoscope',24)} 번식학</h1><p class="vet-site-note">소 번식 참고자료</p></div>
       <div class="header-actions">
         <a class="btn secondary small" href="index.html" title="번식진료 기록부로" style="text-decoration:none;"><span>← 기록부</span></a>
-        <a class="btn secondary small" href="care.html" title="사양 및 처치" style="text-decoration:none;"><span>사양·처치</span></a>
-        <a class="btn secondary small" href="gongsu.html" title="공수의 및 기타" style="text-decoration:none;"><span>공수의·기타</span></a>
         <a class="btn secondary small" href="medicine.html" title="내과학" style="text-decoration:none;"><span>내과학</span></a>
+        <a class="btn secondary small" href="care.html" title="사양관리" style="text-decoration:none;"><span>사양관리</span></a>
+        <a class="btn secondary small" href="gongsu.html" title="업무" style="text-decoration:none;"><span>업무</span></a>
         <button class="btn secondary small" data-action="${isAdmin()?'logoutAdmin':'openAdminLogin'}">${svgIcon(isAdmin()?'lockOpen':'lock')}<span>${isAdmin()?'로그아웃':'로그인'}</span></button>
         <button class="theme-toggle" data-action="toggleTheme" aria-label="${dark?'라이트 모드':'다크 모드'}">${svgIcon(dark?'sun':'moon')}</button>
       </div></div>
