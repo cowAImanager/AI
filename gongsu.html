@@ -1210,7 +1210,7 @@ let DATA = {"theme": "light", "kpnFav": ["1838", "1657", "1642", "1849", "1523",
 try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)||'null');
   if(saved) DATA = {theme:saved.theme==='dark'?'dark':'light',kpnFav:Array.isArray(saved.kpnFav)?saved.kpnFav:DATA.kpnFav};
 } catch(e) { console.warn('수의학 설정 불러오기 실패',e); }
-const TABS = [['blood','채혈'],['drugs','주사제'],['farms','달성군 농장 목록'],['route','방역 동선'],['kpn','KPN 후대예측']];
+const TABS = [['blood','채혈'],['drugs','약품 및 첨가제'],['farms','달성군 농장 목록'],['route','방역 동선'],['kpn','KPN 후대예측']];
 function currentTab(){ const tab=location.hash.slice(1); return TABS.some(t=>t[0]===tab)?tab:'blood'; }
 const UI = {vetMode:true,vetTab:currentTab()};
 let _isOwner = false;
@@ -1539,7 +1539,7 @@ function reproDrugsHtml(){
   const H=['브랜드 (회사)','성분','용법 (소) · 비고','휴약기간 (소 식육)'];
   const S=(title)=>'<div class="grass-section-title"><span class="gst-wrap"><span class="gst-main">'+title+'</span></span></div>';
   return `
-<div class="rb-intro">축주와 수의사가 한우에 자주 쓰는 주사제를 브랜드·성분·용법으로 정리했다. 용량은 소 기준 라벨이나 교과서 값이고, 국내 허가 라벨과 다를 수 있다. 실제 투여 전에 제품 설명서를 확인한다. 번식 호르몬은 번식학에 따로 있다.</div>
+<div class="rb-intro">축주와 수의사가 한우에 자주 쓰는 약품과 사료첨가제를 브랜드·성분·용법·휴약기간으로 정리했다. 용량은 소 기준 라벨이나 교과서 값이고, 국내 허가 라벨과 다를 수 있다. 실제 투여 전에 제품 설명서를 확인한다. 번식 호르몬은 번식학에 따로 있다.</div>
 
 ${S('항생제 — 마크로라이드·플로르페니콜 (호흡기)')}
 <div class="rb-block">${T(H,[
@@ -1621,6 +1621,15 @@ ${S('구충 · 콕시듐')}
 ['바이콕스 5% (엘랑코)','톨트라주릴 50mg/mL','경구 15mg/kg = 10kg당 3mL 1회. 송아지 콕시듐. 주사 아님','약 63일 (외국). 국내 확인'],
 ])}</div>
 
+${S('이오노포어 (사료첨가, 주사 아님)')}
+<div class="rb-block">${T(H,[
+['루멘신 200 (엘랑코)','모넨신 나트륨 200g/kg 프리믹스','비육우 두당 하루 모넨신 100~360mg 사료 혼합(외국 라벨). 고창 예방은 하루 1mg/kg(LAIM). 젖산 생성균 억제로 과산증·곡류 고창·콕시듐 예방, 사료효율 개선. 국내 소 배합사료 허용 성분','없음 (외국 라벨). 국내 확인'],
+['카우멘신 부록 (대한뉴팜)','모넨신','두당 하루 100~250g 급여 = 모넨신 80~200mg','라벨 확인'],
+['라살로시드 제제 (보바텍 등)','라살로시드 나트륨','두당 하루 100~360mg 사료 혼합(외국 라벨). 국내 소 배합사료 허용 성분이나 현재 유통 제품은 확인 못 함','없음 (외국 라벨). 국내 확인'],
+['살리노마이신','살리노마이신','Constable은 과산증 예방에 모넨신·라살로시드보다 낫다고 적었지만, 국내는 닭 배합사료만 허용이고 소는 허용 성분이 아니다','소 사용 불가'],
+])}
+<p class="small">말에게는 소량도 치명적이라 말 사료에 섞이면 안 된다. 과량이면 소도 심근 손상·식욕부진·설사가 온다. 2011년부터 배합사료에 항생제를 못 넣지만 이오노포어는 항원충제로 분류돼 계속 쓸 수 있다.</p></div>
+
 ${S('기타 주사')}
 <div class="rb-block">${T(H,[
 ['유니옥시토신 (유니바이오테크) 등','옥시토신 10 IU/mL','후산정체·자궁수축·비유 촉진. 교과서 소 20~40 IU 근육. 라벨 확인','없음'],
@@ -1652,7 +1661,7 @@ function renderVet(){
   const box = main.querySelector('.vet-panel');
   const REPRO_TABS = {
     blood: { fn: reproBloodHtml, title:'채혈', category:'공수의 업무 · 채혈', ibTitle:'채혈', infobox:[ ['분야','공수의 업무 · 채혈'] ] },
-    drugs: { fn: reproDrugsHtml, title:'한우 자주 쓰는 주사제', category:'업무 · 주사제', ibTitle:'주사제', infobox:[ ['분야','업무 · 주사제'],['정리','브랜드 · 성분 · 용법'] ] },
+    drugs: { fn: reproDrugsHtml, title:'한우 자주 쓰는 약품 및 첨가제', category:'업무 · 약품 및 첨가제', ibTitle:'약품 및 첨가제', infobox:[ ['분야','업무 · 약품 및 첨가제'],['정리','브랜드 · 성분 · 용법 · 휴약'] ] },
   };
   if(REPRO_TABS[UI.vetTab]){
     const t = REPRO_TABS[UI.vetTab];
