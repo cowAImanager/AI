@@ -153,6 +153,7 @@ summary{cursor:pointer;color:var(--primary-dark);font-size:11.5px;}
       </select></label>
       <label>KCl 제품<select id="kprod"><option value="2.01">15% 주사 (2 mmol/mL)</option><option value="powder">분말 (g)</option></select></label>
       <label>수액세트 (방울/mL)<select id="gtt"><option>20</option><option>15</option><option>10</option><option>60</option></select></label>
+      <label>성우 중조 조제<select id="abic"><option value="water">주사용수로 1.3% 등장액</option><option value="saline">생리식염수에 섞기 (송아지식)</option></select></label>
       <label>고장식염수<select id="hts"><option value="auto">상태 보고 표시</option><option value="1">쓴다</option><option value="0">안 쓴다</option></select></label>
     </div>
     <p class="hint">중탄산 계수 송아지 0.5·성우 0.3, 목표 HCO₃ 송아지 30·성우 25, 유지량 성우 60 mL/kg/일은 고정. 결손 교정 4~6시간.</p>
@@ -403,8 +404,22 @@ function calc(){
       if(!C&&glu!=null&&glu<45&&!alkRoute){base='Plasma-Lyte A';bnote='저혈당 성우는 지방간·케토시스를 의심해 하트만을 피하고 Plasma-Lyte 같은 등장액에 포도당을 더한다'+src('LAIM')+'. 간이 젖산을 못 치운다. Plasma-Lyte A가 없으면 생리식염수 + KCl로 쓴다.'+(bicGive?' Plasma-Lyte A는 칼슘이 없어 중조와 침전이 생기지 않는다.':'');}
       P.push('<h3>1단계 기본액 — '+base+' ('+hrs+'시간, '+f(r1,0)+' mL/h)</h3><p class="small">'+bnote+'</p>');
       var rows=[];
-      var bicMixNote=(bicGive&&bicMmol>0&&!C)?'<p><span class="k">1.3% 중조 만들기</span>'+bicMix(bp,bicMmol,155,f)+'. 중탄산 '+f(bicMmol,0)+' mmol.</p>':'';
-      if(bicGive&&bicMmol>0&&!C)rows.push(['1.3% 등장 중조 (먼저, 따로)','-',f(bicVolA,1)+' L']);
+      var abic=$('abic').value, bicMixNote='';
+      if(bicGive&&bicMmol>0&&!C){
+        if(abic==='saline'){
+          var nbs=Math.max(1,Math.ceil(bicVolA/bag)), mbs=bicMmol/nbs;
+          var ts='<table><tr><th>① 중조 단계 — '+nbs+'백 × '+(bag*1000)+'mL 생리식염수</th><th>백당</th><th>합계</th></tr>';
+          if(bp==='powder')ts+='<tr><td>중조 분말</td><td class="c">'+f(mbs/12,1)+' g</td><td class="c">'+f(bicMmol/12,0)+' g</td></tr>';
+          else{var bcs=parseFloat(bp);ts+='<tr><td>중조 '+$('bicarb').selectedOptions[0].text.split(' ')[0]+'</td><td class="c">'+f(mbs/bcs,0)+' mL</td><td class="c">'+f(bicMmol/bcs,0)+' mL</td></tr>';}
+          ts+='</table>';
+          var oss=bp==='powder'?(308*bag*1000+2*mbs*1000)/(bag*1000):(308*bag*1000+2*mbs*1000)/(bag*1000+mbs/parseFloat(bp));
+          bicMixNote=ts+'<p class="small">중탄산 '+f(bicMmol,0)+' mmol. 송아지와 같은 방식이다. 혼합액은 대략 '+f(oss,0)+' mOsm/L 고장액이라 등장액(1.3%)보다 Na가 많이 들어간다. 성우 산증에 생리식염수는 Cl 때문에 피하라는 기술이 있어, 주사용수로 1.3%를 만드는 쪽이 책에 더 맞다'+src('LAIM')+'. 이 단계를 먼저 다 넣고 ②로 넘어간다.</p>';
+          rows.push(['① 중조 단계 (아래 표, 먼저)','-',f(bicVolA,1)+' L']);
+        }else{
+          bicMixNote='<p><span class="k">1.3% 중조 만들기</span>'+bicMix(bp,bicMmol,155,f)+'. 중탄산 '+f(bicMmol,0)+' mmol.</p>';
+          rows.push(['1.3% 등장 중조 (먼저, 따로)','-',f(bicVolA,1)+' L']);
+        }
+      }
       else if(bicGive&&bicMmol>0&&nb){
         if(bp==='powder')rows.push(['중조 분말',f(bicMmol/12/nb,1)+' g/백',f(bicMmol/12,1)+' g']);
         else{var bc=parseFloat(bp);rows.push(['중조 '+$('bicarb').selectedOptions[0].text.split(' ')[0],f(bicMmol/bc/nb,0)+' mL/백',f(bicMmol/bc,0)+' mL']);}
@@ -428,7 +443,7 @@ function calc(){
         if(!C&&bicVolA>deficitL&&deficitL>0)P.push(flag('i','1.3% 중조 '+f(bicVolA,1)+' L가 결손량보다 많다. 교정 시간을 늘리거나 절반 후 재평가한다'+src('Blackwell')+'.'));
       }else if(deficitL>0&&bicVolA>=deficitL){P.push('<p class="small">결손량을 1.3% 중조가 다 채운다.</p>');}
       if(bicMixNote)P.push(bicMixNote);
-      if(!C&&bicVolA>0&&base==='하트만')P.push(flag('w','순서: 1.3% 중조 '+f(bicVolA,1)+' L를 먼저 다 주고 하트만으로 넘어간다. 하트만에는 칼슘이 들어 있어 중조와 섞이면 침전이 생길 수 있다'+src('LAIM')+'. 한 카테터에 Y자로 동시에 걸지 말고, 바꿀 때 생리식염수로 라인을 씻는다.'));
+      if(!C&&bicVolA>0&&base==='하트만')P.push(flag('w','순서: '+(abic==='saline'?'중조 혼합액 ':'1.3% 중조 ')+f(bicVolA,1)+' L를 먼저 다 주고 하트만으로 넘어간다. 하트만에는 칼슘이 들어 있어 중조와 섞이면 침전이 생길 수 있다'+src('LAIM')+'. 한 카테터에 Y자로 동시에 걸지 말고, 바꿀 때 생리식염수로 라인을 씻는다.'));
       if(dexPct===1)P.push('<p class="small">혈당을 모르는 송아지 첫 시간 수액은 포도당 1%(50% 포도당 20mL/L)'+src('Blackwell')+'.</p>');
       if(!hyperK&&(!C||hypoK)&&k1===0&&r1>0)P.push('<p class="small">1단계 속도가 빨라 칼륨 상한(0.5 mEq/kg/h) 안에서는 넣을 수 없다. 1단계에는 칼륨 없음.</p>');
       if(k1>0)P.push('<p class="small">칼륨 상한 0.5 mEq/kg/h'+src('LAIM, Blackwell, Constable')+'. 허용 농도 = 체중 × 0.5 ÷ 시간당 주입량(L)'+src('Blackwell')+'. K·Ca 함유액은 볼루스 금지'+src('LAIM')+'.</p>');
@@ -522,7 +537,7 @@ function calc(){
     (C?'<li>수액은 40℃ 이상으로 데운다'+src('핸드북')+', 송아지 체온 39.5℃보다 높게'+src('지침서')+'.</li>':'')+'</ul>';
 }
 
-['bw','dehy','dem','dis','drink','ph','pco2','hco3','tco2','be','na','k','cl','ica','glu','lac','pcv','tp','hrs','maint','bag','bicarb','kprod','gtt','hts'].forEach(function(id){
+['bw','dehy','dem','dis','drink','ph','pco2','hco3','tco2','be','na','k','cl','ica','glu','lac','pcv','tp','hrs','maint','bag','bicarb','kprod','gtt','hts','abic'].forEach(function(id){
   var el=$(id);el.addEventListener('input',calc);el.addEventListener('change',calc);
 });
 setType('c8');
