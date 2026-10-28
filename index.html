@@ -1524,7 +1524,7 @@ window.__cloudReady = (async () => {
     const ref = col.doc('state');
     /* Firestore 문서 1개는 1MB까지라 JSON을 조각(state_p0, state_p1…)으로 나눠 저장한다.
        state 문서에는 updatedAt·parts(조각 수)만 두고, 조각이 없으면(옛 형식) json 필드를 그대로 쓴다. */
-    const CHUNK = 900*1024;
+    const CHUNK = 300*1024;   // 글자 수 기준. 한글은 글자당 3바이트라 300K자 ≈ 최대 900KB
     const splitJson = str => { const out=[]; for(let i=0;i<str.length;i+=CHUNK) out.push(str.slice(i,i+CHUNK)); return out; };
     const readAll = async (d) => {
       if(!d) return null;
@@ -1673,7 +1673,7 @@ function appVersionLabel(){
   const d = new Date(document.lastModified);
   if(isNaN(d.getTime())) return 'v-';
   const p = n => String(n).padStart(2,'0');
-  return `v${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  return `v${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}·분할저장`;
 }
 function svgIcon(name, size){
   const P = {
