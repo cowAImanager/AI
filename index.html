@@ -1612,7 +1612,7 @@ async function saveState(){
     } else {
       localStorage.setItem(STORAGE_KEY, payload);
     }
-  }catch(e){ console.error('저장 실패', e); toast('저장에 실패했어요. 잠시 후 다시 시도해주세요.'); }
+  }catch(e){ console.error('저장 실패', e); const msg=(e&&(e.code||e.message))?String(e.code||'')+' '+String(e.message||'').slice(0,120):''; toast('저장에 실패했어요. '+(msg?('('+msg.trim()+')'):'잠시 후 다시 시도해주세요.')); }
 }
 function subscribeRemoteIfNeeded(){
   if(STORAGE_MODE!=='cloud' || !window.__cloud) return;
