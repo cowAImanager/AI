@@ -1356,6 +1356,12 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 .sync-spark i.now{background:var(--ink-soft);}
 .sync-spark i.best{background:var(--accent);}
 .open-row.oneline .open-due{flex-wrap:wrap;row-gap:2px;}
+/* 폰: 리피트 배지를 날짜 앞에 두고 날짜·D-day는 오른쪽 끝에 맞춘다 */
+@media (max-width:600px){
+  .open-row.oneline .open-due .open-rt{order:1;}
+  .open-row.oneline .open-due .open-basis{order:2;}
+  .open-row.oneline .open-due .open-date{order:3;margin-left:auto;}
+}
 /* PC: 공태관리 줄을 칸으로 정렬 (귀표 | 구분 | 날짜·D-day·% | 근거 | ›) */
 @media (min-width:601px){
   .open-list{gap:3px;}
@@ -3071,7 +3077,7 @@ function renderPregCheckView(){
   });
   // 분만완료는 수정기록 없는 것으로 취급해 정렬(옛 수정일 기준 X). 나머지는 수정 후 경과일 내림차순.
   const effDays = r => (r.calved || r.days==null) ? -1 : r.days;
-  rows.sort((x,y)=> effDays(y) - effDays(x) || (y.calvDate||'').localeCompare(x.calvDate||''));
+  rows.sort((x,y)=> effDays(y) - effDays(x) || (y.calvDate||'').localeCompare(x.calvDate||'') || byThirdId(x.animalId, y.animalId));
 
   const isXof = r => {
     const p1=(r.preg1||'').trim().toUpperCase(), p2=(r.preg2||'').trim().toUpperCase();
