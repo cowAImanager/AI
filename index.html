@@ -1520,11 +1520,36 @@ window.__cloudReady = (async () => {
     });
     if(!auth.currentUser){ await auth.signInAnonymously(); }
     const db = firebase.firestore();
-    const ref = db.collection('breedingApp').doc('state');
+    const col = db.collection('breedingApp');
+    const ref = col.doc('state');
+    /* Firestore 문서 1개는 1MB까지라 JSON을 조각(state_p0, state_p1…)으로 나눠 저장한다.
+       state 문서에는 updatedAt·parts(조각 수)만 두고, 조각이 없으면(옛 형식) json 필드를 그대로 쓴다. */
+    const CHUNK = 900*1024;
+    const splitJson = str => { const out=[]; for(let i=0;i<str.length;i+=CHUNK) out.push(str.slice(i,i+CHUNK)); return out; };
+    const readAll = async (d) => {
+      if(!d) return null;
+      if(d.parts>0){
+        const snaps = await Promise.all(Array.from({length:d.parts},(_,i)=>col.doc('state_p'+i).get()));
+        if(snaps.some(x=>!x.exists || (x.data().updatedAt!==undefined && x.data().updatedAt!==d.updatedAt))) return null;  // 조각이 덜 써졌으면 이번 스냅샷은 건너뜀
+        return snaps.map(x=>x.data().json).join('');
+      }
+      return d.json || null;
+    };
     window.__cloud = {
-      async get(){ const snap = await ref.get(); return snap.exists ? snap.data().json : null; },
-      async set(jsonStr, ts){ await ref.set({ json: jsonStr, updatedAt: ts }); },
-      subscribe(cb){ return ref.onSnapshot(snap => { if(snap.exists){ const d=snap.data(); cb(d.json, d.updatedAt, !!(snap.metadata&&snap.metadata.hasPendingWrites)); } }, err=>console.error('동기화 오류',err)); }
+      async get(){ const snap = await ref.get(); return snap.exists ? readAll(snap.data()) : null; },
+      async set(jsonStr, ts){
+        const parts = splitJson(jsonStr);
+        const batch = db.batch();
+        parts.forEach((pt,i)=> batch.set(col.doc('state_p'+i), { json: pt, updatedAt: ts, idx: i }));
+        batch.set(ref, { updatedAt: ts, parts: parts.length, json: firebase.firestore.FieldValue.delete() }, { merge: true });
+        await batch.commit();
+      },
+      subscribe(cb){ return ref.onSnapshot(async snap => {
+        if(!snap.exists) return;
+        const d=snap.data(); const pending=!!(snap.metadata&&snap.metadata.hasPendingWrites);
+        if(pending) { cb(null, d.updatedAt, true); return; }
+        try{ const json = await readAll(d); if(json) cb(json, d.updatedAt, false); }catch(e){ console.error('동기화 읽기 실패',e); }
+      }, err=>console.error('동기화 오류',err)); }
     };
     console.log('✅ Firebase 연결 성공');
     return true;
