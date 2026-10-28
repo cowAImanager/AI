@@ -1524,7 +1524,7 @@ window.__cloudReady = (async () => {
     window.__cloud = {
       async get(){ const snap = await ref.get(); return snap.exists ? snap.data().json : null; },
       async set(jsonStr, ts){ await ref.set({ json: jsonStr, updatedAt: ts }); },
-      subscribe(cb){ return ref.onSnapshot(snap => { if(snap.exists){ const d=snap.data(); cb(d.json, d.updatedAt); } }, err=>console.error('동기화 오류',err)); }
+      subscribe(cb){ return ref.onSnapshot(snap => { if(snap.exists){ const d=snap.data(); cb(d.json, d.updatedAt, !!(snap.metadata&&snap.metadata.hasPendingWrites)); } }, err=>console.error('동기화 오류',err)); }
     };
     console.log('✅ Firebase 연결 성공');
     return true;
@@ -1573,6 +1573,7 @@ let UI = {
 ============================================================ */
 let STORAGE_MODE = 'local';      // 'claude' | 'cloud' | 'local'
 let lastLocalWriteTs = 0;
+const OWN_WRITE_TS = new Set();   // 이 기기에서 쓴 타임스탬프들 — 되돌아오는 스냅샷은 무시
 
 async function detectStorageMode(){
   if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
@@ -1605,7 +1606,8 @@ async function saveState(){
     if(STORAGE_MODE==='claude'){
       await window.storage.set(STORAGE_KEY, payload);
     } else if(STORAGE_MODE==='cloud'){
-      lastLocalWriteTs = Date.now();
+      lastLocalWriteTs = Math.max(Date.now(), lastLocalWriteTs+1);
+      OWN_WRITE_TS.add(lastLocalWriteTs); if(OWN_WRITE_TS.size>50){ OWN_WRITE_TS.delete(OWN_WRITE_TS.values().next().value); }
       await window.__cloud.set(payload, lastLocalWriteTs);
     } else {
       localStorage.setItem(STORAGE_KEY, payload);
@@ -1614,8 +1616,9 @@ async function saveState(){
 }
 function subscribeRemoteIfNeeded(){
   if(STORAGE_MODE!=='cloud' || !window.__cloud) return;
-  window.__cloud.subscribe((json, ts)=>{
-    if(!json || ts===lastLocalWriteTs) return;     // 내가 방금 쓴 변경은 무시
+  let pendingRemote = null, pendingTimer = null;
+  const editing = () => !!document.getElementById('modalRoot') || (()=>{ const el=document.activeElement; return !!(el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && el.type!=='checkbox' && el.type!=='radio'); })();
+  const applyRemote = (json) => {
     try{
       const incoming = JSON.parse(json);
       DATA = incoming;
@@ -1626,6 +1629,18 @@ function subscribeRemoteIfNeeded(){
       render();
       toast('다른 기기에서 변경된 내용을 불러왔어요.');
     }catch(e){ console.error('동기화 데이터 처리 실패', e); }
+  };
+  const flush = () => {
+    if(!pendingRemote) return;
+    if(editing()){ clearTimeout(pendingTimer); pendingTimer=setTimeout(flush, 1500); return; }   // 입력 중이면 끝날 때까지 미룸
+    const j = pendingRemote; pendingRemote = null; applyRemote(j);
+  };
+  window.__cloud.subscribe((json, ts, pending)=>{
+    if(!json) return;
+    if(pending) return;                                   // 이 기기의 쓰기가 서버 확인 전에 되돌아온 것
+    if(OWN_WRITE_TS.has(ts) || ts===lastLocalWriteTs) return;   // 내가 쓴 변경
+    if(typeof ts==='number' && ts < lastLocalWriteTs) return;   // 내 최신 저장보다 오래된 상태 — 덮어쓰면 방금 저장이 사라진다
+    pendingRemote = json; flush();
   });
 }
 /* 버전 = 이 파일이 마지막으로 수정된 날짜 (자동) */
