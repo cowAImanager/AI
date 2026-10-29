@@ -5016,9 +5016,17 @@ function openAllSchedule(){
 function allOwnersScheduleHtml(){
   const today = todayStr();
   // 개체별 스케줄과 동일한 규칙(scheduleRowsForOwner): 자동개체 포함·숨긴칸 제외·축주별 설정 범위
+  // 전체 스케줄에서는 주사·처치 단계(GnRH·PGF2α·PG·CIDR 등 동기화 프로그램)는 빼고, 수정(AI)·감정·수기 일정만 보여줌
+  const isInjection = t => /GnRH|PGF|\bPG\b|CIDR|사이더|주사/i.test(t) && !/\bAI\b|수정|감정/.test(t);
+  const stripInjection = note => (note||'').split(' / ').map(t=>t.trim()).filter(t=>t && !isInjection(t)).join(' / ');
   const allRows = [];
   DATA.owners.forEach(owner => {
-    scheduleRowsForOwner(owner).forEach(r => { if(r.date >= today) allRows.push({ ...r, owner }); });
+    scheduleRowsForOwner(owner).forEach(r => {
+      if(r.date < today) return;
+      const note = stripInjection(r.note);
+      if(!note) return;
+      allRows.push({ ...r, note, owner });
+    });
   });
   // 날짜·축주·할일이 같으면 개체번호를 한 줄로 묶어서 나열
   const groups = {}; const order = [];
