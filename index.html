@@ -668,6 +668,11 @@ html[data-theme="dark"] .tag-chip.oneyear{background:#3a3010;color:#ffe08a;borde
 .animal-list-item.fattened{opacity:.62;}
 .animal-list-item.fattened.active{opacity:1;}
 .btn.small.fatten-btn,.btn.fatten-btn{background:#7A3B12;color:#fff;border:none;}
+.btn.small.slaughter-btn,.btn.slaughter-btn{background:#4B5563;color:#fff;border:none;}
+.fatten-badge.slaughter{background:#4B5563;}
+.pc-badge.slaughter{background:#4B5563;color:#fff;}
+.animal-list-item.slaughtered{opacity:.5;}
+.animal-list-item.slaughtered.active{opacity:1;}
 .btn.fatten-btn:hover{opacity:.88;}
 .pregcheck-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;cursor:pointer;flex-wrap:wrap;}
 /* PC: 칸을 고정해 줄마다 같은 위치에 (귀표 | 리피트 | 수정일 | 경과 | 감정 태그 | 배지 | 버튼) */
@@ -2151,7 +2156,8 @@ function animalStatusMeta(status){
     case '미수정':        return { cls:'unknown', order:3 };
     case '임신중':        return { cls:'preg',    order:4 };
     case '비육전환':      return { cls:'fatten',  order:5 };
-    default:              return { cls:'unknown', order:6 };
+    case '도축':          return { cls:'slaughter', order:6 };
+    default:              return { cls:'unknown', order:7 };
   }
 }
 
@@ -2310,7 +2316,7 @@ function cycleDayRange(p, estrus){
 }
 function estimateCycleToday(animal, recs){
   if(!recs || !recs.length) return null;
-  if(animal && animal.fattening) return { fattenSkip:true };
+  if(animal && (animal.fattening || animal.slaughtered)) return { fattenSkip:true, slaughtered:!!animal.slaughtered };
   if(isCurrentlyPregnant(recs)) return { pregnantSkip:true };
   // 가장 최근 진료가 낭종(질환 또는 초음파)이면 추정 안 함
   if(recHasCyst(recs[0])) return { cystSkip:true };
@@ -2355,7 +2361,7 @@ function estimateCycleToday(animal, recs){
 function cycleTodayHtml(animal, recs){
   const r = estimateCycleToday(animal, recs);
   if(!r) return '—';
-  if(r.fattenSkip) return `<span style="color:var(--ink-soft);">비육전환 — 추정 안 함</span>`;
+  if(r.fattenSkip) return `<span style="color:var(--ink-soft);">${r.slaughtered?'도축':'비육전환'} — 추정 안 함</span>`;
   if(r.pregnantSkip) return `<span class="preg-badge">🍼 임신중</span> <span style="color:var(--ink-soft);font-size:12px;">발정주기 추정 안 함</span>`;
   if(r.cystSkip) return `<span style="color:var(--ink-soft);">낭종 — 추정 안 함</span>`;
   if(r.needManual) return `<span style="color:var(--ink-soft);">3난포파 · 주기일 입력 필요</span>`;
@@ -2398,7 +2404,7 @@ function animalListData(){
     const dayTxt = (days!=null && (status==='임신감정 필요'||status==='감정 대기'||status==='비임신')) ? ` ${days}일` : '';
     const badge = `<span class="pc-badge ${meta.cls} list-status">${esc(status)}${dayTxt}</span>`;
     return `
-    <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''} ${a.fattening?'fattened':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
+    <div class="animal-list-item ${a.animalId===UI.selectedAnimal?'active':''} ${a.fattening?'fattened':''} ${a.slaughtered?'slaughtered':''}" data-action="selectAnimal" data-id="${esc(a.animalId)}">
       <span class="list-id-row"><span class="breed-emoji">${breedIcon(a.breed)}</span>${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'sm'); })()}${badge}</span>
       <span class="animal-meta">
         <span>산차 ${esc(a.parity||'—')}</span>
@@ -2423,7 +2429,7 @@ function renderAnimalView(){
       detailHtml = `
         <button class="btn secondary small mobile-back" data-action="backToList">← 목록으로</button>
         <div class="animal-detail-head">
-          <span class="head-id-wrap">${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'lg '+(a.fattening?'fattened':''))+(f.oneYear?'<span class="oy-badge">1년1산</span>':'')+(f.repeat?`<span class="open-repeat" style="font-size:11px;padding:2px 7px;">리피트 ${f.aiN}회</span>`:''); })()}</span>
+          <span class="head-id-wrap">${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'lg '+(a.fattening||a.slaughtered?'fattened':''))+(f.oneYear?'<span class="oy-badge">1년1산</span>':'')+(f.repeat?`<span class="open-repeat" style="font-size:11px;padding:2px 7px;">리피트 ${f.aiN}회</span>`:''); })()}</span>
           <div class="head-actions">
             ${isAdmin()?`<button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
             <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
@@ -2464,10 +2470,12 @@ function renderAnimalView(){
               <div class="field"><label>수정 난이도</label><div class="val">${isAdmin()
                 ? `<select class="inline-edit sel" data-id="${esc(a.animalId)}" data-animal-field="aiDifficulty"><option value="">선택 안 함</option>${[1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${'★'.repeat(n)} ${n}</option>`).join('')}</select>`
                 : difficultyStars(a.aiDifficulty)}${a.aiDifficultyNote?`<div class="kv2-note">${esc(a.aiDifficultyNote)}</div>`:''}</div></div>
-              <div class="field"><label>번식 상태</label><div class="val">${a.fattening
-                ? `<span class="fatten-badge">비육전환됨</span>${isAdmin()?` <button class="btn secondary small" data-action="toggleFattening" data-id="${esc(a.animalId)}">번식 복귀</button>`:''}`
+              <div class="field"><label>번식 상태</label><div class="val">${a.slaughtered
+                ? `<span class="fatten-badge slaughter">도축됨</span>${isAdmin()?` <button class="btn secondary small" data-action="toggleSlaughter" data-id="${esc(a.animalId)}">복귀</button>`:''}`
+                : a.fattening
+                ? `<span class="fatten-badge">비육전환됨</span>${isAdmin()?` <button class="btn secondary small" data-action="toggleFattening" data-id="${esc(a.animalId)}">번식 복귀</button> <button class="btn small slaughter-btn" data-action="toggleSlaughter" data-id="${esc(a.animalId)}">도축</button>`:''}`
                 : (isAdmin()
-                    ? `<button class="btn small fatten-btn" data-action="toggleFattening" data-id="${esc(a.animalId)}">비육전환</button>`
+                    ? `<button class="btn small fatten-btn" data-action="toggleFattening" data-id="${esc(a.animalId)}">비육전환</button> <button class="btn small slaughter-btn" data-action="toggleSlaughter" data-id="${esc(a.animalId)}">도축</button>`
                     : `<span style="color:var(--ink-soft);">번식 대상</span>`)
               }</div></div>
             </div>
@@ -2748,7 +2756,7 @@ function abilityUpdate(owner,aid,field,value,el){
 }
 function abilitySummaryHtml(owner){
   const cnt={}; ABILITY_REGS.forEach(r=>cnt[r]=0);
-  ownerAnimals().filter(a=>!a.fattening).forEach(a=>{ const r=abilityGet(owner,a.animalId).reg||''; cnt[r in cnt?r:'']++; });
+  ownerAnimals().filter(a=>!a.fattening && !a.slaughtered).forEach(a=>{ const r=abilityGet(owner,a.animalId).reg||''; cnt[r in cnt?r:'']++; });
   return ABILITY_REGS.filter(r=>r).map(r=>`<span class="cab-sum reg-${r}">${r} <b>${cnt[r]}</b></span>`).join('')+`<span class="cab-sum reg-none">미기재 <b>${cnt['']}</b></span>`;
 }
 /* 보완 KPN 추천: 보유 정액(없으면 목록 전체 상위) 중에서, 암소가 약한 형질에 가중치를 더 줘 점수화 */
@@ -2796,7 +2804,7 @@ function abilityDetailHtml(owner,a){
 function renderAbilityView(owner){
   // 개체번호 세 번째 묶음(4자리)·네 번째 순으로 정렬 (예: 002 1390 8161 6 → 8161)
   const k3=(id)=>{ const p=(id||'').trim().split(/\s+/); return p.length>=3 ? (p[2]+' '+(p[3]||'')) : id; };
-  const animals=ownerAnimals().filter(a=>!a.fattening).sort((a,b)=>k3(a.animalId).localeCompare(k3(b.animalId)));
+  const animals=ownerAnimals().filter(a=>!a.fattening && !a.slaughtered).sort((a,b)=>k3(a.animalId).localeCompare(k3(b.animalId)));
   const rows=animals.map(a=>{
     const v=abilityGet(owner,a.animalId); const f=animalFlags(owner,a);
     const D=(field)=>`data-owner="${esc(owner)}" data-aid="${esc(a.animalId)}" data-field="${field}"`;
@@ -3087,6 +3095,7 @@ function renderPregCheckView(){
   const animals = ownerAnimals();
   const rows = [];
   animals.forEach(a => {
+    if(a.slaughtered) return;   // 도축 개체는 임신감정 화면에서 제외
     const allRecs = DATA.records.filter(r=>r.owner===UI.owner && r.animalId===a.animalId);
     const aiRecs = allRecs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
     const sorted = allRecs.slice().sort((x,y)=> sortKeyOf(y) - sortKeyOf(x));
@@ -3372,7 +3381,7 @@ function fmtRange(from, to){
 }
 /* 초음파 없을 때: 마지막 분만 이후, 63일 이내의 발정일(또는 수정일=발정)로 오늘 주기일 추정 */
 function estrusBasedEst(animal, recs){
-  if(!recs || !recs.length || (animal && animal.fattening)) return null;
+  if(!recs || !recs.length || (animal && (animal.fattening || animal.slaughtered))) return null;
   if(isCurrentlyPregnant(recs)) return null;
   const today = todayStr();
   const lastCalv = dateOnly((animal&&animal.lastCalving)||'') || latestCalvingDate(recs) || '';
@@ -3550,6 +3559,7 @@ function renderOpenView(){
     const recs = recordsOf(owner, a.animalId).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
     // 차트 기록도 분만 기록도 하나도 없는 개체 → '기록 없음'으로 분리 (비육 제외)
     const hasCalvingRec = !!dateOnly(a.lastCalving||'') || (parseInt(a.parity,10) > 0);
+    if(a.slaughtered) return;
     if(!a.fattening && recs.length===0 && !hasCalvingRec){ noRecord.push({ a }); return; }
     const st = shareAnimalStatus(owner, a).status;
     // 공태(빈 자궁) 대상: 미수정 + 비임신(재수정 대기). 임신중/비육전환/감정대기 제외
@@ -3670,12 +3680,14 @@ function renderDiseaseView(){
 
   // 호전된 개체는 목록에서 제외 (표시만 제외, 데이터는 보존)
   // 호전 정의: 가장 최근 진료에서 낭종 없음, 또는 자궁질환이 치료완료 처리됨
+  // '진료'로 치는 기록 = 검진일이나 초음파·질환 소견이 있는 것. 동기화 일정만 적은 기록은 진료가 아니라 호전 판단에 쓰지 않는다
+  const isExamRec = x => !!(dateOnly(x.examDate||'') || (x.ultraOvaryL||'').trim() || (x.ultraOvaryR||'').trim() || (x.ultraUterus||'').trim() || (x.ultrasound||'').trim() || (x.ovarianDisease||'').trim() || (x.uterineDisease||'').trim());
   const isImprovedRec = r => {
-    const latest = animalRecords(r.animalId)[0];
+    const latest = animalRecords(r.animalId).find(isExamRec);
     const hasUt = (r.uterineDisease||'').trim();
     const hasCyst = recHasCyst(r);
-    // 낭종 기록인데 최신 진료에 낭종 없음 → 호전
-    if(hasCyst && latest && !recHasCyst(latest)) return true;
+    // 낭종 기록인데 그 뒤 진료에서 낭종 없음 → 호전
+    if(hasCyst && latest && latest.id!==r.id && dkey(latest) > dkey(r) && !recHasCyst(latest)) return true;
     // 자궁질환: 이 기록 또는 이후(같은 날 포함) 진료에서 '치료완료' 체크되면 호전
     if(hasUt){
       const rDate = dkey(r);
@@ -4191,7 +4203,7 @@ function openSyncBatchModal(owner, preset){
   UI.activeSyncProtocol = null;
   preset = preset || {};
   modalCtx = { type:'syncBatch', owner };
-  const animals = ownerAnimalsFor(owner).filter(a=>!a.fattening).map(a=>{
+  const animals = ownerAnimalsFor(owner).filter(a=>!a.fattening && !a.slaughtered).map(a=>{
     const st = shareAnimalStatus(owner, a);
     return { id:a.animalId, status:st.status, preg: st.status==='임신중' };
   }).sort((a,b)=> (a.preg-b.preg) || a.id.localeCompare(b.id));
@@ -5645,6 +5657,7 @@ function recordsOf(owner, animalId){
 function shareAnimalStatus(owner, a){
   const recs = recordsOf(owner, a.animalId);
   if(isCurrentlyPregnant(recs)) return { status:'임신중', days:null };
+  if(a.slaughtered) return { status:'도축', days:null };
   if(a.fattening) return { status:'비육전환', days:null };
   if(calvedAfterPregnancy(recs)){                       // 분만 후 아직 재수정(새 AI) 전 → 임신감정 대상 아님(재수정 대기)
     const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
@@ -5703,7 +5716,8 @@ function shareExpCalving(owner, a){
   return withCalv.length ? dateOnly(withCalv[0].expectedCalving) : null;
 }
 function buildSharePayload(owner){
-  const animals = DATA.animals.filter(a=>a.owner===owner)
+  const slaughteredIds = new Set(DATA.animals.filter(a=>a.owner===owner && a.slaughtered).map(a=>a.animalId));
+  const animals = DATA.animals.filter(a=>a.owner===owner && !a.slaughtered)
     .sort((a,b)=>a.animalId.localeCompare(b.animalId))
     .map(a=>{
       const s=shareAnimalStatus(owner,a); const f=animalFlags(owner,a);
@@ -5717,7 +5731,7 @@ function buildSharePayload(owner){
   // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
   const cutoff = addDays(todayStr(), -7);
   const schedule = scheduleRowsForOwner(owner)
-    .filter(r => r.date >= cutoff && !r.skipped)
+    .filter(r => r.date >= cutoff && !r.skipped && !slaughteredIds.has(r.aid))
     .map(r => ({
       date: r.date,
       id: r.aid,
@@ -5727,7 +5741,7 @@ function buildSharePayload(owner){
   schedule.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   // 백신 예정은 별도 탭
   const vaccines = vaccineItemsForOwner(owner)
-    .filter(it => it.date >= cutoff)
+    .filter(it => it.date >= cutoff && !slaughteredIds.has(it.animalId))
     .map(it => ({ date: it.date, id: it.animalId, note: `${VAC_LABEL[it.vaccine]} ${it.dose}` }))
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   return { owner, updatedAt: todayStr(), animals, schedule, vaccines };
@@ -6163,6 +6177,15 @@ const ACTIONS = {
     if(!a) return;
     a.fattening = !a.fattening;
     toast(a.fattening ? '비육전환했어요. 번식 진료 대상에서 제외돼요.' : '번식 대상으로 복귀했어요.');
+    saveState(); renderMain();
+  },
+  toggleSlaughter: ds=>{
+    if(!isAdmin()) return noAdminToast();
+    const a = DATA.animals.find(x=>x.owner===UI.owner && x.animalId===ds.id);
+    if(!a) return;
+    if(!a.slaughtered && !confirm(a.animalId+' 도축 처리할까요? 기록은 남고, 축주 화면·일정·통계에서만 빠져요.')) return;
+    a.slaughtered = !a.slaughtered;
+    toast(a.slaughtered ? '도축 처리했어요. 축주 화면에서 안 보여요.' : '도축을 취소했어요.');
     saveState(); renderMain();
   },
   adjustAnimalNum: ds=>{
