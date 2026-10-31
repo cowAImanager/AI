@@ -103,6 +103,7 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .header-actions .btn{display:inline-flex;align-items:center;gap:5px;}
 .header-actions .ic,.status-badge .ic{flex:0 0 auto;}
+.hdr-break{display:none;}
 .ic{vertical-align:middle;}
 .iconbtn svg,.diff-stars svg{vertical-align:middle;}
 .diff-stars svg{margin:0 .5px;}
@@ -1244,7 +1245,19 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .header-actions .btn.small.nav-link{font-size:12px;padding:5px 8px;}
   .status-badge .btn-label{display:none;}
   .status-badge{font-size:13px;padding:4px 8px;}
-  .header-actions .theme-toggle{width:28px;height:28px;font-size:13px;}
+  .header-actions .theme-toggle{width:30px;height:30px;font-size:13px;order:22;}
+  /* 모바일 헤더 3줄: ① 검색·로그인·테마·상태 ② 메뉴 5개 균등 ③ 엑셀·공유·백업 */
+  .header-actions{row-gap:6px;}
+  .header-actions .global-search-bar{order:1;}
+  .header-actions .btn[data-action="openAdminLogin"],.header-actions .btn[data-action="logoutAdmin"]{order:2;}
+  .header-actions .status-badge{order:25;}
+  .header-actions .hdr-break{display:block;flex:0 0 100%;height:0;margin:-6px 0 0;padding:0;}
+  .header-actions .hdr-break-a{order:5;}
+  .header-actions .btn.nav-link{order:10;flex:1 1 0;justify-content:center;padding:6px 2px;font-size:12.5px;white-space:nowrap;}
+  .header-actions .hdr-break-b{order:15;}
+  .header-actions .hdr-tool{order:20;flex:0 0 auto;padding:5px 14px;}
+  .header-actions .hdr-break+.hdr-tool{margin-left:auto;}
+  .header-actions .global-search-bar{flex:1 1 150px;}
   .owner-tabs{gap:3px;margin-top:6px;}
   .owner-tabs .tab-break{display:block;flex-basis:100%;height:0;margin:0;padding:0;border:none;}
   .owner-tab{padding:4px 9px;font-size:11.5px;border-radius:7px 7px 0 0;gap:3px;}
@@ -1919,14 +1932,16 @@ function render(){
             ? `<button class="btn small" style="background:var(--accent);color:#fff;border:none;" data-action="logoutAdmin">${svgIcon('lockOpen')}<span class="btn-label">관리자 (로그아웃)</span></button>`
             : `<button class="btn secondary small" data-action="openAdminLogin">${svgIcon('lock')}<span class="btn-label">로그인</span></button>`
           }
+          <span class="hdr-break hdr-break-a" aria-hidden="true"></span>
           <a class="btn secondary small nav-link" href="vet.html" title="번식학" style="text-decoration:none;"><span>번식학</span></a>
           <a class="btn secondary small nav-link" href="medicine.html" title="내과학" style="text-decoration:none;"><span>내과학</span></a>
           <a class="btn secondary small nav-link" href="fluid.html" title="수액 계산" style="text-decoration:none;"><span>수액 계산</span></a>
           <a class="btn secondary small nav-link" href="care.html" title="사양관리" style="text-decoration:none;"><span>사양관리</span></a>
           <a class="btn secondary small nav-link" href="gongsu.html" title="업무" style="text-decoration:none;"><span>업무</span></a>
-          <button class="btn secondary small" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
-          ${isAdmin()?`<button class="btn secondary small" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
-          ${isAdmin()?`<button class="btn secondary small" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
+          <span class="hdr-break hdr-break-b" aria-hidden="true"></span>
+          <button class="btn secondary small hdr-tool" data-action="exportExcel" title="엑셀로 내보내기">${svgIcon('table')}<span class="btn-label">엑셀내보내기</span></button>
+          ${isAdmin()?`<button class="btn secondary small hdr-tool" data-action="openShareManage" title="축주 공유 링크">${svgIcon('share')}<span class="btn-label">공유</span></button>`:''}
+          ${isAdmin()?`<button class="btn secondary small hdr-tool" data-action="openBackup" title="데이터 백업/복원">${svgIcon('save')}<span class="btn-label">백업</span></button>`:''}
           <button class="theme-toggle" data-action="toggleTheme" title="${isDark?'라이트 모드로 전환':'다크 모드로 전환'}">${svgIcon(isDark?'sun':'moon')}</button>
           ${status?`<span class="status-badge" title="${esc(status.text)}">${svgIcon(status.key)}<span class="btn-label">${esc(status.text)}</span></span>`:''}
         </div>
