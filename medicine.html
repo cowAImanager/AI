@@ -1186,6 +1186,24 @@ html[data-theme="dark"] mark.hl{background:rgba(255,224,102,.22);color:inherit;}
 .hl-bar button{font-family:inherit;font-size:13px;font-weight:700;padding:7px 16px;border-radius:16px;border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);cursor:pointer;}
 .hl-bar button[data-hl-act="add"]{background:#FFF3B8;color:#1a1200;border-color:#EBDC96;}
 .hl-bar button:disabled{opacity:.4;cursor:default;}
+/* 내과학 검색 */
+.med-search-row{display:flex;align-items:center;gap:8px;margin:8px 0 2px;}
+.med-search-row .global-search-bar{width:100%;max-width:440px;}
+.med-search-row .gs-clear{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;display:none;}
+.med-search-row .global-search-bar.has-q .gs-clear{display:inline-flex;}
+.med-sr-head{font-size:13px;font-weight:700;color:var(--ink-soft);margin:4px 0 10px;}
+.med-sr{display:flex;flex-direction:column;gap:7px;}
+.med-sr-item{display:block;width:100%;text-align:left;font-family:inherit;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink);}
+.med-sr-item:hover{border-color:var(--primary);}
+.med-sr-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.med-sr-tab{font-size:11px;font-weight:700;color:var(--primary-dark);background:var(--green-soft);border:1px solid var(--primary);border-radius:6px;padding:1px 7px;white-space:nowrap;}
+.med-sr-title{font-size:14px;font-weight:800;}
+.med-sr-snip{font-size:12.5px;color:var(--ink-soft);line-height:1.45;}
+.med-sr-snip mark,.med-sr-title mark{background:#FFF3B8;color:inherit;border-radius:3px;padding:0 1px;}
+html[data-theme="dark"] .med-sr-snip mark,html[data-theme="dark"] .med-sr-title mark{background:rgba(255,224,102,.25);}
+.bx.med-hit{outline:2px solid var(--primary);outline-offset:2px;border-radius:8px;transition:outline-color 1.2s;}
+.bx.med-hit.fade{outline-color:transparent;}
+@media(max-width:600px){ .med-search-row{margin:6px 0 0;} .med-search-row .global-search-bar{max-width:none;} }
 </style></head>
 <body><div class="app" id="app"></div>
 <script>
@@ -1211,7 +1229,7 @@ const TAB_ROWS = [
 ];
 const TABS = TAB_ROWS.flat();
 function currentTab(){ const tab=location.hash.slice(1); return TABS.some(t=>t[0]===tab)?tab:'gi'; }
-const UI = {vetMode:true,vetTab:currentTab()};
+const UI = {vetMode:true,vetTab:currentTab(),q:''};
 let _isOwner = false;
 let authReady = false;
 function isAdmin(){ return _isOwner; }
@@ -1234,6 +1252,7 @@ function render(){
         <button class="btn secondary small" data-action="${isAdmin()?'logoutAdmin':'openAdminLogin'}">${svgIcon(isAdmin()?'lockOpen':'lock')}<span>${isAdmin()?'로그아웃':'로그인'}</span></button>
         <button class="theme-toggle" data-action="toggleTheme" aria-label="${dark?'라이트 모드':'다크 모드'}">${svgIcon(dark?'sun':'moon')}</button>
       </div></div>
+      <div class="med-search-row"><div class="global-search-bar${UI.q?' has-q':''}"><span class="gs-icon">${svgIcon('search',15)}</span><input class="gs-input" id="med-search" type="text" placeholder="증상·질병·약물 검색" value="${(UI.q||'').replace(/"/g,'&quot;')}" autocomplete="off"><button type="button" class="gs-clear" data-action="clearMedSearch" aria-label="지우기">×</button></div></div>
       <nav class="subnav vet-subnav vet-subnav-rows" aria-label="내과학 분야">${TAB_ROWS.map(row=>`<div class="subnav-row">${row.map(([id,label])=>`<button class="${UI.vetTab===id?'active':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</div>`).join('')}</nav>
     </header><main id="main" class="vet-main"></main>`;
   renderVet();
@@ -1285,8 +1304,12 @@ function init(){
       case 'toggleTheme': DATA.theme=DATA.theme==='dark'?'light':'dark';applyTheme();saveState();render();break;
       case 'openAdminLogin':openAdminLogin();break;
       case 'logoutAdmin':logoutAdmin();break;
+      case 'clearMedSearch': medSetQuery(''); {const i=document.getElementById('med-search'); if(i){i.value=''; i.focus();}} break;
+      case 'medGo': medGoBox(el.dataset.tab, el.dataset.title); break;
     }
   });
+  document.addEventListener('input',e=>{ if(e.target && e.target.id==='med-search') medSetQuery(e.target.value); });
+  document.addEventListener('keydown',e=>{ if(e.target && e.target.id==='med-search' && e.key==='Escape'){ e.target.value=''; medSetQuery(''); } });
   window.addEventListener('hashchange',()=>{UI.vetTab=currentTab();render();window.scrollTo(0,0);});
   vetHlInit();
   initAuth();
@@ -2841,10 +2864,81 @@ function renderVet(){
   main.classList.remove('vet-panel');
   main.innerHTML = '<div class="vet-panel"></div>';
   const box = main.querySelector('.vet-panel');
+  if((UI.q||'').trim()){ box.innerHTML = medSearchHtml(UI.q.trim()); return; }
   const t = MED_TABS[UI.vetTab] || MED_TABS.gi;
   box.innerHTML = t.fn();
   namuify(box, {title:t.title, category:t.category, ibTitle:t.ibTitle, infobox:t.infobox});
   vetBoxLayout(box);
+  medOpenPending(box);
+}
+
+/* ---------- 내과학 전체 검색 ---------- */
+let _medIndex=null, _medPending=null;
+function medBuildIndex(){
+  if(_medIndex) return _medIndex;
+  const out=[];
+  Object.keys(MED_TABS).forEach(tab=>{
+    const t=MED_TABS[tab]; const tmp=document.createElement('div');
+    try{ tmp.innerHTML=t.fn(); }catch(e){ return; }
+    tmp.querySelectorAll('.bx').forEach(bx=>{
+      const tt=bx.querySelector(':scope>.bx-title'); if(!tt) return;
+      const title=tt.textContent.replace(/\s+/g,' ').trim();
+      const body=[...bx.querySelectorAll('p,li,td,.bx-subtitle')].map(n=>n.textContent).join(' ').replace(/[•★]/g,'').replace(/\s+/g,' ').trim();
+      out.push({tab, tabLabel:t.title, title, body, lt:title.toLowerCase(), lb:body.toLowerCase()});
+    });
+  });
+  _medIndex=out; return out;
+}
+function medEsc(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function medMark(text, terms){
+  let h=medEsc(text);
+  terms.forEach(t=>{ const re=new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'); h=h.replace(re,m=>'<mark>'+m+'</mark>'); });
+  return h;
+}
+function medSearchHtml(q){
+  const terms=q.toLowerCase().split(/\s+/).filter(Boolean);
+  const idx=medBuildIndex();
+  const hits=[];
+  idx.forEach(e=>{
+    const inTitle=terms.every(t=>e.lt.includes(t));
+    const inBody=terms.every(t=>e.lt.includes(t)||e.lb.includes(t));
+    if(!inBody) return;
+    let snip='';
+    const pos=e.lb.indexOf(terms.find(t=>e.lb.includes(t))||'');
+    if(pos>=0){ const a=Math.max(0,pos-40); snip=(a>0?'…':'')+e.body.slice(a,pos+90)+(pos+90<e.body.length?'…':''); }
+    else snip=e.body.slice(0,120)+(e.body.length>120?'…':'');
+    hits.push({e,score:inTitle?2:1,snip});
+  });
+  hits.sort((a,b)=>b.score-a.score);
+  if(!hits.length) return `<div class="med-sr-head">"${medEsc(q)}" 검색 결과 없음</div>`;
+  return `<div class="med-sr-head">"${medEsc(q)}" 검색 결과 ${hits.length}건</div><div class="med-sr">`+
+    hits.slice(0,80).map(h=>`<button type="button" class="med-sr-item" data-action="medGo" data-tab="${h.e.tab}" data-title="${medEsc(h.e.title)}">
+      <div class="med-sr-top"><span class="med-sr-tab">${medEsc(h.e.tabLabel)}</span><span class="med-sr-title">${medMark(h.e.title,terms)}</span></div>
+      <div class="med-sr-snip">${medMark(h.snip,terms)}</div></button>`).join('')+`</div>`;
+}
+function medSetQuery(q){
+  UI.q=q||'';
+  const bar=document.querySelector('.med-search-row .global-search-bar'); if(bar) bar.classList.toggle('has-q',!!UI.q.trim());
+  renderVet();
+}
+function medGoBox(tab,title){
+  _medPending=title; UI.q='';
+  const i=document.getElementById('med-search'); if(i) i.value='';
+  const bar=document.querySelector('.med-search-row .global-search-bar'); if(bar) bar.classList.remove('has-q');
+  if(UI.vetTab!==tab){ location.hash=tab; } else { renderVet(); }
+}
+function medOpenPending(root){
+  if(!_medPending) return;
+  const want=_medPending; _medPending=null;
+  const bx=[...root.querySelectorAll('.bx')].find(b=>{ const t=b.querySelector(':scope>.bx-title'); return t && t.textContent.replace(/\s+/g,' ').trim()===want; });
+  if(!bx) return;
+  bx.classList.add('med-hit');
+  setTimeout(()=>{
+    if(bx.classList.contains('collapsed')){ const t=bx.querySelector(':scope>.bx-title'); if(t) t.click(); }
+    bx.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+  setTimeout(()=>bx.classList.add('fade'),1500);
+  setTimeout(()=>bx.classList.remove('med-hit','fade'),2800);
 }
 function namuify(root, doc){
   root = root || document.getElementById('main');
