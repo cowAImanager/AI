@@ -134,6 +134,32 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .owner-tab.calc-tab{background:var(--primary);color:#fff;border-color:var(--primary);margin-right:6px;}
 .owner-tab.calc-tab:hover{opacity:.88;}
 .owner-tab.allsched-tab{background:var(--primary-dark);}
+/* 진료통계 */
+.owner-tab.stats-tab{background:#2F6F8F;border-color:#2F6F8F;}
+.cs-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 12px;}
+.cs-card{background:var(--surface-alt);border:1px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center;}
+.cs-big{font-size:26px;font-weight:900;color:var(--primary-dark);letter-spacing:-.02em;line-height:1.1;}
+.cs-label{font-size:12px;font-weight:700;color:var(--ink);margin-top:3px;}
+.cs-sub{font-size:10.5px;color:var(--ink-soft);margin-top:3px;line-height:1.35;}
+.cs-years{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.cs-yb{font-family:inherit;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;}
+.cs-yb.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+.cs-legend{display:flex;gap:12px;font-size:11px;color:var(--ink-soft);margin:0 0 6px 2px;}
+.cs-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+.cs-legend i.exam,.cs-seg.exam{background:var(--primary);}
+.cs-legend i.ai,.cs-seg.ai{background:#E0A94A;}
+.cs-list{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto;padding-right:2px;}
+.cs-row{display:grid;grid-template-columns:92px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
+.cs-row.now{border-color:var(--primary);background:var(--green-soft,#EEF7F4);}
+.cs-ym{font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;}
+.cs-bar{display:flex;height:10px;border-radius:5px;background:var(--surface-alt);overflow:hidden;}
+.cs-seg{display:block;height:100%;}
+.cs-nums{text-align:right;line-height:1.25;white-space:nowrap;}
+.cs-nums b{font-size:15px;font-weight:900;color:var(--primary-dark);display:block;}
+.cs-nums span{display:block;font-size:10.5px;color:var(--ink-soft);}
+.cs-empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12.5px;}
+@media (max-width:560px){ .cs-row{grid-template-columns:78px 1fr auto;gap:6px;padding:7px 8px;} .cs-ym{font-size:11.5px;} .cs-nums .cs-meta{display:none;} .cs-big{font-size:22px;} .cs-cards{gap:6px;} }
+
 .owner-tab.addnew:hover{background:var(--surface-alt);}
 
 .subnav{display:flex;gap:20px;padding:14px 0 0;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -1274,7 +1300,8 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .owner-tabs{gap:3px;margin-top:6px;}
   .owner-tabs .tab-break{display:block;flex-basis:100%;height:0;margin:0;padding:0;border:none;}
   .owner-tab{padding:4px 9px;font-size:11.5px;border-radius:7px 7px 0 0;gap:3px;}
-  .owner-tab.calc-tab{margin-right:3px;}
+  .owner-tab.calc-tab{margin-right:0;flex:1 1 0;justify-content:center;padding:5px 2px;font-size:11px;gap:3px;min-width:0;white-space:nowrap;}
+  .owner-tab.calc-tab svg{width:12px;height:12px;}
   .subnav{gap:12px;padding:6px 0 0;}
   .subnav button{font-size:12.5px;padding:4px 1px 7px;border-bottom-width:2px;}
   header.topbar{padding-top:8px;}
@@ -1970,6 +1997,7 @@ function renderOwnerTabs(){
   DATA.owners.forEach(ensureOwnerMeta);
   let html = `<div class="owner-tab calc-tab" data-action="openDueDateCalc">${svgIcon('calendar',14)}<span>분만예정일</span></div>`;
   html += `<div class="owner-tab calc-tab semen-tab" data-action="openSemenStock">🧬<span>보유정액</span></div>`;
+  html += `<div class="owner-tab calc-tab stats-tab" data-action="openClinicStats">📊<span>진료통계</span></div>`;
   html += `<div class="owner-tab calc-tab allsched-tab" data-action="openAllSchedule">${svgIcon('clipboard',14)}<span>전체스케줄</span></div>`;
   html += `<div class="tab-break" aria-hidden="true"></div>`;
   // 현재 보고 있는 축주가 보관됨이면 임시로 보여줌
@@ -5030,6 +5058,54 @@ function fmtCalcDate(d){
 function openDueDateCalc(){
   renderDueDateCalc(todayStr());
 }
+
+/* ---------- 진료통계: 매월 진료건수 ---------- */
+function openClinicStats(yearSel){
+  const today = todayStr();
+  const ym = d => dateOnly(d||'').slice(0,7);
+  const months = {}; // 'YYYY-MM' -> {exam:n, examDays:Set, ai:n, owners:Set, animals:Set}
+  const bump = (k, f, r) => { if(!/^\d{4}-\d{2}$/.test(k)) return; const m = months[k] || (months[k] = {exam:0, ai:0, examDays:new Set(), aiDays:new Set(), owners:new Set(), animals:new Set()}); m[f]++; m[f==='exam'?'examDays':'aiDays'].add(dateOnly(f==='exam'?r.examDate:r.aiDate)); m.owners.add(r.owner); m.animals.add(r.owner+'|'+r.animalId); };
+  DATA.records.forEach(r => {
+    if(dateOnly(r.examDate)) bump(ym(r.examDate), 'exam', r);
+    if(dateOnly(r.aiDate)) bump(ym(r.aiDate), 'ai', r);
+  });
+  const keys = Object.keys(months).sort().reverse();
+  const years = [...new Set(keys.map(k=>k.slice(0,4)))];
+  if(yearSel===undefined) yearSel = parseInt(today.slice(0,4),10);
+  if(yearSel!=='all' && !years.includes(String(yearSel)) && years.length) yearSel = parseInt(years[0],10);
+  const shown = yearSel==='all' ? keys : keys.filter(k=>k.startsWith(String(yearSel)));
+  const sum = (arr, f) => arr.reduce((a,k)=>a+months[k][f],0);
+  const thisM = months[today.slice(0,7)] || {exam:0, ai:0, examDays:new Set(), aiDays:new Set(), owners:new Set(), animals:new Set()};
+  const yearKeys = keys.filter(k=>k.startsWith(today.slice(0,4)));
+  const maxV = Math.max(1, ...shown.map(k=>months[k].exam + months[k].ai));
+  const fmtYM = k => `${k.slice(0,4)}년 ${parseInt(k.slice(5,7),10)}월`;
+  const card = (big, label, sub) => `<div class="cs-card"><div class="cs-big">${big}</div><div class="cs-label">${label}</div>${sub?`<div class="cs-sub">${sub}</div>`:''}</div>`;
+  const rows = shown.map(k => {
+    const m = months[k]; const tot = m.exam + m.ai;
+    const w1 = Math.round(m.exam / maxV * 100), w2 = Math.round(m.ai / maxV * 100);
+    return `<div class="cs-row${k===today.slice(0,7)?' now':''}">
+      <div class="cs-ym">${fmtYM(k)}</div>
+      <div class="cs-bar"><span class="cs-seg exam" style="width:${w1}%"></span><span class="cs-seg ai" style="width:${w2}%"></span></div>
+      <div class="cs-nums"><b>${tot}</b><span>진료 ${m.exam} · 수정 ${m.ai}</span><span class="cs-meta">${m.examDays.size}일 출장 · 축주 ${m.owners.size} · 개체 ${m.animals.size}</span></div>
+    </div>`;
+  }).join('') || '<div class="cs-empty">기록이 없다.</div>';
+  const yearBtns = ['all', ...years].map(y => `<button class="cs-yb${String(yearSel)===String(y)?' on':''}" data-action="clinicStatsYear" data-year="${y}">${y==='all'?'전체':y+'년'}</button>`).join('');
+  openModal(`
+    <div class="modal cs-modal" style="max-width:640px;">
+      <h2>📊 진료통계</h2>
+      <div class="modal-sub">진료일(검진일)·수정일이 적힌 기록을 달별로 센다. 기록 1건 = 개체 1두 1회.</div>
+      <div class="cs-cards">
+        ${card(thisM.exam + thisM.ai, '이번 달', `진료 ${thisM.exam} · 수정 ${thisM.ai} · ${thisM.examDays.size}일 출장`)}
+        ${card(sum(yearKeys,'exam') + sum(yearKeys,'ai'), today.slice(0,4)+'년 누계', `진료 ${sum(yearKeys,'exam')} · 수정 ${sum(yearKeys,'ai')}`)}
+        ${card(sum(keys,'exam') + sum(keys,'ai'), '전체 누계', `진료 ${sum(keys,'exam')} · 수정 ${sum(keys,'ai')}`)}
+      </div>
+      <div class="cs-years">${yearBtns}</div>
+      <div class="cs-legend"><span><i class="exam"></i>진료</span><span><i class="ai"></i>수정</span></div>
+      <div class="cs-list">${rows}</div>
+      <div class="modal-actions"><button class="btn secondary" data-action="closeModal">닫기</button></div>
+    </div>
+  `);
+}
 function openAllSchedule(){
   openModal(`
     <div class="modal" style="max-width:660px;">
@@ -6173,6 +6249,8 @@ const ACTIONS = {
   toggleTheme: ()=>{ DATA.theme = DATA.theme==='dark' ? 'light' : 'dark'; applyTheme(); saveState(); render(); },
   openDueDateCalc: ()=>openDueDateCalc(),
   openSemenStock: ()=>openSemenStock(),
+  openClinicStats: ()=>openClinicStats(),
+  clinicStatsYear: (ds)=>openClinicStats(ds.year==='all'?'all':parseInt(ds.year,10)),
   semenAdd: ()=>semenAdd(),
   semenDel: (ds)=>semenDel(ds.kpn),
   semenSort: (ds)=>{ const i=ds.i==='n'?'n':parseInt(ds.i,10); if(semenSort&&semenSort.i===i){ semenSort.dir=-semenSort.dir; if(semenSort.dir<0&&false){} } else semenSort={i,dir:1}; semenRefresh(); },
