@@ -134,6 +134,8 @@ header.topbar{margin:0 20px;padding:16px 20px 0;background:var(--surface);border
 .owner-tab.calc-tab{background:var(--primary);color:#fff;border-color:var(--primary);margin-right:6px;}
 .owner-tab.calc-tab:hover{opacity:.88;}
 .owner-tab.allsched-tab{background:var(--primary-dark);}
+.dt-field label{display:flex;align-items:center;justify-content:space-between;gap:6px;}.dt-clear{font-family:inherit;font-size:10.5px;font-weight:700;color:var(--ink-soft);background:var(--surface-alt);border:1px solid var(--line);border-radius:6px;padding:1px 7px;cursor:pointer;line-height:1.4;}.dt-clear:active{opacity:.7;}
+
 /* 진료통계 */
 .owner-tab.stats-tab{background:#2F6F8F;border-color:#2F6F8F;}
 .cs-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 12px;}
@@ -2158,7 +2160,7 @@ function lastNonEmpty(recs, field){
   return null;
 }
 function sortKeyOf(r){
-  const d = r.examDate || r.aiDate || r.estrusDate;
+  const d = r.examDate || r.aiDate || r.estrusDate || firstSyncDate(r);
   if(!d) return -1;
   return new Date(d.slice(0,10)+'T'+(d.length>10?d.slice(11,16):'00:00')).getTime();
 }
@@ -2201,7 +2203,7 @@ function sortScheduleIds(ids, owner, auto){
 function lastRecordDate(animalId){
   const recs = animalRecords(animalId);
   if(!recs.length) return null;
-  return recs[0].examDate || recs[0].aiDate || recs[0].estrusDate || null;
+  return recs[0].examDate || recs[0].aiDate || recs[0].estrusDate || firstSyncDate(recs[0]) || null;
 }
 // 개체 상태 → 배지 클래스 + 정렬 우선순위 (작을수록 위로)
 function animalStatusMeta(status){
@@ -2259,7 +2261,7 @@ function cystType(r){
   if(/황체\s*낭종|황체낭종|황체성\s*낭종/.test(src)) return '황체낭종';
   return '낭종';
 }
-function recDate(r){ return dateOnly(r.examDate || r.aiDate || r.estrusDate || ''); }
+function recDate(r){ return dateOnly(r.examDate || r.aiDate || r.estrusDate || firstSyncDate(r) || ''); }
 /* 기록에 수기로 적어둔 '다음발정일' 중 가장 최근 것 (추정 불가일 때 보조용) */
 function manualNextEstrus(recs){
   const ds = recs.filter(r => dateOnly(r.nextEstrusDate||'')).map(r => dateOnly(r.nextEstrusDate)).sort();
@@ -2380,7 +2382,7 @@ function estimateCycleToday(animal, recs){
   const mode = animal.waveMode || '2';
   if(mode==='3'){
     const base = recs[0];
-    const baseDate = dateOnly(base.examDate || base.aiDate || base.estrusDate || '');
+    const baseDate = dateOnly(base.examDate || base.aiDate || base.estrusDate || firstSyncDate(base) || '');
     if(!baseDate) return null;
     const md = parseFloat(animal.manualCycleDay);
     if(isNaN(md)) return { needManual:true, cycleLen };
@@ -2391,7 +2393,7 @@ function estimateCycleToday(animal, recs){
   // 2난포파: 낭종이 아닌, 초음파가 적힌 가장 최근 진료 기준
   const ultraRec = recs.find(r => !recHasCyst(r) && [r.ultraOvaryL,r.ultraOvaryR,r.ultraUterus,r.ultrasound].some(v=>v&&v.trim()));
   if(!ultraRec) return { undetermined:true, cycleLen };
-  const baseDate = dateOnly(ultraRec.examDate || ultraRec.aiDate || ultraRec.estrusDate || '');
+  const baseDate = dateOnly(ultraRec.examDate || ultraRec.aiDate || ultraRec.estrusDate || firstSyncDate(ultraRec) || '');
   if(!baseDate) return { undetermined:true, cycleLen };
   const ultra = [ultraRec.ultraOvaryL, ultraRec.ultraOvaryR, ultraRec.ultraUterus, ultraRec.ultrasound].filter(Boolean).join(' ');
   const p = parseUltra(ultra);
@@ -3083,7 +3085,7 @@ function uterineTxStats(owner){
   Object.keys(byAnimal).forEach(k=>{
     const rs = byAnimal[k].slice().sort((a,b)=> sortKeyOf(a)-sortKeyOf(b));
     const [own, aid] = k.split('|');
-    const dOf = r => D(r.examDate || r.aiDate || r.estrusDate);
+    const dOf = r => D(r.examDate || r.aiDate || r.estrusDate || firstSyncDate(r));
     const aiEv = [];   // 모든 수정 이벤트 (aiDate + 동기화 AI)
     rs.forEach(r=>{
       if(D(r.aiDate)) aiEv.push({ date:D(r.aiDate), n: parseInt(r.aiCount,10)||0 });
@@ -3504,7 +3506,7 @@ function pregStatsFor(owner){
   // 수태율: 임신감정(O/X)이 난 라운드 중 '그 라운드의 수정을 내가 한 것'만 집계.
   //   (감정은 감정한 날, 내수정횟수는 수정한 날에 적힐 수 있으므로 — 같은 줄이 아니어도
   //    개체별 날짜순으로 보며 '직전 수정' 기록의 내수정 여부로 내 라운드인지 판정)
-  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const dkeyP = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || firstSyncDate(r) || '');
   const inh = r => String((r.inHouseAiCount!=null && r.inHouseAiCount!=='') ? r.inHouseAiCount : (r.inHouseAi||'')).trim();
   const inhN = r => { const n = parseInt(inh(r),10); return isNaN(n) ? 0 : n; };
   const pregOf = r => (r.pregnant||'').trim().toUpperCase();
@@ -3728,7 +3730,7 @@ function animalShortName(a){
 }
 
 function renderDiseaseView(){
-  const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || '');
+  const dkey = r => dateOnly(r.examDate || r.aiDate || r.estrusDate || firstSyncDate(r) || '');
   const allDiseaseRecs = DATA.records
     .filter(r => r.owner===UI.owner && (((r.uterineDisease||'').trim()) || ((r.ovarianDisease||'').trim()) || recHasCyst(r)))
     .sort((a,b)=> (dkey(b)||'').localeCompare(dkey(a)||''));
@@ -3947,7 +3949,7 @@ function openConfirm(message, fn){
 /* ---------- 폼 필드 헬퍼 ---------- */
 function dtField(label, key, val){
   return `<div class="field dt-field">
-    <label>${label}</label>
+    <label>${label} <button type="button" class="dt-clear" data-action="clearDtField" data-key="${key}" title="날짜 지우기">지우기</button></label>
     <div class="field-pair">
       <input type="date" id="f_${key}_date" value="${dateOnly(val)}">
       <input type="time" id="f_${key}_time" value="${timeOnly(val)}">
@@ -4313,7 +4315,7 @@ function actionSaveSyncBatch(){
   rememberSyncUsage(steps);
   const first = used[0];
   ids.forEach(animalId=>{
-    const rec = Object.assign(blankRecord(animalId), { id: uid(owner+'-rec'), owner, animalId, examDate: combineDT(first.date, first.time) });
+    const rec = Object.assign(blankRecord(animalId), { id: uid(owner+'-rec'), owner, animalId });   // 동기화만 거는 기록: 진료일은 비워 둔다(시작일은 1단계 날짜에 있음)
     steps.forEach((s,i)=>{
       rec['sync'+(i+1)+'Type'] = s.type;
       rec['sync'+(i+1)+'Date'] = s.type ? combineDT(s.date, s.time) : null;
@@ -6251,6 +6253,7 @@ const ACTIONS = {
   toggleTheme: ()=>{ DATA.theme = DATA.theme==='dark' ? 'light' : 'dark'; applyTheme(); saveState(); render(); },
   openDueDateCalc: ()=>openDueDateCalc(),
   openSemenStock: ()=>openSemenStock(),
+  clearDtField: (ds)=>{ const d=document.getElementById('f_'+ds.key+'_date'), t=document.getElementById('f_'+ds.key+'_time'); if(d) d.value=''; if(t) t.value=''; if(d) d.dispatchEvent(new Event('change',{bubbles:true})); },
   openClinicStats: ()=>openClinicStats(),
   clinicStatsYear: (ds)=>openClinicStats(ds.year==='all'?'all':parseInt(ds.year,10)),
   semenAdd: ()=>semenAdd(),
