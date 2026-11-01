@@ -2091,7 +2091,7 @@ window.KPN_DATA={"COEF":[[1.4609,433.622],[1.5839,91.511],[1.0619,12.603],[1.081
     return ''
     +'<div style="max-width:760px;margin:0 auto;padding:4px 2px;">'
     +'<h2 style="font-size:19px;font-weight:800;color:var(--primary-dark);margin:6px 0 2px;">KPN 후대예측 · 정액 비교</h2>'
-    +'<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;">정액번호(KPN) 최대 3개 비교. 예측 + 실측 + <b style="color:var(--primary-dark);">저평가 신호</b>(실측이 EPD를 앞서면 EPD가 오를 소). 형질별 최고값 <b style="color:var(--primary-dark);">굵게</b>.</p>'
+    +'<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;">정액번호(KPN) 최대 3개. <b style="color:var(--primary-dark);">EPD + 아비·외조부 계통</b>으로 후대 도축성적과 1++ 확률을 예측한다. 후대 성적이 아직 없는 신규 정액도 된다. 형질별 최고값은 초록.</p>'
     +'<div style="display:flex;gap:8px;margin-bottom:10px;">'+boxes+'</div>'
     +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">'
     +'<button id="kpnFavAdd" style="font-size:11.5px;font-weight:800;color:#fff;background:var(--primary);border:none;border-radius:8px;padding:7px 11px;cursor:pointer;white-space:nowrap;">★ 현재 입력 저장</button>'
@@ -2101,8 +2101,9 @@ window.KPN_DATA={"COEF":[[1.4609,433.622],[1.5839,91.511],[1.0619,12.603],[1.081
     +'<div style="margin-top:12px;"><button id="kpnValBtn" style="font-size:12px;font-weight:700;color:var(--primary-dark);background:var(--surface-alt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;">📊 예측 검증 로그 보기 (실측 있는 소 전체)</button></div>'
     +'<div id="kpnVal" style="display:none;margin-top:10px;"></div>'
     +'<div style="margin-top:14px;font-size:11px;color:var(--ink-soft);line-height:1.6;background:var(--surface-alt);border-radius:8px;padding:10px 12px;">'
-    +'※ 저평가 판정 = 예측보다 유의미하게 벗어난 형질 개수. <b style="color:var(--primary-dark);">2개↑ 상향</b>=저평가(EPD 오를 소), <b style="color:var(--notpregnant-bg);">2개↑ 하향</b>=고평가. 임계: 도체중 15kg·단면적 5·등지방 1.5·근내 0.5.<br>'
-    +'※ ⚠️ = 등급 높은데(3A↑) 실측이 크게 못 미치는 소(인기 대비 주의). 신뢰도 R²: 도체 0.81·단면 0.74·근내 0.64·등지 0.48(낮음).'
+    +'※ 예측 = 회귀식(EPD→실측, 387두 적합) + 아비·외조부 계통의 잔차 평균(두수 가중). 자기 후대가 있어도 예측엔 넣지 않는다.<br>'
+    +'※ 정확도(실측 있는 소 검증): 도체중 ±10kg·등심 ±2.4㎠·근내 ±0.3·등지방 ±0.8mm. 등지방이 가장 약하다. 상위권(1++ 80%↑)은 0.5~1점 낮게 부르는 경향.<br>'
+    +'※ 1++ 확률 = 예측 근내지방도에서 환산(실측 23두 묶음 적합: 근내 6.7점 ≈ 50%, 7.5 ≈ 70%, 8.0 ≈ 80%).'
     +'</div></div>';
   };
 
@@ -2130,7 +2131,7 @@ window.KPN_DATA={"COEF":[[1.4609,433.622],[1.5839,91.511],[1.0619,12.603],[1.081
         if(bv==null||(BETTER[i]===1?v>bv:v<bv)){bv=v;bi=ci;}});bestIdx.push(bi);}
     var H='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);font-size:13px;">';
     H+='<thead><tr style="background:var(--primary);color:#fff;"><th style="padding:9px 6px;text-align:left;font-size:11.5px;">항목</th>';
-    cols.forEach(function(c){H+='<th style="padding:9px 6px;font-size:14px;">'+(c?('KPN'+c.kpn+(c.warn?' ⚠️':'')):'—')+'</th>';});
+    cols.forEach(function(c){H+='<th style="padding:9px 6px;font-size:14px;">'+(c?('KPN'+c.kpn):'—')+'</th>';});
     H+='</tr></thead><tbody>';
     H+='<tr style="border-bottom:1px solid var(--line);"><td style="padding:7px 6px;font-weight:700;color:var(--ink-soft);font-size:12px;">후대두수</td>';
     cols.forEach(function(c){var t=(!c)?'':(c.missing?'<span style="color:var(--accent);">DB없음</span>':(c.rec.n?c.rec.n.toLocaleString()+'두'+(c.rec.n<300?'<span style="color:var(--notpregnant-bg);font-size:10px;">*</span>':''):'<span style="color:var(--accent);">신규0두</span>'));H+=cell(t);});
@@ -2161,15 +2162,24 @@ window.KPN_DATA={"COEF":[[1.4609,433.622],[1.5839,91.511],[1.0619,12.603],[1.081
       });
       H+='</tr>';
     }
-    // 저평가 판정 (유의미하게 벗어난 형질 개수)
-    H+='<tr style="border-bottom:1px solid var(--line);background:var(--surface-alt);"><td style="padding:9px 6px;font-weight:700;font-size:12px;">저평가 판정</td>';
-    cols.forEach(function(c){
-      if(!c||c.missing){H+=cell('');return;}
-      if(c.sig==null){H+=cell('<span style="font-size:11px;color:var(--ink-soft);">후대없음</span>');return;}
-      var col=c.sig.v===1?'var(--primary-dark)':(c.sig.v===-1?'var(--notpregnant-bg)':'var(--ink-soft)');
-      var lab=c.sig.v===1?'저평가 ↑':(c.sig.v===-1?'고평가 ↓':'≈ EPD대로');
-      var dt=c.sig.det.length?('<div style="font-size:9.5px;color:var(--ink-soft);">'+c.sig.det.join(' ')+'</div>'):'';
-      H+=cell('<div style="font-weight:800;font-size:13px;color:'+col+';">'+lab+'</div>'+dt);
+    // 예측 1++ 확률 (예측 근내 → 로지스틱 환산) + 실측 분포
+    H+='<tr style="border-bottom:1px solid var(--line);background:var(--surface-alt);"><td style="padding:9px 6px;font-weight:700;font-size:12px;">예측 1++ 확률<div style="font-size:9.5px;color:var(--ink-soft);font-weight:500;">1+ 이상</div></td>';
+    (function(){ var bi=-1,bv=-1; cols.forEach(function(c,ci){ if(!c||c.missing) return; var v=c.out[3].pred; if(v>bv){bv=v;bi=ci;} });
+      cols.forEach(function(c,ci){
+        if(!c||c.missing){H+=cell('');return;}
+        var m=c.out[3].pred; var p1=1/(1+Math.exp(-(1.075*m-7.245))), p2=1/(1+Math.exp(-(1.347*m-7.853)));
+        var act=''; if(c.rec.gq){ var q=c.rec.gq, tot=q.reduce(function(x,y){return x+y;},0); if(tot) act='<div style="font-size:10px;color:var(--ink-soft);">실측 '+Math.round(q[0]/tot*100)+'% ('+tot+'두)</div>'; }
+        H+=cell('<div style="font-weight:'+(bi===ci?'800':'600')+';font-size:16px;color:'+(bi===ci?'var(--primary-dark)':'var(--ink)')+';">'+Math.round(p1*100)+'%</div><div style="font-size:10.5px;color:var(--ink-soft);">1+↑ '+Math.round(p2*100)+'%</div>'+act, bi===ci);
+      }); })();
+    H+='</tr>';
+    // 예측 근거(신뢰도): 아비·외조부 계통 두수
+    H+='<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 6px;font-weight:700;color:var(--ink-soft);font-size:12px;">예측 근거</td>';
+    cols.forEach(function(c){ if(!c||c.missing){H+=cell('');return;}
+      var FA=window.KPN_DATA.FA, MG=window.KPN_DATA.MG; var fa=c.rec.fa,mg=c.rec.mg;
+      var nf=(fa!=null&&FA[fa])?FA[fa][5]:0, nm=(mg!=null&&MG[mg])?MG[mg][5]:0;
+      var lv=(nf>=300&&nm>=100)?'높음':(nf>=50||nm>=50)?'보통':'낮음';
+      var col=lv==='높음'?'var(--primary-dark)':(lv==='보통'?'var(--ink)':'var(--notpregnant-bg)');
+      H+=cell('<div style="font-weight:800;font-size:12.5px;color:'+col+';">신뢰도 '+lv+'</div><div style="font-size:10px;color:var(--ink-soft);line-height:1.4;">아비 계통 '+(nf?nf.toLocaleString()+'두':'자료 없음')+'<br>외조부 계통 '+(nm?nm.toLocaleString()+'두':'자료 없음')+'</div>');
     });
     H+='</tr>';
     // EPD 등급
@@ -2186,7 +2196,7 @@ window.KPN_DATA={"COEF":[[1.4609,433.622],[1.5839,91.511],[1.0619,12.603],[1.081
       H+=cell('<span style="font-size:12px;">'+t+'</span>');});
     H+='</tr>';
     H+='</tbody></table></div>';
-    H+='<div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;">초록 = 형질별 최고 · 저평가 <b style="color:var(--primary-dark);">+</b>면 EPD 오를 소 · <b style="color:var(--notpregnant-bg);">⚠️</b> 등급 높은데 실측 부진 · * 후대 300두 미만</div>';
+    H+='<div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;">큰 숫자 = 예측 후대성적(EPD+계통) · 초록 = 형질별 최고 · 작은 글씨 = 계통 보정분과 실측 · * 후대 300두 미만</div>';
     cmp.innerHTML=H;
   }
 
