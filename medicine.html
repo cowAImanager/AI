@@ -1118,7 +1118,7 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
 @media (max-width:600px){.subnav.vet-subnav-rows{padding-top:8px;}.subnav.vet-subnav-rows .subnav-row{gap:3px;margin-top:5px;flex-wrap:nowrap;overflow-x:auto;}.subnav.vet-subnav-rows button{padding:3px 6px;font-size:11.5px;letter-spacing:-.03em;}}
 /* 박스 레이아웃 (문단 묶음 = 박스, 왼쪽 열 → 오른쪽 열 순) */
 .rb-boxes{display:flex;gap:6px;align-items:flex-start;}
-.rb-boxes{flex-wrap:wrap;}.rb-boxes>.bx.bx-full{flex:0 0 100%;width:100%;box-sizing:border-box;}.rb-boxes .col{flex:1 1 0;min-width:0;}
+.bx-group{border:1px dashed var(--line,#CFD4D8);border-radius:10px;padding:8px 8px 2px;margin:0 0 10px;position:relative;}.bx-group>.bx-group-title{font-weight:600;font-size:12px;color:var(--ink-soft,#6b7280);margin:-2px 0 6px 2px;letter-spacing:-.01em;}.bx-group>.rb-boxes{margin:0;}.rb-boxes{flex-wrap:wrap;}.rb-boxes>.bx.bx-full{flex:0 0 100%;width:100%;box-sizing:border-box;}.rb-boxes .col{flex:1 1 0;min-width:0;}
 .rb-boxes .bx{background:#fff;border:1px solid #CFD4D8;padding:6px 13px;margin:0 0 6px;font-size:13px;line-height:1.65;color:var(--ink);}
 [data-theme="dark"] .rb-boxes .bx{background:var(--surface);border-color:var(--line);}
 .rb-boxes .bx p{margin:6px 0;}
@@ -1559,8 +1559,10 @@ function med_giHtml(){
 function med_respHtml(){
   return `
 <div class="modal-sub" style="margin-bottom:6px;">${svgIcon('stethoscope',16)} 호흡기</div>
+
+<div class="bx-group"><div class="bx-group-title">소 호흡기질병 복합체(BRD)</div>
 <div class="rb-boxes">
-<div class="bx"><div class="bx-title">소 호흡기질병(BRD)</div>
+<div class="bx" data-col="full"><div class="bx-title">소 호흡기질병(BRD)</div>
 <div class="bx-sub"><div class="bx-subtitle">개요·원인</div>
 <p class="bx-num"><span class="bxn" data-n="1">•</span><span>소 호흡기질병(BRD)은 호흡과 관련된 모든 기관의 염증을 통틀어 일컫는다. 한 원인이 한 곳에 병을 일으키는 것이 아니라서 호흡기질병 증후군(BRDC)이라고도 부른다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="2">•</span><span>세 가지로 나눈다.<table class="bxt"><tr><th>구분</th><th>부위</th><th>특징</th></tr><tr><td>상부 호흡기 감염</td><td>콧구멍·인두·기관</td><td>기침·콧물·열·체중감소 정도로 대개 심하지 않다</td></tr><tr><td>디프테리아</td><td>주로 후두</td><td>호흡 잡음, 후두 부종으로 폐사하기도 한다</td></tr><tr><td>폐렴</td><td>하부 호흡기</td><td>수송열·유행성 송아지폐렴이 여기에 든다</td></tr></table></span></p>
@@ -1734,7 +1736,7 @@ function med_respHtml(){
 <p class="bx-num"><span class="bxn" data-n="144">•</span><span>합병증이 없으면 10~14일에 낫는다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="145">•</span><span>생독·불활화 백신이 있다. 비강 생독백신이 예방을 개선할 가장 좋은 방법이다. 발생 초기에 생독백신을 놓은 뒤 병이 악화된 것으로 보인 보고가 있어 발생 중 접종은 해로울 수 있다. 그러나 BRSV 백신은 널리 쓰이고 백신에 의한 병 악화 보고는 드물어, 백신은 여전히 BRSV 방제 계획의 일부로 권한다.</span></p>
 </div>
-<div class="bx" data-col="right"><div class="bx-title">히스토필루스 감염증(Histophilus somni)</div>
+<div class="bx"><div class="bx-title">히스토필루스 감염증(Histophilus somni)</div>
 <p class="bx-num"><span class="bxn" data-n="146">•</span><span>Histophilus somni(Pasteurellaceae과의 그람음성 호기성 세균. 운동성·아포·협막이 없는 다형성 구간균)</span></p>
 <p class="bx-num"><span class="bxn" data-n="147">•</span><span>히스토필루스 폐렴은 증상만으로 다른 세균성 폐렴과 가를 수 없다. 심한 정도가 중간쯤이라, 심한 Pasteurella multocida 폐렴이나 가벼운 Mannheimia 폐렴처럼 보인다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="148">•</span><span>발열 39.72~41.44℃, 호흡수 40~80회/분, 침울, 콧물, 통증성 기침을 보인다. 일반 광범위 항생제에 반응하지 않는 것이 히스토필루스 폐렴의 특징이다.</span></p>
@@ -1769,7 +1771,8 @@ function med_respHtml(){
 <p class="bx-num"><span class="bxn" data-n="175">•</span><span>효과적인 백신이 없다. 미국에 허가 백신이 있으나 야외 효과 시험은 드물고 결과가 엇갈린다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="176">•</span><span>감염 우유를 먹이지 말고 송아지마다 따로 양동이·젖병을 쓰며, 환기를 좋게 하고 다른 소와 직접 닿지 않게 한다. 송아지 중이염·관절염 병력이 있는 농장의 소는 사지 않는다.</span></p>
 </div>
-
+</div></div>
+<div class="rb-boxes" data-notools="1">
 <div class="bx"><div class="bx-title">우폐역(소 전염성 흉막폐렴) <span style="font-weight:500;font-size:12px;color:var(--muted,#6b7280)">제1종 가축전염병</span></div>
 <p class="bx-num"><span class="bxn" data-n="177">•</span><span>Mycoplasma mycoides subsp. mycoides small colony형(MmmSC).</span></p>
 <p class="bx-num"><span class="bxn" data-n="178">•</span><span>세포벽이 없는 다형성 균이고, 정상 상재균으로 보지 않는다. 버팔로·양·염소에서 분리되기도 하지만 병은 소(Bos속)에서만 생기고 다른 종으로 옮기지 않는다. 소독제·열·건조에 약해 몸 밖에서는 몇 시간을 넘기지 못한다.</span></p>
@@ -1808,7 +1811,7 @@ function med_respHtml(){
 <p class="bx-num"><span class="bxn" data-n="209">•</span><span>예방은 사료조·급여 기구 청결, 거친 사료 피하기이고, 다른 호흡기병 대책이 괴사성 후두염 발생을 줄일 수 있다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="210">•</span><span>감별은 인두 외상·연조직염·농양, 심한 바이러스성 후두염(IBR 등), 방선균증, 후두 부종·농양·외상·마비·종양, BVD, 이물성 폐렴, 치아 농양, 턱뼈 골절, 이물이다.</span></p>
 </div>
-<div class="bx"><div class="bx-title">이물성(흡인성) 폐렴</div>
+<div class="bx" data-col="right"><div class="bx-title">이물성(흡인성) 폐렴</div>
 <p class="bx-num"><span class="bxn" data-n="211">•</span><span>위험 요인은 미숙한 사람의 강제 경구·위관 투여, 깊은 진정·마취, 인두·식도 장애, 신생 송아지의 태변 흡인, 셀레늄 결핍, 괴사성 후두염이다. 머리를 높이 든 채 많은 양의 약을 먹여도 생긴다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="212">•</span><span>송아지는 근육영양장애(셀레늄·비타민 E 결핍)로 삼키는 근육이 약해져 우유를 흡인하거나, 위관·식도 급여기가 기관으로 들어가거나, 구멍이 너무 큰 젖꼭지로 먹이거나, 누운 채 젖병으로 먹일 때가 흔한 원인이다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="213">•</span><span>성우는 유열이 가장 흔한 원인이다. 심한 저칼슘혈증 소는 옆으로 누워 고창이 생기고, 반위된 제1위 내용물을 반혼수 상태라 뱉어내지 못해 흡인한다.</span></p>
@@ -1826,6 +1829,7 @@ function med_respHtml(){
 <p class="bx-num"><span class="bxn" data-n="225">•</span><span>유열처럼 일어서지 못하는 소는 빨리 치료해 엎드린 자세를 유지시킨다. 식도 폐쇄·삼킴 장애가 있는 소는 사료를 끊는다.</span></p>
 </div>
 </div>
+
 `;
 }
 function med_calfHtml(){
@@ -3214,18 +3218,20 @@ function showEntryGate(onPass){
     });
     (root||document).querySelectorAll('.rb-boxes').forEach(function(rb){
       if(rb.previousElementSibling && rb.previousElementSibling.classList.contains('bx-tools')) return;
+      if(rb.parentNode.classList.contains('bx-group') && rb.parentNode.previousElementSibling && rb.parentNode.previousElementSibling.classList.contains('bx-tools')) return;
+      if(rb.hasAttribute('data-notools')) return;
       if(!rb.querySelector('.bx>.bx-title')) return;
       var d=document.createElement('div'); d.className='bx-tools';
       d.innerHTML='<button type="button" data-all="1">모두 펼치기</button><button type="button" data-all="0">모두 접기</button>';
-      rb.parentNode.insertBefore(d, rb);
+      var anchor=rb.parentNode.classList.contains('bx-group')?rb.parentNode:rb; if(anchor.previousElementSibling&&anchor.previousElementSibling.classList.contains('bx-tools')) return; anchor.parentNode.insertBefore(d, anchor);
     });
   }
   document.addEventListener('click', function(e){
     var t=e.target.closest('.rb-boxes .bx>.bx-title');
     if(t){ var bx=t.parentElement; bx.classList.toggle('collapsed'); open[keyOf(bx)]=!bx.classList.contains('collapsed'); save(); return; }
     var b=e.target.closest('.bx-tools button[data-all]');
-    if(b){ var rb=b.parentElement.nextElementSibling; var on=b.getAttribute('data-all')==='1';
-      rb.querySelectorAll('.bx').forEach(function(bx){ if(!bx.querySelector(':scope>.bx-title')) return; bx.classList.toggle('collapsed',!on); open[keyOf(bx)]=on; }); save(); }
+    if(b){ var rb=b.closest('.namu-doc')||b.parentElement.nextElementSibling; var on=b.getAttribute('data-all')==='1';
+      rb.querySelectorAll('.rb-boxes .bx').forEach(function(bx){ if(!bx.querySelector(':scope>.bx-title')) return; bx.classList.toggle('collapsed',!on); open[keyOf(bx)]=on; }); save(); }
   });
   var mo=new MutationObserver(function(){ apply(); });
   document.addEventListener('DOMContentLoaded', function(){ apply(); mo.observe(document.body,{childList:true,subtree:true}); });
@@ -3258,7 +3264,7 @@ function showEntryGate(onPass){
   window.vetApplyStars=apply;
   document.addEventListener('click', async function(e){
     var so=e.target.closest('[data-star-only]');
-    if(so){ var rb=so.parentElement.nextElementSibling; if(rb){ var on=!rb.classList.contains('star-only'); rb.classList.toggle('star-only',on); so.classList.toggle('on',on); } return; }
+    if(so){ var doc=so.closest('.namu-doc'); var rbs=doc?[].slice.call(doc.querySelectorAll('.rb-boxes')):[so.parentElement.nextElementSibling]; if(rbs[0]){ var on=!rbs[0].classList.contains('star-only'); rbs.forEach(function(rb){ rb.classList.toggle('star-only',on); }); so.classList.toggle('on',on); } return; }
     var b=e.target.closest('#main p.bx-num .bxn'); if(!b) return;
     if(!((typeof isAdmin==='function') && isAdmin())) return;
     if(typeof _vetLoaded!=='undefined' && !_vetLoaded){ if(typeof toast==='function') toast('저장된 내용을 불러오는 중이에요. 잠시 후 다시 시도해주세요.'); return; }
