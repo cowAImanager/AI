@@ -1342,7 +1342,7 @@ function tabGroup(id){ for(const g of TAB_GROUPS){ if(g[1].flat().some(t=>t[0]==
 function navHtml(){
   const cur=tabGroup(UI.vetTab);
   const cats=TAB_GROUPS.map(g=>{ let last=null; try{ last=sessionStorage.getItem('lastTab_'+g[0]); }catch(e){}
-    const first=g[1][0][0]; const to=(last&&g[1].flat().some(t=>t[0]===last))?last:first;
+    const first=g[1][0][0][0]; const to=(last&&g[1].flat().some(t=>t[0]===last))?last:first;
     return `<button class="cat${g[0]===cur?' active':''}" data-action="setVetTab" data-vettab="${to}">${g[0]}</button>`; }).join('');
   const rows=TAB_GROUPS.find(g=>g[0]===cur)[1];
   return `<div class="subnav-row subnav-cats">${cats}</div>`+rows.map(row=>`<div class="subnav-row">${row.map(([id,label])=>`<button class="${UI.vetTab===id?'active':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</div>`).join('');
