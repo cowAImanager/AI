@@ -1319,7 +1319,7 @@ html[data-theme="dark"] mark.ps{background:rgba(255,216,102,.35);}
   document.addEventListener('DOMContentLoaded',function(){ mo.observe(document.body,{childList:true,subtree:true}); });
 })();
 </script>
-</head>
+<style>nav.vet-subnav.g-nav{display:block !important;margin-top:12px !important;border:none !important;padding:0 !important;}nav.g-nav .g-bar{display:grid;grid-template-columns:repeat(5,1fr);background:#1f2933;margin:0 -20px;padding:0 8px;}nav.g-nav .g-bar button.g-cat{all:unset;text-align:center;color:#9aa5b1;padding:12px 4px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}nav.g-nav .g-bar button.g-cat.on{color:#fff;box-shadow:inset 0 -4px 0 #2dd4bf;}@media(max-width:600px){header.topbar{margin:0 !important;padding:8px 10px 0 !important;}.header-actions{width:100% !important;}nav.g-nav .g-bar{grid-template-columns:repeat(3,1fr);margin:0 -10px;padding:0 4px;}nav.g-nav .g-bar button.g-cat{font-size:13.5px;padding:11px 2px;}}</style></head>
 <body><div class="app" id="app"></div>
 <script>
 window.FIREBASE_CONFIG = {
@@ -1364,7 +1364,7 @@ function render(){
         <span class="hdr-break hdr-break-b" aria-hidden="true"></span>
         <button class="theme-toggle" data-action="toggleTheme" aria-label="${dark?'라이트 모드':'다크 모드'}">${svgIcon(dark?'sun':'moon')}</button>
       </div></div>
-      <nav class="subnav vet-subnav" aria-label="업무 분야">${TABS.map(([id,label])=>`<button class="${UI.vetTab===id?'active':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</nav>
+      <nav class="subnav vet-subnav g-nav" aria-label="업무 분야"><div class="g-bar g-tabs">${TABS.map(([id,label])=>`<button class="g-cat${UI.vetTab===id?' on':''}" data-action="setVetTab" data-vettab="${id}" ${UI.vetTab===id?'aria-current="page"':''}>${label}</button>`).join('')}</div></nav>
     </header><main id="main" class="vet-main"></main>`;
   renderVet();
 }
@@ -1741,17 +1741,7 @@ ${S('스테로이드')}
 
 ${S('영양 · 대사 · 수액')}
 
-<div class="rb-block">${T(H,[
-['비간톨-E (엘랑코)','비타민 A·D3·E','지용성 비타민 보충','라벨 확인'],
-['카토살 (엘랑코)','부타포스판 100mg/mL + 비타민B12','인·B12 대사촉진제. 허약·식욕부진 보조','성우 10~25mL, 송아지 5~12mL 근육·피하·정맥. 필요시 24h 뒤 반복'],
-['칼폰-포르테 (엘랑코)','칼슘 함유 대사촉진제','분만 전후 저칼슘 보조','라벨 확인'],
-['칼슘 보로글루코네이트 23% (여러 회사)','칼슘 보로글루코네이트','유열·저칼슘혈증. 천천히 정맥, 심장 청진. 중조와 혼합 금지','성우 500mL(칼슘 약 10g) 천천히 정맥 10~15분, 심박 들으며. 절반은 피하 가능'],
-['셀레비트 · 셀레토코 · 노바비트 · 셀렌이 등','비타민E + 셀레늄','백근증 예방·치료. 과량 중독','셀레늄 0.1mg/kg 기준. 제품 농도별 라벨 (송아지 보통 1mL/10~50kg)'],
-['아미톱S 주사 (한동)','아미노산 11종 + 비타민B군 + 전해질 + 포도당 5%','영양 수액. 고칼륨혈증·일사병 금기','성우 500~1000mL, 송아지 200~500mL 정맥 천천히'],
-['바이아민 34 주사','포도당 5% + 아미노산 12종 + 비타민B군 + 전해질','영양 수액. 탈수·설사·쇼크 보조','성우 500~1000mL, 송아지 200~500mL 정맥 천천히'],
-['토노포스판 콤프 (MSD)','인 제제 + 비타민B12','대사장애, 경직·마비 보조','라벨 확인'],
-['카라실주 · 콤비콤-C주 (대성) · 타우린-F 주사 · 로보란트칼이어','영양제. 성분 미확인','라벨 확인','라벨 확인'],
-])}</div>
+<div class="rb-block"><p class="rb-p">→ <a href="vet.html#nutr">수의학 › 약물 › 영양제</a>로 옮겼다.</p></div>
 
 ${S('소화기 주사')}
 

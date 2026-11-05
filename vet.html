@@ -1335,7 +1335,8 @@ try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)||'null');
 const TAB_GROUPS = [
   ['번식학', [[['phys','호르몬'],['puberty','사춘기'],['postpartum','산후'],['wave','난포파'],['nutri','영양·관리'],['exam','직장검사'],['us','초음파검사'],['doppler','도플러'],['media','영상 자료']],[['cyst','번식질환'],['cof','COF'],['sync','동기화'],['et','수정란이식'],['breed','수정'],['mating','교배'],['pdiag','임신감정']],[['preg','임신'],['obst','산과'],['husb','사양·육성']]]],
   ['내과학', [[['vac','백신'],['resp','호흡기'],['gi','소화기'],['calf','송아지'],['sys','전신·감염']],[['skin','피부·눈'],['msk','근골격'],['uro','비뇨기'],['metab','대사·중독'],['prev','예방'],['fluid','수액·항생제'],['abx','항생제']]]],
-  ['사양관리', [[['fetal','태아기·교배'],['neo','신생·포유기'],['wean','이유기']],[['grow','육성기'],['heifer','초임우·시설'],['grass','풀정보']]]]
+  ['사양관리', [[['fetal','태아기·교배'],['neo','신생·포유기'],['wean','이유기']],[['grow','육성기'],['heifer','초임우·시설'],['grass','풀정보']]]],
+  ['약물', [[['nutr','영양제']]]]
 ];
 const TAB_ROWS = TAB_GROUPS.flatMap(g=>g[1]);
 function tabGroup(id){ for(const g of TAB_GROUPS){ if(g[1].flat().some(t=>t[0]===id)) return g[0]; } return '번식학'; }
@@ -8138,6 +8139,75 @@ function med_grassHtml(){
 
     `;
 }
+function med_nutrHtml(){
+  return `
+<div class="modal-sub" style="margin-bottom:6px;">${svgIcon('pill',16)} 영양제</div>
+<div class="rb-boxes">
+<div class="bx"><div class="bx-title">주사 영양제 성분 비교</div>
+<p class="bx-num"><span class="bxn" data-n="1">•</span><span>1mL당 원소·비타민 양. 화합물 함량은 원소량으로 환산했다.</span></p>
+<div class="bxt-wrap"><table class="bxt bxt-spec bxt-even">
+<tr><th></th><th>비간톨<br><span style="font-weight:400">엘랑코</span></th><th>셀레비트<br><span style="font-weight:400">Fatro</span></th><th>멀티민<br><span style="font-weight:400">버박</span></th><th>미네졸<br><span style="font-weight:400">서삼</span></th></tr>
+<tr><th>비타민 A</th><td>500,000 IU</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><th>비타민 D3</th><td>75,000 IU</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><th>비타민 E</th><td>50mg</td><td>70mg</td><td>—</td><td>—</td></tr>
+<tr><th>비타민 B12</th><td>—</td><td>0.1mg</td><td>—</td><td>—</td></tr>
+<tr><th>셀레늄</th><td>—</td><td>0.15mg</td><td>5mg</td><td>—</td></tr>
+<tr><th>구리</th><td>—</td><td>—</td><td>15mg</td><td>—</td></tr>
+<tr><th>아연</th><td>—</td><td>—</td><td>60mg</td><td>0.07mg</td></tr>
+<tr><th>망간</th><td>—</td><td>—</td><td>10mg</td><td>—</td></tr>
+<tr><th>요오드</th><td>—</td><td>—</td><td>—</td><td>약 80mg</td></tr>
+<tr><th>칼슘·철·마그네슘</th><td>—</td><td>—</td><td>—</td><td>Ca 43, Fe 3.6, Mg 2.3mg</td></tr>
+<tr><th>경로</th><td>근육</td><td>근육·피하·정맥</td><td>피하</td><td>근육</td></tr>
+</table></div>
+<p class="bx-num"><span class="bxn" data-n="2">•</span><span>면역에 필요한 비타민 A·E, 구리, 셀레늄, 아연을 실제로 채우는 것은 비간톨(A·E)과 멀티민(구리·셀레늄·아연) 두 가지다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="3">•</span><span>셀레비트는 셀레늄이 적어(10mL에 1.5mg) 비타민 E·B12 보충에 가깝다. 미네졸은 미량광물제가 아니라 요오드·칼슘 주사제다.</span></p>
+</div>
+<div class="bx"><div class="bx-title">비간톨 (엘랑코)</div>
+<p class="bx-num"><span class="bxn" data-n="4">•</span><span>1mL 중 비타민 A 500,000 IU, 비타민 D3 75,000 IU, 비타민 E 50mg. 바이엘코리아 제조, 엘랑코 유통 제품(비간톨 ADE 포르테) 기준이다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="5">•</span><span>송아지 2~3mL, 성우 5~7mL 근육 깊이 주사.</span></p>
+<p class="bx-num"><span class="bxn" data-n="6">•</span><span>스페인에서 엘랑코가 등록했던 비간톨 E 콤푸에스토는 1mL 중 A 300,000 IU, D3 100,000 IU, E 50mg으로 함량이 다르고, 고기 휴약이 소 259일로 매우 길었다(현재 허가 반납). 국내 라벨의 함량과 휴약기간을 확인한다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="7">•</span><span>셀레늄·구리·아연은 없다.</span></p>
+</div>
+<div class="bx"><div class="bx-title">셀레비트 (Fatro)</div>
+<p class="bx-num"><span class="bxn" data-n="8">•</span><span>이탈리아 Fatro 수입품. 1mL 중 셀레늄 0.15mg(아셀렌산나트륨 0.5mg), 비타민 E 70mg, 비타민 B12 0.1mg, 아데노신 1인산(AMP) 5mg, 솔비톨 50mg.</span></p>
+<p class="bx-num"><span class="bxn" data-n="9">•</span><span>근육·피하·정맥. 치료는 소 10~20mL, 송아지 10mL를 1일 1회 5일. 예방은 송아지 생후 10일부터 주 1회 10mL씩 5주. 후산 목적으로 분만 20일 전 20mL 근육주사.</span></p>
+<p class="bx-num"><span class="bxn" data-n="10">•</span><span>휴약은 고기 7일.</span></p>
+<p class="bx-num"><span class="bxn" data-n="11">•</span><span>분만 전 15일 이내 임신우, 특히 초산우에서 드물게 과민반응·쇼크가 난다. 현장에서 초임 분만우 쇼크사 사례가 있다. 셀레늄 고함유 사료를 먹는 소에는 쓰지 않는다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="12">•</span><span>셀레늄 양이 적다. 10mL에 1.5mg으로, 일반 셀레늄·E 주사제(1mg/mL, 성우 20mL로 20mg)나 멀티민(성우 5mL로 25mg)에 비해 훨씬 적다.</span></p>
+</div>
+<div class="bx"><div class="bx-title">멀티민 (버박)</div>
+<p class="bx-num"><span class="bxn" data-n="13">•</span><span>1mL 중 아연 60mg, 구리 15mg, 망간 10mg, 셀레늄 5mg (EU 허가 기준). 남아공 판(Multimin + Se + Cu)은 아연이 40mg이다. 비타민은 없다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="14">•</span><span>피하 전용. 1세 미만 50kg당 1mL, 1~2세 75kg당 1mL, 2세 이상 100kg당 1mL.</span></p>
+<p class="bx-num"><span class="bxn" data-n="15">•</span><span>분만·수정·건유·이유 등 스트레스 시기 전에 1회. 남아공 라벨은 분만 4주 전, 수정 4주 전, 건유 4주 전, 이유 4주 전 송아지, 미경산우는 번식 때까지 3개월마다로 적는다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="16">•</span><span>휴약은 EU 기준 고기 28일, 우유 0시간.</span></p>
+</div>
+<div class="bx"><div class="bx-title">미네졸 (서삼)</div>
+<p class="bx-num"><span class="bxn" data-n="17">•</span><span>인도 Panchsheel 제조, 서삼 수입(허가 제283-047호). 1mL 중 요오드화나트륨 50mg, 요오드화칼륨 50mg, 글루콘산칼슘 300mg, 차아인산칼슘 65mg, 염화아연 0.1355mg, 염화칼륨 4.282mg, 염화마그네슘 19.64mg, 염화철 12.96mg, 염화코발트 0.164mg, 붕산 28mg, 벤질알코올 15mg.</span></p>
+<p class="bx-num"><span class="bxn" data-n="18">•</span><span>원소량으로 1mL 중 요오드 약 80mg, 칼슘 약 43mg, 인 약 24mg(차아인산), 칼륨 약 14mg, 철 3.6mg, 마그네슘 2.3mg, 아연 0.07mg, 코발트 0.04mg.</span></p>
+<p class="bx-num"><span class="bxn" data-n="19">•</span><span>라벨 용법은 필요 시 1주 뒤 재주사, 수태율을 높이려면 인공수정 때, 불임 예방은 분만 후 1개월에 주사한다. 한 곳에 많이 놓으면 통증·화농 위험. 50·100mL 포장.</span></p>
+<p class="bx-num"><span class="bxn" data-n="20">•</span><span>요오드가 매우 많다. 성우 요구량이 하루 수 mg인데 10mL에 800mg이다. 과량이면 눈물·콧물·비듬·식욕저하 같은 요오드 중독이 오고, 임신 후기 요오드 주사는 유산 위험이 있다. 우유로도 넘어간다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="21">•</span><span>차아인산 형태의 인은 소가 거의 이용하지 못해 인 보충 효과는 기대하기 어렵다. 칼슘도 10mL에 0.43g으로, 저칼슘혈증 치료용 보로글루콘산칼슘 500mL(칼슘 약 10g)에 비하면 적다.</span></p>
+<p class="bx-num"><span class="bxn" data-n="22">•</span><span>구리·셀레늄·망간·비타민은 없다.</span></p>
+</div>
+<div class="bx"><div class="bx-title">영양·대사·수액 제품</div>
+<div class="bxt-wrap"><table class="bxt bxt-spec">
+<tr><th>브랜드 (회사)</th><th>성분</th><th>약효</th><th>용량·용법</th></tr>
+<tr><th>비간톨 (엘랑코)</th><td>비타민 A·D3·E</td><td>지용성 비타민 보충</td><td>송아지 2~3mL, 성우 5~7mL 근육. 위 비간톨 항목 참고</td></tr>
+<tr><th>카토살 (엘랑코)</th><td>부타포스판 100mg/mL + 비타민B12</td><td>인·B12 대사촉진제. 허약·식욕부진 보조</td><td>성우 10~25mL, 송아지 5~12mL 근육·피하·정맥. 필요시 24h 뒤 반복</td></tr>
+<tr><th>칼폰-포르테 (엘랑코)</th><td>칼슘 함유 대사촉진제</td><td>분만 전후 저칼슘 보조</td><td>라벨 확인</td></tr>
+<tr><th>칼슘 보로글루코네이트 23% (여러 회사)</th><td>칼슘 보로글루코네이트</td><td>유열·저칼슘혈증. 천천히 정맥, 심장 청진. 중조와 혼합 금지</td><td>성우 500mL(칼슘 약 10g) 천천히 정맥 10~15분, 심박 들으며. 절반은 피하 가능</td></tr>
+<tr><th>셀레비트 (Fatro) · 셀레토코 · 노바비트 · 셀렌이 등</th><td>비타민E + 셀레늄</td><td>백근증 예방·치료. 과량 중독</td><td>제품마다 셀레늄 농도가 크게 다르다. 셀레비트는 위 항목 참고</td></tr>
+<tr><th>멀티민 (버박)</th><td>아연·구리·망간·셀레늄</td><td>미량광물 보충. 분만·수정·이유 전</td><td>피하. 위 멀티민 항목 참고</td></tr>
+<tr><th>미네졸 (서삼)</th><td>요오드·칼슘 위주</td><td>라벨상 수태율·번식 개선</td><td>위 미네졸 항목 참고. 요오드 과량 주의</td></tr>
+<tr><th>아미톱S 주사 (한동)</th><td>아미노산 11종 + 비타민B군 + 전해질 + 포도당 5%</td><td>영양 수액. 고칼륨혈증·일사병 금기</td><td>성우 500~1000mL, 송아지 200~500mL 정맥 천천히</td></tr>
+<tr><th>바이아민 34 주사</th><td>포도당 5% + 아미노산 12종 + 비타민B군 + 전해질</td><td>영양 수액. 탈수·설사·쇼크 보조</td><td>성우 500~1000mL, 송아지 200~500mL 정맥 천천히</td></tr>
+<tr><th>토노포스판 콤프 (MSD)</th><td>인 제제 + 비타민B12</td><td>대사장애, 경직·마비 보조</td><td>라벨 확인</td></tr>
+<tr><th>카라실주 · 콤비콤-C주 (대성) · 타우린-F 주사 · 로보란트칼이어</th><td>영양제. 성분 미확인</td><td>라벨 확인</td><td>라벨 확인</td></tr>
+</table></div>
+</div>
+</div>
+`;
+}
 const MED_TABS = {
   vac: { fn: med_vacHtml, title:'백신', category:'내과학 · 백신', ibTitle:'백신', infobox:[['분야','백신'],['대상','한우']] },
   resp: { fn: med_respHtml, title:'호흡기', category:'내과학 · 호흡기', ibTitle:'호흡기', infobox:[['분야','호흡기'],['대상','한우']] },
@@ -8157,6 +8227,7 @@ const MED_TABS = {
   grow: { fn: med_growHtml, title:'육성기', category:'사양관리 · 육성기', ibTitle:'육성기', infobox:[['분야','육성기'],['출처','新しい子牛の科学 (일본송아지)']] },
   heifer: { fn: med_heiferHtml, title:'초임우·시설', category:'사양관리 · 초임우·시설', ibTitle:'초임우·시설', infobox:[['분야','초임우·시설'],['출처','新しい子牛の科学 (일본송아지)']] },
   grass: { fn: med_grassHtml, title:'풀정보', category:'사양관리 · 풀정보', ibTitle:'풀정보', infobox:[['분야','풀정보'],['출처','新しい子牛の科学 (일본송아지)']] },
+  nutr: { fn: med_nutrHtml, title:'영양제', category:'약물 · 영양제', ibTitle:'영양제', infobox:[['분야','영양제']] },
 };
 const REPRO_TABS = {
     phys: { fn: reproPhysHtml, title:'호르몬', category:'번식학 · 소 번식생리', ibTitle:'호르몬 (Endocrine & Cycle)', infobox:[
