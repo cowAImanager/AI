@@ -1577,6 +1577,14 @@ details.opt-section summary{cursor:pointer;font-size:12.5px;font-weight:700;colo
   .header-actions .gs-count{order:21;}
   .header-actions .status-badge{order:25;}
 }
+/* 혈통 행: 어미 포함 7칸 */
+@media (min-width:761px){ .info-row.ped-six.ped-seven{grid-template-columns:repeat(7,minmax(0,1fr));gap:12px 10px;} }
+@media (max-width:760px){
+  .info-panel.pedigree .info-row.ped-seven{grid-template-columns:repeat(12,minmax(0,1fr));gap:4px 6px;}
+  .info-panel.pedigree .info-row.ped-seven>.field{grid-column:span 4;}
+  .info-panel.pedigree .info-row.ped-seven>.field:nth-child(-n+4){grid-column:span 3;}
+}
+.dam-link{cursor:pointer;color:var(--primary-dark,#0f766e);text-decoration:underline dotted;}
 </style>
 <style>@media(max-width:600px){header.topbar{margin:0 !important;padding:8px 12px 0 !important;}}</style></head>
 <body>
@@ -2545,7 +2553,8 @@ function renderAnimalView(){
         <div class="info-groups">
           <div class="info-panel pedigree">
             <div class="info-panel-title">${svgIcon('dna',16)} 혈통 · 기본정보</div>
-            <div class="info-row cols3 ped-six">
+            <div class="info-row cols3 ped-six ped-seven">
+              <div class="field"><label>어미</label><div class="val">${(a.damId||'').trim()?`<span class="dam-link" data-action="famGoto" data-id="${esc(a.damId.trim())}" title="${esc(a.damId.trim())}">${esc(a.damId.trim().split(/\s+/).slice(-2).join(' '))}</span>`:'—'}</div></div>
               <div class="field"><label>부</label><div class="val">${esc(a.sire)||'—'}</div></div>
               <div class="field"><label>외조부</label><div class="val">${esc(a.damSire)||'—'}</div></div>
               <div class="field"><label>외외증조부</label><div class="val">${esc(a.damDamSire)||'—'}</div></div>
