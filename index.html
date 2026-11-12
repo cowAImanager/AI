@@ -5051,6 +5051,7 @@ function openAnimalModal(animal){
       <div class="form-grid">
         <div class="field"><label>개체번호 *</label><div style="display:flex;gap:6px;"><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0" style="flex:1;min-width:0;"><button type="button" class="btn secondary small" data-action="traceLookup">이력 조회</button></div><div id="trace_info" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;"></div></div>
         <div class="field"><label>품종</label><select id="f_breed">${breedOpts}</select></div>
+        <div class="field"><label>어미 개체번호</label><input type="text" id="f_damId" list="dam_list" value="${esc(a.damId||'')}" placeholder="고르면 부·외조부·외외증조부 자동"><datalist id="dam_list">${ownerAnimalsFor(modalCtx.owner).filter(x=>x.animalId!==a.animalId).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist><div id="dam_info" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;"></div></div>
         ${textField('부','sire',a.sire)}
         ${textField('외조부','damSire',a.damSire)}
         ${textField('외외증조부','damDamSire',a.damDamSire)}
@@ -5093,11 +5094,43 @@ async function actionTraceLookup(){
     const r = await fetch(TRACE_URL + '?no=' + id);
     const d = await r.json();
     if(!r.ok || d.error){ if(info) info.textContent = '조회 실패: ' + (d.error||r.status); return; }
-    if(d.birth){ const b=document.getElementById('f_birth'); if(b) b.value = d.birth; }
+    if(d.birth){ const b=document.getElementById('f_birth'); if(b) b.value = d.birth; damAutoFill(); }
     if(d.type){ const br=document.getElementById('f_breed'); if(br){ if(/젖소|육우|홀스타인/.test(d.type) && /젖소/.test(d.type)) br.value='젖소'; else if(/한우/.test(d.type)) br.value='한우'; } }
     const parts = [d.type, d.sex, d.birth?('출생 '+d.birth):'', d.farm, d.vaccineDate?('백신 '+d.vaccineDate+(d.vaccineOrder?' '+String(d.vaccineOrder).replace(/\s*차\s*$/,'')+'차':'')):'', d.slaughterDate?('도축 '+d.slaughterDate):''].filter(Boolean);
     if(info) info.textContent = parts.join(' · ') || '정보 없음';
   }catch(e){ if(info) info.textContent = '조회 실패: 네트워크 오류'; }
+}
+
+/* 어미 개체번호 → 송아지 혈통 자동 입력: 부 = 어미가 수태한 수정 KPN, 외조부 = 어미의 부, 외외증조부 = 어미의 외조부 */
+function findAnimalLoose(owner, q){
+  const k=(q||'').replace(/\D/g,''); if(k.length<4) return null;
+  const list=ownerAnimalsFor(owner);
+  return list.find(x=>x.animalId.replace(/\D/g,'')===k) || (k.length>=8 ? list.find(x=>x.animalId.replace(/\D/g,'').endsWith(k)) : null) || null;
+}
+function damConceptionKpn(owner, damId, calfBirth){
+  const recs = recordsOf(owner, damId).filter(r=>r.aiDate && (r.kpn||'').trim());
+  if(!recs.length) return '';
+  if(calfBirth){
+    const target = addDays(calfBirth, -285);
+    const cand = recs.filter(r=>{ const d=dateOnly(r.aiDate); return d<=addDays(calfBirth,-250) && d>=addDays(calfBirth,-320); });
+    if(cand.length){ cand.sort((x,y)=>Math.abs(daysBetween(dateOnly(x.aiDate),target))-Math.abs(daysBetween(dateOnly(y.aiDate),target))); return cand[0].kpn.trim(); }
+    return '';
+  }
+  recs.sort((x,y)=>dateOnly(y.aiDate).localeCompare(dateOnly(x.aiDate)));
+  return recs[0].kpn.trim();
+}
+function damAutoFill(){
+  const owner = modalCtx.owner;
+  const inp = document.getElementById('f_damId'); const info = document.getElementById('dam_info');
+  if(!inp) return;
+  const dam = findAnimalLoose(owner, inp.value);
+  if(!dam){ if(info) info.textContent = inp.value.trim()?'기록부에 없는 개체 — 혈통은 직접 입력':''; return; }
+  if(inp.value!==dam.animalId) inp.value = dam.animalId;
+  const birth = (document.getElementById('f_birth')||{}).value || '';
+  const kpn = damConceptionKpn(owner, dam.animalId, birth);
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el && v && !el.value.trim()) el.value=v; };
+  set('f_sire', kpn); set('f_damSire', dam.sire||''); set('f_damDamSire', dam.damSire||'');
+  if(info) info.textContent = `어미 혈통: 부 ${dam.sire||'-'} · 외조부 ${dam.damSire||'-'} · 수태 KPN ${kpn||(birth?'못 찾음':'출생일 넣으면 정확')}  (빈 칸만 채움)`;
 }
 
 function actionSaveAnimal(){
@@ -5109,6 +5142,7 @@ function actionSaveAnimal(){
   if(dup){ toast('이미 존재하는 개체번호예요.'); return; }
   const fields = {
     breed: (document.getElementById('f_breed')||{}).value || '한우',
+    damId: ((document.getElementById('f_damId')||{}).value||'').trim(),
     sire: document.getElementById('f_sire').value.trim(),
     damSire: document.getElementById('f_damSire').value.trim(),
     damDamSire: document.getElementById('f_damDamSire').value.trim(),
@@ -6620,6 +6654,7 @@ function initEvents(){
       renderMain();
     }
     else if(t.id==='syncbatch_q'){ syncBatchFilter(t.value); }
+    else if(t.id==='f_damId' || (t.id==='f_birth' && document.getElementById('f_damId'))){ damAutoFill(); }
     else if(t.classList && t.classList.contains('ov-free')){
       const key=t.dataset.key; if(ovaryState[key]){ ovaryState[key].free=t.value; const hid=document.getElementById('f_'+key); if(hid) hid.value=ovaryCombined(key); }
     }
