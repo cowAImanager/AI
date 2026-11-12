@@ -5049,7 +5049,7 @@ function openAnimalModal(animal){
       <h2>${isNew?'새 개체 등록':'개체정보 수정'}</h2>
       <div class="modal-sub">축주: ${esc(modalCtx.owner)}</div>
       <div class="form-grid">
-        <div class="field"><label>개체번호 *</label><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0"></div>
+        <div class="field"><label>개체번호 *</label><div style="display:flex;gap:6px;"><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0" style="flex:1;min-width:0;"><button type="button" class="btn secondary small" data-action="traceLookup">이력 조회</button></div><div id="trace_info" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;"></div></div>
         <div class="field"><label>품종</label><select id="f_breed">${breedOpts}</select></div>
         ${textField('부','sire',a.sire)}
         ${textField('외조부','damSire',a.damSire)}
@@ -5079,6 +5079,25 @@ function openAnimalModal(animal){
       </div>
     </div>
   `);
+}
+
+/* 이력제 조회 (Cloudflare Worker 중계) — 출생일·품종 자동 입력 */
+const TRACE_URL = 'https://cow-trace.sunun0.workers.dev/';
+async function actionTraceLookup(){
+  const id = (document.getElementById('f_animalId').value||'').replace(/\D/g,'');
+  const info = document.getElementById('trace_info');
+  if(id.length < 9){ toast('개체번호를 먼저 넣어주세요.'); return; }
+  if(!TRACE_URL){ toast('이력 조회 서버 주소가 아직 설정되지 않았어요.'); return; }
+  if(info) info.textContent = '조회 중…';
+  try{
+    const r = await fetch(TRACE_URL + '?no=' + id);
+    const d = await r.json();
+    if(!r.ok || d.error){ if(info) info.textContent = '조회 실패: ' + (d.error||r.status); return; }
+    if(d.birth){ const b=document.getElementById('f_birth'); if(b) b.value = d.birth; }
+    if(d.type){ const br=document.getElementById('f_breed'); if(br){ if(/젖소|육우|홀스타인/.test(d.type) && /젖소/.test(d.type)) br.value='젖소'; else if(/한우/.test(d.type)) br.value='한우'; } }
+    const parts = [d.type, d.sex, d.birth?('출생 '+d.birth):'', d.farm, d.vaccineDate?('백신 '+d.vaccineDate+(d.vaccineOrder?' '+String(d.vaccineOrder).replace(/\s*차\s*$/,'')+'차':'')):'', d.slaughterDate?('도축 '+d.slaughterDate):''].filter(Boolean);
+    if(info) info.textContent = parts.join(' · ') || '정보 없음';
+  }catch(e){ if(info) info.textContent = '조회 실패: 네트워크 오류'; }
 }
 
 function actionSaveAnimal(){
@@ -6543,6 +6562,7 @@ const ACTIONS = {
   saveSyncBatch: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSyncBatch(); },
   syncBatchAll: ()=>{ document.querySelectorAll('.sync-batch-item').forEach(el=>{ if(el.style.display!=='none' && !el.classList.contains('preg') && !el.classList.contains('early') && !el.classList.contains('insync')){ const cb=el.querySelector('.syncbatch-cb'); if(cb) cb.checked=true; } }); syncBatchUpdateCount(); },
   syncBatchRecs: (ds,e)=>{ e.preventDefault(); const el=e.target.closest('[data-action]'); const it=el.closest('.sync-batch-item'); if(it){ it.classList.toggle('open'); el.textContent=it.classList.contains('open')?'기록 ▴':'기록 ▾'; } },
+  traceLookup: ()=> actionTraceLookup(),
   syncBatchNone: ()=>{ document.querySelectorAll('.syncbatch-cb').forEach(cb=>cb.checked=false); syncBatchUpdateCount(); },
   openSchedImage: ()=>{ openSchedImageModal(); },
   schedImgDays: ds=>{ UI.schedImgDays = parseInt(ds.days,10)||0; openSchedImageModal(); },
