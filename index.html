@@ -306,25 +306,26 @@ main{flex:1;padding:18px 20px 70px;}
 .diff-num{font-size:12px;color:var(--ink-soft);font-weight:600;}
 
 /* 분만예정일 계산 결과 카드 */
-.fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
-.fam-card{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;}
-.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line);}
-.fam-card-head b{color:var(--ink);font-family:var(--mono,monospace);}
-.fam-card-head .fam-pre{font-size:10.5px;}
-.fam-n{margin-left:auto;font-size:11px;font-weight:700;color:var(--primary-dark,#0f766e);}
+.fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+.fam-card{--fc:#14b8a6;border:1px solid #d5f2ee;border-radius:12px;background:var(--surface);padding:0 12px 10px;overflow:hidden;box-shadow:0 1px 3px rgba(20,184,166,.08);}
+.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 -12px 8px;padding:8px 12px;background:#effcfa;border-bottom:1px solid #d5f2ee;}
+.fam-card-head .fam-cow{border-color:var(--fc);}
+.fam-n{margin-left:auto;font-size:11.5px;font-weight:800;color:#0f766e;}
 .fam-tree,.fam-tree ul{list-style:none;margin:0;padding:0;}
-.fam-tree ul{margin-left:10px;padding-left:12px;border-left:1.5px solid var(--line);}
-.fam-tree li{position:relative;padding:2px 0;}
-.fam-tree ul>li::before{content:"";position:absolute;left:-12px;top:14px;width:9px;border-top:1.5px solid var(--line);}
-.fam-cow{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-alt);font-size:12px;cursor:pointer;white-space:nowrap;}
-.fam-cow b{font-family:var(--mono,monospace);font-weight:700;}
-.fam-pre{font-family:var(--mono,monospace);color:var(--ink-soft);font-size:10px;}
-.fam-cow .fam-sub{color:var(--ink-soft);font-size:10.5px;}
-.fam-cow .fam-st{font-size:10px;padding:1px 5px;border-radius:5px;background:var(--surface);color:var(--ink-soft);font-weight:700;}
-.fam-st.ok{background:#dcfce7;color:#166534;}
-.fam-st.warn{background:#ffedd5;color:#9a3412;}
-.fam-st.wait{background:#e0f2fe;color:#075985;}
-.fam-cow.gone{opacity:.5;}
+.fam-tree{margin-left:6px !important;padding-left:12px !important;border-left:2px solid #99e6dc;}
+.fam-tree ul{margin-left:10px;padding-left:12px;border-left:2px solid #99e6dc;}
+.fam-tree li{position:relative;padding:3px 0;}
+.fam-tree li::before{content:"";position:absolute;left:-12px;top:15px;width:10px;border-top:2px solid #99e6dc;}
+.fam-cow{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid #e2e8f0;border-radius:8px;background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;}
+.fam-cow:hover{border-color:var(--fc,#14b8a6);}
+.fam-cow b{font-family:var(--mono,monospace);font-weight:800;color:var(--ink);}
+.fam-pre{font-family:var(--mono,monospace);color:#94a3b8;font-size:10px;}
+.fam-cow .fam-sub{color:#64748b;font-size:10.5px;}
+.fam-cow .fam-st{font-size:10px;padding:1px 6px;border-radius:5px;background:#f1f5f9;color:#475569;font-weight:700;}
+.fam-st.ok{background:#14b8a6;color:#fff;}
+.fam-st.wait{background:#ccfbf1;color:#0f766e;}
+.fam-st.warn{background:#f1f5f9;color:#475569;}
+.fam-cow.gone{opacity:.45;}
 .fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
