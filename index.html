@@ -1855,7 +1855,7 @@ function buildInitial(){
   return d;
 }
 function defaultOwnerProfile(){
-  return { address:'', phone:'', feeds:[], grasses:[], supplements:[] };
+  return { address:'', phone:'', kpns:[], supplements:[] };
 }
 function ensureOwnerMeta(owner){
   if(!DATA.scheduleAnimals[owner]) DATA.scheduleAnimals[owner] = [];
@@ -2076,7 +2076,7 @@ function renderOwnerTabs(){
 function renderSubnav(){
   const tabs = [['animal','개체별'],['date','날짜별'],['ability','암소능력'],['family','가계도'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄'],['aiplan','수정계획']];
   if(isAdmin()) tabs.unshift(['owner','농장정보']);
-  tabs.unshift(['vaccine','백신관리']);
+  tabs.splice(isAdmin()?1:0, 0, ['vaccine','백신관리']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
   `).join('');
@@ -3911,8 +3911,7 @@ function renderDiseaseView(){
 }
 
 const KV_CATS = [
-  ['feeds','사료','예: TMR 단미사료','예: 10kg/일'],
-  ['grasses','풀(조사료)','예: 볏짚, 청보리','예: 3kg/일'],
+  ['kpns','보유 KPN','KPN 번호','보유량 (예: 5스트로)'],
   ['supplements','영양제','예: 미네랄 보충제','예: 50g/일'],
 ];
 
@@ -3975,19 +3974,19 @@ function renderOwnerInfoView(){
           <div class="field"><label>전 농장 내 수정 ${y}년</label><div class="val"><b>${inhouseAiCountForOwner(null, y)}</b>회 <span class="kv2-note" style="display:inline;font-weight:400;color:var(--ink-soft);">(누적 ${inhouseAiCountForOwner(null)}회)</span></div></div>
         </div>`; })()}
       </div>
-      ${kvBlock('feeds','사료')}
-      ${kvBlock('grasses','풀(조사료)')}
+      ${kvBlock('kpns','보유 KPN')}
       ${kvBlock('supplements','영양제')}
     </div>
   `;
 }
 
 function renderKvRows(cat, items){
+  const ph = (KV_CATS.find(c=>c[0]===cat)||[]);
   if(!items.length) return `<div class="empty-state" style="padding:10px;">아직 항목이 없어요. 아래 버튼으로 추가하세요.</div>`;
   return items.map((it, i) => `
     <div class="kv-row" data-idx="${i}">
-      <input type="text" class="kv-name" id="kv_${cat}_name_${i}" placeholder="이름" value="${esc(it.name)}">
-      <input type="text" class="kv-amount" id="kv_${cat}_amount_${i}" placeholder="급여량" value="${esc(it.amount)}">
+      <input type="text" class="kv-name" id="kv_${cat}_name_${i}" placeholder="${esc(ph[2]||'이름')}" value="${esc(it.name)}">
+      <input type="text" class="kv-amount" id="kv_${cat}_amount_${i}" placeholder="${esc(ph[3]||'급여량')}" value="${esc(it.amount)}">
       <button type="button" class="iconbtn" data-action="removeKvRow" data-cat="${cat}" data-idx="${i}">${svgIcon('x',14)}</button>
     </div>
   `).join('');
@@ -5531,6 +5530,7 @@ function openOwnerProfileModal(){
     owner: UI.owner,
     draft: JSON.parse(JSON.stringify(profile)),
   };
+  KV_CATS.forEach(([cat])=>{ if(!Array.isArray(modalCtx.draft[cat])) modalCtx.draft[cat]=[]; });
   renderOwnerProfileModal();
 }
 function renderOwnerProfileModal(){
@@ -5586,8 +5586,7 @@ function actionSaveOwnerProfile(){
   const cleaned = {
     address: document.getElementById('f_opAddress').value.trim(),
     phone: document.getElementById('f_opPhone').value.trim(),
-    feeds: modalCtx.draft.feeds.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
-    grasses: modalCtx.draft.grasses.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
+    kpns: (modalCtx.draft.kpns||[]).filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
     supplements: modalCtx.draft.supplements.filter(it=>it.name.trim()||it.amount.trim()).map(it=>({name:it.name.trim(),amount:it.amount.trim()})),
   };
   DATA.ownerProfiles[owner] = cleaned;
