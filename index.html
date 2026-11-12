@@ -306,18 +306,28 @@ main{flex:1;padding:18px 20px 70px;}
 .diff-num{font-size:12px;color:var(--ink-soft);font-weight:600;}
 
 /* 분만예정일 계산 결과 카드 */
+.fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.fam-card{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;}
+.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+.fam-card-head b{color:var(--ink);font-family:var(--mono,monospace);}
+.fam-card-head .fam-pre{font-size:10.5px;}
+.fam-n{margin-left:auto;font-size:11px;font-weight:700;color:var(--primary-dark,#0f766e);}
 .fam-tree,.fam-tree ul{list-style:none;margin:0;padding:0;}
-.fam-tree ul{margin-left:14px;padding-left:12px;border-left:2px solid var(--line);}
-.fam-tree li{position:relative;padding:3px 0;}
-.fam-tree ul>li::before{content:"";position:absolute;left:-12px;top:15px;width:10px;border-top:2px solid var(--line);}
-.fam-tree>li{padding:6px 0;border-bottom:1px dashed var(--line);}
-.fam-cow{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12.5px;cursor:pointer;}
+.fam-tree ul{margin-left:10px;padding-left:12px;border-left:1.5px solid var(--line);}
+.fam-tree li{position:relative;padding:2px 0;}
+.fam-tree ul>li::before{content:"";position:absolute;left:-12px;top:14px;width:9px;border-top:1.5px solid var(--line);}
+.fam-cow{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-alt);font-size:12px;cursor:pointer;white-space:nowrap;}
 .fam-cow b{font-family:var(--mono,monospace);font-weight:700;}
-.fam-cow .fam-sub{color:var(--ink-soft);font-size:11px;}
-.fam-cow .fam-st{font-size:10.5px;padding:1px 5px;border-radius:5px;background:var(--surface-alt);color:var(--ink-soft);}
+.fam-pre{font-family:var(--mono,monospace);color:var(--ink-soft);font-size:10px;}
+.fam-cow .fam-sub{color:var(--ink-soft);font-size:10.5px;}
+.fam-cow .fam-st{font-size:10px;padding:1px 5px;border-radius:5px;background:var(--surface);color:var(--ink-soft);font-weight:700;}
+.fam-st.ok{background:#dcfce7;color:#166534;}
+.fam-st.warn{background:#ffedd5;color:#9a3412;}
+.fam-st.wait{background:#e0f2fe;color:#075985;}
 .fam-cow.gone{opacity:.5;}
-.fam-cow.ext{cursor:default;border-style:dashed;}
-.fam-free{display:flex;flex-wrap:wrap;gap:6px;}
+.fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
+.fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
+.fam-free{display:flex;flex-wrap:wrap;gap:5px;}
 /* 암소능력 */
 .cab-panel{max-width:none;}
 .cab-summary{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
@@ -2914,27 +2924,31 @@ function renderFamilyView(owner){
   const kids = new Map();
   animals.forEach(a=>{ const d=(a.damId||'').trim(); if(d){ if(!kids.has(d)) kids.set(d,[]); kids.get(d).push(a); } });
   kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
+  const stCls = st => /임신중/.test(st)?'ok':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
+  const idHtml = id => { const g=String(id).trim().split(/\s+/); return g.length>=4 ? `<span class="fam-pre">${esc(g.slice(0,2).join(' '))}</span><b>${esc(g.slice(2).join(' '))}</b>` : `<b>${esc(id)}</b>`; };
+  const count = id => (kids.get(id)||[]).reduce((n,c)=>n+1+count(c.animalId),0);
   const node = (id, depth)=>{
     const a = byId.get(id);
     const ch = (kids.get(id)||[]);
-    const yr = a && a.birth ? dateOnly(a.birth).slice(0,4) : '';
-    const st = a ? shareAnimalStatus(owner,a).status : '';
+    const yr = a && a.birth ? dateOnly(a.birth).slice(2,4) : '';
+    const st = a ? (a.slaughtered?'도축':a.fattening?'비육전환':shareAnimalStatus(owner,a).status) : '';
     const gone = a && (a.slaughtered||a.fattening);
     const label = a
-      ? `<span class="fam-cow ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}"><b>${esc(id)}</b>${yr?` <span class="fam-sub">${yr}년생</span>`:''}${a.sire?` <span class="fam-sub">부 ${esc(a.sire)}</span>`:''}${st?` <span class="fam-st">${esc(st)}</span>`:''}</span>`
-      : `<span class="fam-cow ext"><b>${esc(id)}</b> <span class="fam-sub">기록부에 없는 어미</span></span>`;
+      ? `<span class="fam-cow ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}">${idHtml(id)}${yr?`<span class="fam-sub">'${yr}</span>`:''}${a.sire?`<span class="fam-sub">부 ${esc(a.sire)}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
+      : `<span class="fam-cow ext">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
     return `<li>${label}${ch.length&&depth<8?`<ul>${ch.map(c=>node(c.animalId, depth+1)).join('')}</ul>`:''}</li>`;
   };
-  const roots = [...kids.keys()].filter(d=>{ const a=byId.get(d); return !a || !(a.damId||'').trim() || !byId.has(a.damId.trim()); })
-    .sort((x,y)=> (kids.get(y).length-kids.get(x).length) || x.localeCompare(y));
+  // 뿌리: 기록부에 없는 어미, 또는 어미 번호가 없는 소 (어미가 외부면 그 외부 어미 밑으로 들어감)
+  const roots = [...kids.keys()].filter(d=>{ const a=byId.get(d); return !a || !(a.damId||'').trim(); })
+    .sort((x,y)=> (count(y)-count(x)) || x.localeCompare(y));
   const linked = new Set(); animals.forEach(a=>{ if((a.damId||'').trim()){ linked.add(a.animalId); linked.add(a.damId.trim()); } });
   const noLink = animals.filter(a=>!linked.has(a.animalId) && !a.slaughtered);
   return `
     <div class="open-head"><h2>가계도</h2><span class="open-count">${roots.length}개 모계</span></div>
     <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 10px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면으로 간다.</div>
-    ${roots.length ? `<ul class="fam-tree">${roots.map(r=>node(r,0)).join('')}</ul>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
-    ${noLink.length ? `<div style="font-size:12px;color:var(--ink-soft);margin:14px 0 6px;font-weight:700;">연결 안 된 소 ${noLink.length}두</div>
-      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(0,4):''; return `<span class="fam-cow ${a.fattening?'gone':''}" data-action="famGoto" data-id="${esc(a.animalId)}"><b>${esc(a.animalId)}</b>${yr?` <span class="fam-sub">${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
+    ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
+    ${noLink.length ? `<div class="fam-free-title">연결 안 된 소 ${noLink.length}두</div>
+      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; return `<span class="fam-cow ${a.fattening?'gone':''}" data-action="famGoto" data-id="${esc(a.animalId)}">${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
 }
 /* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
 function abilityDetailHtml(owner,a){
