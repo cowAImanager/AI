@@ -506,12 +506,23 @@ main{flex:1;padding:18px 20px 70px;}
 .sync-alltime button{border:1px solid var(--line);background:var(--surface-alt);color:var(--ink);border-radius:7px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;height:26px;}
 .sync-batch-tools{display:flex;gap:6px;align-items:center;margin:6px 0 8px;flex-wrap:wrap;}
 .sync-batch-tools input{flex:1 1 140px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);}
-.sync-batch-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 6px;background:var(--surface-alt);}
-.sync-batch-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:12px;}
+.sync-batch-list{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 6px;background:var(--surface-alt);}
+.sync-batch-item{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 8px;padding:6px 4px;border-bottom:1px solid var(--line);font-size:12px;}
+.sync-batch-item .sb-main{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:pointer;}
+.sync-batch-item .sb-body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.sync-batch-item .sb-top{display:flex;align-items:center;gap:8px;}
+.sync-batch-item .sb-meta{font-size:11px;color:var(--ink-soft);line-height:1.45;}
+.sync-batch-item .sb-warn{color:#9ca3af;font-weight:700;}
+.sync-batch-item .sb-late{color:#d97706;font-weight:700;}
+.sync-batch-item.early,.sync-batch-item.insync{opacity:.55;}
+.sync-batch-item .sb-more{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:11px;padding:2px 6px;color:var(--ink-soft);cursor:pointer;flex-shrink:0;}
+.sync-batch-item .sb-recs{display:none;flex-basis:100%;margin:2px 0 2px 24px;padding:6px 8px;border-radius:8px;background:var(--surface);font-size:11px;line-height:1.5;color:var(--ink);}
+.sync-batch-item.open .sb-recs{display:block;}
+.sync-batch-item .sb-rec+.sb-rec{margin-top:4px;padding-top:4px;border-top:1px dashed var(--line);}
 .sync-batch-item:last-child{border-bottom:none;}
 .sync-batch-item.preg{opacity:.45;}
 .sync-batch-item .sb-status{margin-left:auto;font-size:11px;color:var(--ink-soft);white-space:nowrap;}
-.sync-batch-item input{width:16px;height:16px;flex-shrink:0;}
+.sync-batch-item input{width:16px;height:16px;flex-shrink:0;margin-top:2px;}
 .open-group{background:var(--surface);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin:8px 0 12px;}
 .open-group.muted{border-color:var(--line);background:var(--surface-alt);}
 .open-basis .open-repeat{margin:0 4px 0 0;}
@@ -4280,6 +4291,51 @@ function blankRecord(animalId){
     sync7Type:'', sync7Date:null };
 }
 
+/* 동기화 일괄: 개체 판단용 요약 (분만 후 일수·수정·질환·진행중 동기화) + 최근 기록 3건 */
+function syncBatchInfo(owner, a){
+  const recs = recordsOf(owner, a.animalId);
+  const today = todayStr();
+  const meta = [];
+  const preg = isCurrentlyPregnant(recs);
+  const calv = [latestCalvingDate(recs), dateOnly(a.lastCalving||'')].filter(Boolean).sort().pop() || '';
+  const pp = calv ? daysBetween(calv, today) : null;
+  let early=false;
+  const aiRecs = recs.filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
+  const lastAi = aiRecs.length ? dateOnly(aiRecs[0].aiDate) : '';
+  const bredSince = lastAi && calv && lastAi>=calv;
+  if(pp!=null && !preg && bredSince) meta.push({t:`분만 ${pp}일`});
+  else if(pp!=null && !preg){
+    if(pp<30){ early=true; meta.push({t:`분만 ${pp}일 (30일 미만)`, cls:'sb-warn'}); }
+    else if(pp>80) meta.push({t:`분만 ${pp}일 (80일 지남)`, cls:'sb-late'});
+    else meta.push({t:`분만 ${pp}일`});
+  }
+  if(!preg && lastAi && (!calv || lastAi>=calv)){
+    const n = currentAiCount(a, recs);
+    meta.push({t:`수정${n?' '+n+'회':''} (최근 ${fmtShort(lastAi)}, ${daysBetween(lastAi, today)}일 전)`});
+  }
+  let insync=false;
+  recs.forEach(r=>{ for(let i=1;i<=SYNC_STEPS;i++){ const d=r['sync'+i+'Type']&&r['sync'+i+'Date']?dateOnly(r['sync'+i+'Date']):''; if(d && d>=today) insync=true; } });
+  if(insync){ const f=recs.map(firstSyncDate).filter(Boolean).map(dateOnly).sort().pop(); meta.push({t:`동기화 진행중${f?' '+fmtShort(f)+'~':''}`, cls:'sb-warn'}); }
+  const ut = recs.find(r=>(r.uterineDisease||'').trim());
+  if(ut && !ut.uterineResolved) meta.push({t:`자궁: ${ut.uterineDisease.trim()}`, cls:'sb-late'});
+  const ov = recs.find(r=>(r.ovarianDisease||'').trim());
+  if(ov && (!lastAi || dateOnly(ov.examDate||'')>=lastAi)) meta.push({t:`난소: ${ov.ovarianDisease.trim()}`});
+  const recsHtml = recs.slice(0,3).map(r=>{
+    const d = dateOnly(r.examDate||r.aiDate||r.estrusDate||firstSyncDate(r)||'');
+    const parts = [];
+    if(r.aiDate) parts.push('수정');
+    const rx=rectalSummary(r), us=ultraSummary(r), dn=dateNoteSummary(r);
+    if(rx) parts.push('직장 '+rx);
+    if(us) parts.push('초음파 '+us);
+    if(dn) parts.push(dn);
+    if(r.hormoneTreatment) parts.push('처치 '+r.hormoneTreatment);
+    if(r.uterineTx) parts.push('자궁처치 '+r.uterineTx);
+    const sy=syncSummary(r); if(sy) parts.push('동기화 '+sy);
+    if(r.notes) parts.push(r.notes);
+    return `<div class="sb-rec"><b>${d?fmtShort(d):'-'}</b> ${esc(parts.join(' · ')||'기록 내용 없음')}</div>`;
+  }).join('');
+  return { meta, early, insync, recsHtml };
+}
 /* ---------- 동기화 일괄 입력 (여러 소 한 번에) ---------- */
 function openSyncBatchModal(owner, preset){
   UI.activeSyncProtocol = null;
@@ -4287,7 +4343,7 @@ function openSyncBatchModal(owner, preset){
   modalCtx = { type:'syncBatch', owner };
   const animals = ownerAnimalsFor(owner).filter(a=>!a.fattening && !a.slaughtered).map(a=>{
     const st = shareAnimalStatus(owner, a);
-    return { id:a.animalId, status:st.status, preg: st.status==='임신중' };
+    return Object.assign({ id:a.animalId, status:st.status, preg: st.status==='임신중' }, syncBatchInfo(owner, a));
   }).sort((a,b)=> (a.preg-b.preg) || a.id.localeCompare(b.id));
   openModal(`
     <div class="modal">
@@ -4303,11 +4359,16 @@ function openSyncBatchModal(owner, preset){
         <button type="button" class="btn secondary small" data-action="syncBatchNone">해제</button>
       </div>
       <div class="sync-batch-list" id="syncbatch_list">
-        ${animals.map(a=>`<label class="sync-batch-item ${a.preg?'preg':''}" data-id="${esc(a.id.replace(/\s/g,''))}">
-          <input type="checkbox" class="syncbatch-cb" value="${esc(a.id)}">
-          <span class="tag-chip sm">${esc(a.id)}</span>
-          <span class="sb-status">${esc(a.status||'')}</span>
-        </label>`).join('') || '<div class="empty-state">등록된 소가 없어요.</div>'}
+        ${animals.map(a=>`<div class="sync-batch-item ${a.preg?'preg':''} ${a.early?'early':''} ${a.insync?'insync':''}" data-id="${esc(a.id.replace(/\s/g,''))}">
+          <label class="sb-main">
+            <input type="checkbox" class="syncbatch-cb" value="${esc(a.id)}">
+            <span class="sb-body">
+              <span class="sb-top"><span class="tag-chip sm">${esc(a.id)}</span><span class="sb-status">${esc(a.status||'')}</span></span>
+              ${a.meta.length?`<span class="sb-meta">${a.meta.map(m=>`<span class="${m.cls||''}">${esc(m.t)}</span>`).join(' · ')}</span>`:''}
+            </span>
+          </label>
+          ${a.recsHtml?`<button type="button" class="sb-more" data-action="syncBatchRecs">기록 ▾</button><div class="sb-recs">${a.recsHtml}</div>`:''}
+        </div>`).join('') || '<div class="empty-state">등록된 소가 없어요.</div>'}
       </div>
       <div class="modal-actions">
         <button class="btn secondary" data-action="closeModal">취소</button>
@@ -6480,7 +6541,8 @@ const ACTIONS = {
   openSyncBatch: ()=>{ if(!isAdmin()) return noAdminToast(); openSyncBatchModal(UI.owner); },
   openSyncBatchGroup: (ds,e)=>{ if(e) e.stopPropagation(); if(!isAdmin()) return noAdminToast(); openSyncBatchModal(UI.owner, { date: ds.date, ids: (ds.ids||'').split('|').filter(Boolean) }); },
   saveSyncBatch: ()=>{ if(!isAdmin()) return noAdminToast(); actionSaveSyncBatch(); },
-  syncBatchAll: ()=>{ document.querySelectorAll('.sync-batch-item').forEach(el=>{ if(el.style.display!=='none' && !el.classList.contains('preg')){ const cb=el.querySelector('.syncbatch-cb'); if(cb) cb.checked=true; } }); syncBatchUpdateCount(); },
+  syncBatchAll: ()=>{ document.querySelectorAll('.sync-batch-item').forEach(el=>{ if(el.style.display!=='none' && !el.classList.contains('preg') && !el.classList.contains('early') && !el.classList.contains('insync')){ const cb=el.querySelector('.syncbatch-cb'); if(cb) cb.checked=true; } }); syncBatchUpdateCount(); },
+  syncBatchRecs: (ds,e)=>{ e.preventDefault(); const el=e.target.closest('[data-action]'); const it=el.closest('.sync-batch-item'); if(it){ it.classList.toggle('open'); el.textContent=it.classList.contains('open')?'기록 ▴':'기록 ▾'; } },
   syncBatchNone: ()=>{ document.querySelectorAll('.syncbatch-cb').forEach(cb=>cb.checked=false); syncBatchUpdateCount(); },
   openSchedImage: ()=>{ openSchedImageModal(); },
   schedImgDays: ds=>{ UI.schedImgDays = parseInt(ds.days,10)||0; openSchedImageModal(); },
