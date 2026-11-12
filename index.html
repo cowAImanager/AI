@@ -5108,6 +5108,7 @@ function actionDeleteRecord(id){
 function openAnimalModal(animal){
   const isNew = !animal;
   modalCtx = { type:'animal', owner: animal?animal.owner:UI.owner, originalId: animal?animal.animalId:null };
+  modalCtx.pedAuto = animal && (animal.damId||'').trim() ? pedFromDam(modalCtx.owner, animal.damId, animal.birth?dateOnly(animal.birth):'') : null;
   const a = animal || { animalId:'', breed:'한우', sire:'', damSire:'', damDamSire:'', birth:null, parity:'', lastCalving:null, aiDifficulty:'', aiDifficultyNote:'', waveMode:'2', cycleLength:'21', manualCycleDay:'' };
   const diffOpts = [1,2,3,4,5].map(n=>`<option value="${n}" ${String(a.aiDifficulty)===String(n)?'selected':''}>${n}</option>`).join('');
   const breedVal = a.breed || '한우';
@@ -5189,6 +5190,11 @@ function damConceptionKpn(owner, damId, calfBirth){
   recs.sort((x,y)=>dateOnly(y.aiDate).localeCompare(dateOnly(x.aiDate)));
   return recs[0].kpn.trim();
 }
+function pedFromDam(owner, damQ, birth){
+  const dam = findAnimalLoose(owner, damQ);
+  if(!dam) return null;
+  return { damId: dam.animalId, sire: damConceptionKpn(owner, dam.animalId, birth), damSire: dam.sire||'', damDamSire: dam.damSire||'', dam };
+}
 function damAutoFill(){
   const owner = modalCtx.owner;
   const inp = document.getElementById('f_damId'); const info = document.getElementById('dam_info');
@@ -5197,10 +5203,15 @@ function damAutoFill(){
   if(!dam){ if(info) info.textContent = inp.value.trim()?'기록부에 없는 개체 — 혈통은 직접 입력':''; return; }
   if(inp.value!==dam.animalId) inp.value = dam.animalId;
   const birth = (document.getElementById('f_birth')||{}).value || '';
-  const kpn = damConceptionKpn(owner, dam.animalId, birth);
-  const set = (id,v)=>{ const el=document.getElementById(id); if(el && v && !el.value.trim()) el.value=v; };
-  set('f_sire', kpn); set('f_damSire', dam.sire||''); set('f_damDamSire', dam.damSire||'');
-  if(info) info.textContent = `어미 혈통: 부 ${dam.sire||'-'} · 외조부 ${dam.damSire||'-'} · 수태 KPN ${kpn||(birth?'못 찾음':'출생일 넣으면 정확')}  (빈 칸만 채움)`;
+  const ped = pedFromDam(owner, dam.animalId, birth);
+  const kpn = ped.sire;
+  const prev = modalCtx.pedAuto || {};
+  // 빈 칸이거나, 이전에 자동으로 채운 값 그대로면 새 어미 기준으로 바꾼다. 직접 고친 값은 그대로 둔다.
+  const set = (id,key)=>{ const el=document.getElementById(id); if(!el) return; const cur=el.value.trim();
+    if(!cur || (prev[key]!=null && cur===String(prev[key]).trim())) el.value = ped[key]||''; };
+  set('f_sire','sire'); set('f_damSire','damSire'); set('f_damDamSire','damDamSire');
+  modalCtx.pedAuto = ped;
+  if(info) info.textContent = `어미 혈통: 부 ${dam.sire||'-'} · 외조부 ${dam.damSire||'-'} · 수태 KPN ${kpn||(birth?'못 찾음':'출생일 넣으면 정확')}  (직접 고친 칸은 유지)`;
 }
 
 function actionSaveAnimal(){
