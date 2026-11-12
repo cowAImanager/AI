@@ -317,6 +317,7 @@ main{flex:1;padding:18px 20px 70px;}
 .fam-cow .fam-st{font-size:10.5px;padding:1px 5px;border-radius:5px;background:var(--surface-alt);color:var(--ink-soft);}
 .fam-cow.gone{opacity:.5;}
 .fam-cow.ext{cursor:default;border-style:dashed;}
+.fam-free{display:flex;flex-wrap:wrap;gap:6px;}
 /* 암소능력 */
 .cab-panel{max-width:none;}
 .cab-summary{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
@@ -2932,7 +2933,8 @@ function renderFamilyView(owner){
     <div class="open-head"><h2>가계도</h2><span class="open-count">${roots.length}개 모계</span></div>
     <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 10px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면으로 간다.</div>
     ${roots.length ? `<ul class="fam-tree">${roots.map(r=>node(r,0)).join('')}</ul>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
-    ${noLink.length ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:14px;">연결 안 된 소 ${noLink.length}두</div>` : ''}`;
+    ${noLink.length ? `<div style="font-size:12px;color:var(--ink-soft);margin:14px 0 6px;font-weight:700;">연결 안 된 소 ${noLink.length}두</div>
+      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(0,4):''; return `<span class="fam-cow ${a.fattening?'gone':''}" data-action="famGoto" data-id="${esc(a.animalId)}"><b>${esc(a.animalId)}</b>${yr?` <span class="fam-sub">${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
 }
 /* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
 function abilityDetailHtml(owner,a){
