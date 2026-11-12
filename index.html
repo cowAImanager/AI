@@ -306,6 +306,17 @@ main{flex:1;padding:18px 20px 70px;}
 .diff-num{font-size:12px;color:var(--ink-soft);font-weight:600;}
 
 /* 분만예정일 계산 결과 카드 */
+.fam-tree,.fam-tree ul{list-style:none;margin:0;padding:0;}
+.fam-tree ul{margin-left:14px;padding-left:12px;border-left:2px solid var(--line);}
+.fam-tree li{position:relative;padding:3px 0;}
+.fam-tree ul>li::before{content:"";position:absolute;left:-12px;top:15px;width:10px;border-top:2px solid var(--line);}
+.fam-tree>li{padding:6px 0;border-bottom:1px dashed var(--line);}
+.fam-cow{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12.5px;cursor:pointer;}
+.fam-cow b{font-family:var(--mono,monospace);font-weight:700;}
+.fam-cow .fam-sub{color:var(--ink-soft);font-size:11px;}
+.fam-cow .fam-st{font-size:10.5px;padding:1px 5px;border-radius:5px;background:var(--surface-alt);color:var(--ink-soft);}
+.fam-cow.gone{opacity:.5;}
+.fam-cow.ext{cursor:default;border-style:dashed;}
 /* 암소능력 */
 .cab-panel{max-width:none;}
 .cab-summary{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
@@ -2054,8 +2065,9 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['ability','암소능력'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['vaccine','백신관리'],['schedule','스케줄'],['aiplan','수정계획']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['ability','암소능력'],['family','가계도'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄'],['aiplan','수정계획']];
   if(isAdmin()) tabs.unshift(['owner','농장정보']);
+  tabs.unshift(['vaccine','백신관리']);
   return tabs.map(([k,label]) => `
     <button class="${UI.view===k?'active':''}" data-action="setView" data-view="${k}">${label}</button>
   `).join('');
@@ -2163,6 +2175,7 @@ function renderMain(){
   else if(UI.view==='vaccine') main.innerHTML = renderVaccineView();
   else if(UI.view==='aiplan') main.innerHTML = renderAiPlanPanel(UI.owner);
   else if(UI.view==='ability') main.innerHTML = renderAbilityView(UI.owner);
+  else if(UI.view==='family') main.innerHTML = renderFamilyView(UI.owner);
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
     const newList = document.getElementById('animalListBox');
@@ -2881,6 +2894,36 @@ function abilityRecHtml(v,a){
   const r=abilityRecommend(v,a);
   if(!r.list.length) return `<span class="cab-dim">보유 정액 없음</span>`;
   return r.list.map(x=>`<span class="cab-reck ${x.inbred?'inbred':''}" title="${x.inbred?('근친 주의: '+x.inbred):(r.has?x.why+' 보완':'종합 상위')}">${x.inbred?'⚠':''}${esc(x.kpn)}<i>${x.inbred?'근친':(r.has?x.why:'종합')}</i></span>`).join('')+(r.fromStock?'':'<span class="cab-dim"> (목록 전체)</span>');
+}
+/* ============================================================
+   가계도 — 어미 개체번호로 이어진 모계 계보
+============================================================ */
+function renderFamilyView(owner){
+  const animals = ownerAnimalsFor(owner);
+  const byId = new Map(animals.map(a=>[a.animalId,a]));
+  const kids = new Map();
+  animals.forEach(a=>{ const d=(a.damId||'').trim(); if(d){ if(!kids.has(d)) kids.set(d,[]); kids.get(d).push(a); } });
+  kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
+  const node = (id, depth)=>{
+    const a = byId.get(id);
+    const ch = (kids.get(id)||[]);
+    const yr = a && a.birth ? dateOnly(a.birth).slice(0,4) : '';
+    const st = a ? shareAnimalStatus(owner,a).status : '';
+    const gone = a && (a.slaughtered||a.fattening);
+    const label = a
+      ? `<span class="fam-cow ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}"><b>${esc(id)}</b>${yr?` <span class="fam-sub">${yr}년생</span>`:''}${a.sire?` <span class="fam-sub">부 ${esc(a.sire)}</span>`:''}${st?` <span class="fam-st">${esc(st)}</span>`:''}</span>`
+      : `<span class="fam-cow ext"><b>${esc(id)}</b> <span class="fam-sub">기록부에 없는 어미</span></span>`;
+    return `<li>${label}${ch.length&&depth<8?`<ul>${ch.map(c=>node(c.animalId, depth+1)).join('')}</ul>`:''}</li>`;
+  };
+  const roots = [...kids.keys()].filter(d=>{ const a=byId.get(d); return !a || !(a.damId||'').trim() || !byId.has(a.damId.trim()); })
+    .sort((x,y)=> (kids.get(y).length-kids.get(x).length) || x.localeCompare(y));
+  const linked = new Set(); animals.forEach(a=>{ if((a.damId||'').trim()){ linked.add(a.animalId); linked.add(a.damId.trim()); } });
+  const noLink = animals.filter(a=>!linked.has(a.animalId) && !a.slaughtered);
+  return `
+    <div class="open-head"><h2>가계도</h2><span class="open-count">${roots.length}개 모계</span></div>
+    <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 10px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면으로 간다.</div>
+    ${roots.length ? `<ul class="fam-tree">${roots.map(r=>node(r,0)).join('')}</ul>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
+    ${noLink.length ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:14px;">연결 안 된 소 ${noLink.length}두</div>` : ''}`;
 }
 /* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
 function abilityDetailHtml(owner,a){
@@ -6410,6 +6453,7 @@ const ACTIONS = {
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
+  famGoto: ds=>{ UI.view='animal'; UI.selectedAnimal=ds.id; render(); },
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
   setPregFilter: ds=>{ UI.pregFilter = (UI.pregFilter===ds.filter)?'all':ds.filter; renderMain(); },
