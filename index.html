@@ -328,6 +328,9 @@ main{flex:1;padding:18px 20px 70px;}
 .fam-st.warn{background:#e2e8f0;color:#334155;}
 .fam-st.bad{background:#fdd3d3;color:#991b1b;}
 .fam-cow.gone{opacity:.45;}
+.fam-reg{font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;color:#64748b;}
+.fam-reg.r-고등{background:#f3e3a8;color:#6b5205;}
+.fam-reg.r-우량,.fam-reg.r-초우량{background:#c3f1e9;color:#0f766e;}
 .fam-cow.oneyear{border-color:#E5B400;background:#FFF8DC;}
 .fam-cow.oneyear b{color:#5a4500;}
 html[data-theme="dark"] .fam-cow.oneyear{background:#3a3010;border-color:#a57f00;}
@@ -2107,7 +2110,7 @@ function renderOwnerTabs(){
 }
 
 function renderSubnav(){
-  const tabs = [['animal','개체별'],['date','날짜별'],['ability','암소능력'],['family','가계도'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄'],['aiplan','수정계획']];
+  const tabs = [['animal','개체별'],['date','날짜별'],['family','가계도'],['open','공태관리'],['pregcheck','임신감정'],['disease','질환관리'],['schedule','스케줄'],['aiplan','수정계획']];
   if(isAdmin()) tabs.unshift(['owner','농장정보']);
   tabs.splice(isAdmin()?1:0, 0, ['vaccine','백신관리']);
   return tabs.map(([k,label]) => `
@@ -2216,7 +2219,7 @@ function renderMain(){
   else if(UI.view==='disease') main.innerHTML = renderDiseaseView();
   else if(UI.view==='vaccine') main.innerHTML = renderVaccineView();
   else if(UI.view==='aiplan') main.innerHTML = renderAiPlanPanel(UI.owner);
-  else if(UI.view==='ability') main.innerHTML = renderAbilityView(UI.owner);
+  else if(UI.view==='ability'){ UI.view='family'; main.innerHTML = renderFamilyView(UI.owner); }
   else if(UI.view==='family'){ main.innerHTML = renderFamilyView(UI.owner); if(UI.famQ) famFilter(UI.famQ); }
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
@@ -2578,7 +2581,7 @@ function renderAnimalView(){
       detailHtml = `
         <button class="btn secondary small mobile-back" data-action="backToList">← 목록으로</button>
         <div class="animal-detail-head">
-          <span class="head-id-wrap">${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'lg '+(a.fattening||a.slaughtered?'fattened':''))+(f.oneYear?'<span class="oy-badge">1년1산</span>':'')+(f.repeat?`<span class="open-repeat" style="font-size:11px;padding:2px 7px;">리피트 ${f.aiN}회</span>`:''); })()}</span>
+          <span class="head-id-wrap">${(()=>{ const f=animalFlags(UI.owner,a); return idChip(a,f,'lg '+(a.fattening||a.slaughtered?'fattened':''))+(f.oneYear?'<span class="oy-badge">1년1산</span>':'')+(()=>{ const rg=regOf(UI.owner,a); return (rg&&rg!=='미등록')?`<span class="abl-reg reg-${rg}" style="font-size:11px;margin-left:4px;">${rg}</span>`:''; })()+(f.repeat?`<span class="open-repeat" style="font-size:11px;padding:2px 7px;">리피트 ${f.aiN}회</span>`:''); })()}</span>
           <div class="head-actions">
             ${isAdmin()?`<button class="btn secondary small" data-action="editAnimal" data-id="${esc(a.animalId)}">개체정보 수정</button>
             <button class="btn danger small" data-action="deleteAnimal" data-id="${esc(a.animalId)}">개체 삭제</button>`:''}
@@ -2879,6 +2882,7 @@ const ABILITY_REGS=['','미등록','기초','혈통','고등','우량','초우�
 const ABILITY_TRAITS=[['cw','도체중','kg'],['ema','등심','cm²'],['bf','등지방','mm'],['ms','근내','점']];
 const ABILITY_SD=[14,3.4,1.0,0.4]; // 형질별 EPD 표준편차(gongsu 모델과 동일) — 암소·수소 값을 같은 자로 재기 위함
 function abilityKey(owner,aid){ return `${owner}|${aid}`; }
+function regOf(owner,a){ return (a && a.reg!=null && a.reg!=='') ? a.reg : ((a && abilityGet(owner,a.animalId).reg)||''); }
 function abilityGet(owner,aid){ return ((DATA.cowAbility||{})[abilityKey(owner,aid)])||{}; }
 function abilityUpdate(owner,aid,field,value,el){
   if(!isAdmin()){ const cur=abilityGet(owner,aid); if(el){ if(/^prog\d+[qy]$/.test(field)){ const c=(cur.prog||[])[parseInt(field.slice(4),10)]||''; el.value=field.endsWith('q')?c.replace(/[ABC]$/,''):((c.match(/[ABC]$/)||[''])[0]); } else el.value=cur[field]==null?'':cur[field]; } return noAdminToast(); }
@@ -2972,7 +2976,7 @@ function renderFamilyView(owner){
     const st = a ? famStatus(owner,a) : '';
     const gone = a && (a.slaughtered||a.fattening);
     const label = a
-      ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" data-key="${esc(id.replace(/\D/g,''))}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
+      ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" data-key="${esc(id.replace(/\D/g,''))}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(()=>{ const rg=regOf(owner,a); return (rg&&rg!=='미등록')?`<span class="fam-reg r-${rg}">${rg}</span>`:''; })()}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
       : `<span class="fam-cow ext" data-key="${esc(id.replace(/\D/g,''))}">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
     const add = a ? `<button type="button" class="fam-add" data-action="famAddProg" data-dam="${esc(id)}" title="후대 등급 추가">+</button>` : '';
     const pl = prog.get(id)||[];
@@ -5216,6 +5220,7 @@ function openAnimalModal(animal){
       <div class="form-grid">
         <div class="field"><label>개체번호 *</label><div style="display:flex;gap:6px;"><input type="text" id="f_animalId" value="${esc(a.animalId)}" placeholder="002 0000 0000 0" style="flex:1;min-width:0;"><button type="button" class="btn secondary small" data-action="traceLookup">이력 조회</button></div><div id="trace_info" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;"></div></div>
         <div class="field"><label>품종</label><select id="f_breed">${breedOpts}</select></div>
+        <div class="field"><label>등록구분</label><select id="f_reg">${ABILITY_REGS.map(r=>`<option value="${r}" ${regOf(modalCtx.owner,a)===r?'selected':''}>${r||'선택 안 함'}</option>`).join('')}</select></div>
         <div class="field"><label>어미 개체번호</label><input type="text" id="f_damId" list="dam_list" value="${esc(a.damId||'')}" placeholder="고르면 부·외조부·외외증조부 자동"><datalist id="dam_list">${ownerAnimalsFor(modalCtx.owner).filter(x=>x.animalId!==a.animalId).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist><div id="dam_info" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;"></div></div>
         ${textField('부','sire',a.sire)}
         ${textField('외조부','damSire',a.damSire)}
@@ -5318,6 +5323,7 @@ function actionSaveAnimal(){
   const fields = {
     breed: (document.getElementById('f_breed')||{}).value || '한우',
     damId: ((document.getElementById('f_damId')||{}).value||'').trim(),
+    reg: ((document.getElementById('f_reg')||{}).value||''),
     sire: document.getElementById('f_sire').value.trim(),
     damSire: document.getElementById('f_damSire').value.trim(),
     damDamSire: document.getElementById('f_damDamSire').value.trim(),
