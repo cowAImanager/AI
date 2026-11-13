@@ -353,12 +353,12 @@ html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .pg-g.on{border-color:#0d9488;background:#e3f9f5;color:#0f766e;}
 html[data-theme="dark"] .fam-prog{background:transparent;}
 @media (max-width:760px){
-  .fam-tree li{white-space:nowrap;padding:2px 0 2px 10px;}
+  .fam-tree li{padding:2px 0 2px 10px;}
   .fam-tree li::before{top:12px;width:8px;}
   .fam-tree li:last-child::after{height:13px;}
   .fam-tree ul{padding-left:9px;}
   .fam-card{overflow-x:auto;padding:0 8px 8px;}
-  .fam-card-head{margin:0 -8px 6px;padding:6px 8px;gap:4px;flex-wrap:nowrap;white-space:nowrap;}
+  .fam-card-head{margin:0 -8px 6px;padding:6px 8px;gap:4px;}
   .fam-cards,.fam-free{-webkit-text-size-adjust:100%;text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard',sans-serif;}
   .fam-cow b{font-family:ui-monospace,monospace;}
   .fam-cow{gap:3px;padding:2px 5px;font-size:10px;border-radius:6px;}
@@ -370,7 +370,9 @@ html[data-theme="dark"] .fam-prog{background:transparent;}
   .fam-add{width:16px;height:16px;font-size:11px;line-height:13px;margin-left:2px;}
 }
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
-.fam-free{display:flex;flex-wrap:wrap;gap:5px;}
+.fam-free{display:flex;flex-wrap:wrap;gap:5px 8px;}
+.fam-free-item{display:inline-flex;align-items:center;}
+.fam-free-item .fam-add{margin-left:2px;}
 /* 암소능력 */
 .cab-panel{max-width:none;}
 .cab-summary{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
@@ -3013,7 +3015,7 @@ function renderFamilyView(owner){
     <div class="fam-tools"><input type="search" id="fam_q" placeholder="개체번호 검색 (뒷자리만 쳐도 됨)" value="${esc(UI.famQ||'')}" inputmode="numeric"><button type="button" class="btn secondary small" data-action="famAddProg" data-dam="">+ 후대 등급</button></div>
     ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}</div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
     ${noLink.length ? `<div class="fam-free-title">연결 안 된 소 ${noLink.length}두</div>
-      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" data-key="${esc(a.animalId.replace(/\D/g,''))}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
+      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-free-item"><span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" data-key="${esc(a.animalId.replace(/\D/g,''))}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span><button type="button" class="fam-add" data-action="famAddProg" data-dam="${esc(a.animalId)}" title="후대 등급 추가">+</button></span>`; }).join('')}</div>` : ''}`;
 }
 function famFilter(q){
   UI.famQ = q;
@@ -3021,7 +3023,7 @@ function famFilter(q){
   const view=document.getElementById('main')||document;
   view.querySelectorAll('.fam-cow,.fam-prog').forEach(el=>el.classList.toggle('hit', !!k && (el.dataset.key||'').includes(k)));
   view.querySelectorAll('.fam-card').forEach(c=>{ c.style.display = (!k || c.querySelector('.hit')) ? '' : 'none'; });
-  view.querySelectorAll('.fam-free .fam-cow').forEach(el=>{ el.style.display = (!k || el.classList.contains('hit')) ? '' : 'none'; });
+  view.querySelectorAll('.fam-free-item').forEach(el=>{ el.style.display = (!k || el.querySelector('.hit')) ? '' : 'none'; });
   const first=view.querySelector('.fam-cards .hit'); if(first && k.length>=3) first.scrollIntoView({block:'center',behavior:'smooth'});
 }
 /* 후대(거세·도축) 성적 입력 */
