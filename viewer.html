@@ -122,6 +122,38 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
   .v-stat .n{font-size:18px;}
   .v-tab{font-size:12.5px;gap:4px;}
 }
+
+/* 가계도 */
+#vfam .fcard{border:1px solid #a7ece2;border-radius:12px;background:var(--surface);padding:0 12px 10px;margin-bottom:10px;overflow:hidden;}
+#vfam .fhead{margin:0 -12px 8px;padding:8px 12px;background:#e3f9f5;border-bottom:1px solid #a7ece2;}
+#vfam .fhead .fc{border-color:#14b8a6;}
+#vfam ul{list-style:none;margin:0;padding:0;}
+#vfam .ftree{margin-left:6px;}
+#vfam ul ul{padding-left:12px;}
+#vfam li{position:relative;padding:3px 0 3px 12px;}
+#vfam li::after{content:"";position:absolute;left:0;top:0;bottom:0;border-left:1.5px solid #c2ece5;}
+#vfam li:last-child::after{bottom:auto;height:16px;}
+#vfam li::before{content:"";position:absolute;left:0;top:15px;width:10px;border-top:1.5px solid #c2ece5;}
+#vfam .fc{display:inline-flex;flex-wrap:wrap;align-items:center;gap:5px;padding:4px 9px;border:1px solid #d6dee8;border-radius:8px;background:var(--surface);font-size:12px;}
+#vfam .fc b{font-family:ui-monospace,monospace;font-weight:800;font-size:13.5px;}
+#vfam .fc.oy{border-color:#E5B400;background:#FFF8DC;}
+#vfam .fc.gone{opacity:.45;}
+#vfam .fc.ext{border-style:dashed;background:transparent;}
+#vfam .fc.hit{outline:2.5px solid #f59e0b;outline-offset:1px;}
+#vfam .fs{color:#64748b;font-size:11px;}
+#vfam .fst{font-size:10.5px;padding:1px 7px;border-radius:5px;background:#e2e8f0;color:#334155;font-weight:700;}
+#vfam .fst.ok{background:#2cc4b0;color:#fff;}
+#vfam .fst.wait{background:#c7e6fb;color:#075985;}
+#vfam .fst.bad{background:#fdd3d3;color:#991b1b;}
+#vfam .fr{font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;color:#64748b;}
+#vfam .fr.r-고등{background:#f3e3a8;color:#6b5205;}
+#vfam .fr.r-우량,#vfam .fr.r-초우량{background:#c3f1e9;color:#0f766e;}
+#vfam .fp{display:inline-flex;align-items:center;gap:4px;font-size:11px;}
+#vfam .fg{display:inline-block;min-width:30px;text-align:center;padding:2px 6px;border-radius:6px;font-size:11.5px;font-weight:800;}
+#vfam .fg.g1pp{background:#fde68a;color:#78350f;}
+#vfam .fg.g1p{background:#fef3c7;color:#92400e;}
+#vfam .fg.g1{background:#e0f2fe;color:#075985;}
+#vfam .fg.glow{background:#f1f5f9;color:#475569;}
 </style>
 </head>
 <body>
@@ -299,6 +331,29 @@ function schedGroup(g){
     </div>`;
 }
 
+
+// ---- 가계도 ----
+function famHtml(data){
+  const animals=(data.animals||[]);
+  const byId=new Map(animals.map(a=>[a.id,a]));
+  const kids=new Map(); animals.forEach(a=>{ if(a.dam){ if(!kids.has(a.dam)) kids.set(a.dam,[]); kids.get(a.dam).push(a); } });
+  kids.forEach(l=>l.sort((x,y)=>(x.by||'').localeCompare(y.by||'')));
+  const prog=new Map(); (data.progeny||[]).forEach(p=>{ if(!prog.has(p.dam)) prog.set(p.dam,[]); prog.get(p.dam).push(p.grade); });
+  const short=id=>{ const g=String(id).trim().split(/\s+/); return g.length>=4?g.slice(2).join(' '):id; };
+  const stCls=st=>/임신중/.test(st)?'ok':/난임/.test(st)?'bad':/감정/.test(st)?'wait':'';
+  const gCls=g=>{ g=String(g).replace(/[ABC]$/,''); return g==='1++'?'g1pp':g==='1+'?'g1p':g==='1'?'g1':'glow'; };
+  const chip=id=>{ const a=byId.get(id);
+    if(!a) return `<span class="fc ext" data-key="${esc(id.replace(/\D/g,''))}"><b>${esc(short(id))}</b><span class="fs">어미</span></span>`;
+    const st=a.fst||a.status||'';
+    return `<span class="fc ${a.gone?'gone':''} ${(!a.gone&&a.oneYear)?'oy':''}" data-key="${esc(id.replace(/\D/g,''))}"><b>${esc(short(id))}</b>${a.reg?`<span class="fr r-${esc(a.reg)}">${esc(a.reg)}</span>`:''}${(a.by||a.sire)?`<span class="fs">${[a.by?a.by+'년생':'',a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fst ${stCls(st)}">${esc(st)}</span>`:''}</span>`; };
+  const progRow=id=>{ const l=prog.get(id)||[]; return l.length?`<li><span class="fp"><span class="fs">후대</span>${l.map(g=>`<span class="fg ${gCls(g)}">${esc(g)}</span>`).join('')}</span></li>`:''; };
+  const node=(id,d)=>{ const ch=kids.get(id)||[]; const inner=(d<8?ch.map(c=>node(c.id,d+1)).join(''):'')+progRow(id); return `<li>${chip(id)}${inner?`<ul>${inner}</ul>`:''}</li>`; };
+  const roots=[...new Set([...kids.keys(), ...[...prog.keys()].filter(d=>byId.has(d))])].filter(d=>{ const a=byId.get(d); return !a || !a.dam; });
+  const size=id=>(kids.get(id)||[]).reduce((n,c)=>n+1+size(c.id),0);
+  roots.sort((x,y)=>size(y)-size(x)||x.localeCompare(y));
+  if(!roots.length) return '<div class="v-empty-sm">아직 가계도 정보가 없어요.</div>';
+  return roots.map(r=>`<div class="fcard"><div class="fhead">${chip(r)}</div><ul class="ftree">${(kids.get(r)||[]).map(c=>node(c.id,1)).join('')}${progRow(r)}</ul></div>`).join('');
+}
 function renderApp(data){
   const animals = data.animals || [];
   const byDate = (a,b)=> (a.date<b.date?-1:a.date>b.date?1:0);
@@ -330,7 +385,7 @@ function renderApp(data){
     <div class="v-head">
       <div>
         <div class="v-title">${esc(data.owner)}님 농장</div>
-        <div class="v-sub">처치 · 백신 · 공태 · 임신 현황</div>
+        <div class="v-sub">처치 · 백신 · 공태 · 임신 · 가계도</div>
       </div>
       <div class="v-updated">업데이트<br>${esc(data.updatedAt||'-')}</div>
     </div>
@@ -348,6 +403,7 @@ function renderApp(data){
       <button class="v-tab" data-tab="vac">${svgIcon("syringe",15)} 백신 ${vacN?`<span class="cnt">${vacN}</span>`:''}</button>
       <button class="v-tab" data-tab="status">${svgIcon("cow",15)} 공태</button>
       <button class="v-tab" data-tab="preg">${svgIcon("cow",15)} 임신</button>
+      <button class="v-tab" data-tab="fam">${svgIcon("cow",15)} 가계도</button>
     </div>
 
     <div id="panel-sched" class="v-panel">
@@ -382,13 +438,26 @@ function renderApp(data){
       <div id="vlist2"></div>
     </div>
 
+    <div id="panel-fam" class="v-panel" style="display:none;">
+      <div class="v-sched-hint">어미로 이어진 소들이에요. 노란색 = 1년1산, 아래 등급 = 후대 도축 성적</div>
+      <input class="v-search" id="vsearch3" placeholder="개체번호 검색 (뒷자리만 쳐도 됨)" inputmode="numeric">
+      <div id="vfam">${famHtml(data)}</div>
+    </div>
+
     <div class="v-foot">
       이 화면은 담당 수의사가 공유한 정보예요.<br>
       자세한 내용은 수의사에게 문의해 주세요.
     </div>`;
 
   // ---- 탭 전환 ----
-  const PANELS = {sched:'panel-sched', vac:'panel-vac', status:'panel-status', preg:'panel-preg'};
+  const PANELS = {sched:'panel-sched', vac:'panel-vac', status:'panel-status', preg:'panel-preg', fam:'panel-fam'};
+  const fq=document.getElementById('vsearch3');
+  if(fq) fq.addEventListener('input', ()=>{
+    const k=fq.value.replace(/\D/g,'');
+    document.querySelectorAll('#vfam .fc').forEach(el=>el.classList.toggle('hit', !!k && (el.dataset.key||'').includes(k)));
+    document.querySelectorAll('#vfam .fcard').forEach(c=>{ c.style.display=(!k||c.querySelector('.hit'))?'':'none'; });
+    const first=document.querySelector('#vfam .hit'); if(first && k.length>=3) first.scrollIntoView({block:'center',behavior:'smooth'});
+  });
   document.querySelectorAll('.v-tab').forEach(t=>{
     t.addEventListener('click', ()=>{
       document.querySelectorAll('.v-tab').forEach(x=>x.classList.toggle('on', x===t));

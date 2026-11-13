@@ -2945,6 +2945,15 @@ function abilityRecHtml(v,a){
 /* ============================================================
    가계도 — 어미 개체번호로 이어진 모계 계보
 ============================================================ */
+function famStatusOf(owner,a){
+  if(a.slaughtered) return '도축'; if(a.fattening) return '비육전환';
+  const r = shareAnimalStatus(owner,a);
+  if(r.status!=='비임신') return r.status;
+  const recs = recordsOf(owner, a.animalId);
+  if(r.basis==='calv' && calvedAfterPregnancy(recs)) return '분만 후 대기';   // 분만 뒤 아직 수정 안 함
+  if((currentAiCount(a, recs)||0) >= 3) return '난임';                        // 이번 공태 중 수정 3회 이상 미수태
+  return '비임신';
+}
 function renderFamilyView(owner){
   const animals = ownerAnimalsFor(owner);
   const byId = new Map(animals.map(a=>[a.animalId,a]));
@@ -2957,15 +2966,7 @@ function renderFamilyView(owner){
   const progHtml = p => `<span class="fam-grade ${gCls(p.grade)}" data-action="famEditProg" data-pid="${esc(p.pid)}">${esc(p.grade||'?')}</span>`;
   const progRow = list => list.length ? `<li class="fam-prog-li"><span class="fam-prog"><span class="fam-sub">후대</span>${list.map(progHtml).join('')}</span></li>` : '';
   const stCls = st => /임신중/.test(st)?'ok':/난임/.test(st)?'bad':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
-  const famStatus = (owner,a)=>{
-    if(a.slaughtered) return '도축'; if(a.fattening) return '비육전환';
-    const r = shareAnimalStatus(owner,a);
-    if(r.status!=='비임신') return r.status;
-    const recs = recordsOf(owner, a.animalId);
-    if(r.basis==='calv' && calvedAfterPregnancy(recs)) return '분만 후 대기';   // 분만 뒤 아직 수정 안 함
-    if((currentAiCount(a, recs)||0) >= 3) return '난임';                        // 이번 공태 중 수정 3회 이상 미수태
-    return '비임신';
-  };
+  const famStatus = famStatusOf;
   const idHtml = id => { const g=String(id).trim().split(/\s+/); return `<b title="${esc(id)}">${esc(g.length>=4?g.slice(2).join(' '):id)}</b>`; };
   const count = id => (kids.get(id)||[]).reduce((n,c)=>n+1+count(c.animalId),0);
   const pcount = id => (prog.get(id)||[]).length + (kids.get(id)||[]).reduce((n,c)=>n+pcount(c.animalId),0);
@@ -6161,7 +6162,9 @@ function buildSharePayload(owner){
         const aiRecs = recordsOf(owner,a.animalId).filter(r=>r.aiDate).sort((x,y)=> sortKeyOf(y)-sortKeyOf(x));
         kpn = String((aiRecs[0]||{}).kpn||'').trim();
       }
-      return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN, kpn, basis:s.basis||'ai' };
+      const rg = regOf(owner,a);
+      return { id:a.animalId, status:s.status, days:s.days, expectedCalving:shareExpCalving(owner,a), oneYear:f.oneYear, aiCount:f.aiN, kpn, basis:s.basis||'ai',
+        dam:(a.damId||'').trim(), by:a.birth?dateOnly(a.birth).slice(2,4):'', sire:a.sire||'', reg:(rg&&rg!=='미등록')?rg:'', fst:famStatusOf(owner,a), gone:!!a.fattening };
     });
   // 동기화/처치 일정: 자동(동기화 프로토콜 등)+수동 일정 포함, 오늘 기준 과거 7일~미래, '안 함' 제외
   const cutoff = addDays(todayStr(), -7);
@@ -6179,7 +6182,8 @@ function buildSharePayload(owner){
     .filter(it => it.date >= cutoff && !slaughteredIds.has(it.animalId))
     .map(it => ({ date: it.date, id: it.animalId, note: `${VAC_LABEL[it.vaccine]} ${it.dose}` }))
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
-  return { owner, updatedAt: todayStr(), animals, schedule, vaccines };
+  const progeny = (DATA.progeny||[]).filter(p=>p.owner===owner && p.damId && p.grade).map(p=>({ dam:p.damId, grade:p.grade }));
+  return { owner, updatedAt: todayStr(), animals, schedule, vaccines, progeny };
 }
 function shareViewerLink(owner){
   const token = ownerShareToken(owner);
