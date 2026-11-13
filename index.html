@@ -328,6 +328,10 @@ main{flex:1;padding:18px 20px 70px;}
 .fam-st.warn{background:#e2e8f0;color:#334155;}
 .fam-st.bad{background:#fdd3d3;color:#991b1b;}
 .fam-cow.gone{opacity:.45;}
+.fam-cow.oneyear{border-color:#E5B400;background:#FFF8DC;}
+.fam-cow.oneyear b{color:#5a4500;}
+html[data-theme="dark"] .fam-cow.oneyear{background:#3a3010;border-color:#a57f00;}
+html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
@@ -2946,7 +2950,7 @@ function renderFamilyView(owner){
     const st = a ? famStatus(owner,a) : '';
     const gone = a && (a.slaughtered||a.fattening);
     const label = a
-      ? `<span class="fam-cow ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}">${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
+      ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
       : `<span class="fam-cow ext">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
     return `<li>${label}${ch.length&&depth<8?`<ul>${ch.map(c=>node(c.animalId, depth+1)).join('')}</ul>`:''}</li>`;
   };
@@ -2960,7 +2964,7 @@ function renderFamilyView(owner){
     <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 10px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면으로 간다.</div>
     ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
     ${noLink.length ? `<div class="fam-free-title">연결 안 된 소 ${noLink.length}두</div>
-      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; return `<span class="fam-cow ${a.fattening?'gone':''}" data-action="famGoto" data-id="${esc(a.animalId)}">${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
+      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
 }
 /* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
 function abilityDetailHtml(owner,a){
