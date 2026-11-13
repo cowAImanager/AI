@@ -338,9 +338,15 @@ html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .fam-cow.hit,.fam-prog.hit{outline:2.5px solid #f59e0b;outline-offset:1px;}
 .fam-add{margin-left:4px;width:20px;height:20px;border-radius:50%;border:1px dashed #94a3b8;background:transparent;color:#64748b;font-size:13px;line-height:16px;padding:0;cursor:pointer;vertical-align:middle;}
 .fam-add:hover{border-color:#0d9488;color:#0d9488;}
-.fam-prog{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc;font-size:11.5px;cursor:pointer;white-space:nowrap;}
-.fam-prog b{font-family:var(--mono,monospace);font-weight:700;font-size:12.5px;color:#475569;}
-.fam-prog .fam-sub{color:#64748b;font-size:11px;}
+.fam-prog{display:inline-flex;align-items:center;gap:4px;padding:2px 0;font-size:11px;}
+.fam-grade{display:inline-block;min-width:30px;text-align:center;padding:2px 6px;border-radius:6px;font-size:11.5px;font-weight:800;cursor:pointer;}
+.fam-grade.g1pp{background:#fde68a;color:#78350f;}
+.fam-grade.g1p{background:#fef3c7;color:#92400e;}
+.fam-grade.g1{background:#e0f2fe;color:#075985;}
+.fam-grade.glow{background:#f1f5f9;color:#475569;}
+.pg-grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;}
+.pg-g{padding:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:17px;font-weight:800;color:var(--ink);cursor:pointer;}
+.pg-g.on{border-color:#0d9488;background:#e3f9f5;color:#0f766e;}
 html[data-theme="dark"] .fam-prog{background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
@@ -2942,10 +2948,9 @@ function renderFamilyView(owner){
   kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
   const prog = new Map();
   (DATA.progeny||[]).filter(p=>p.owner===owner).forEach(p=>{ const d=(p.damId||'').trim(); if(!d) return; if(!prog.has(d)) prog.set(d,[]); prog.get(d).push(p); });
-  prog.forEach(l=>l.sort((x,y)=>(x.slaughterDate||'').localeCompare(y.slaughterDate||'')));
-  const progHtml = p => { const g=String(p.id||'').trim().split(/\s+/); const sid=g.length>=4?g.slice(2).join(' '):(p.id||'번호 없음');
-    const bits=[p.sex, p.grade, p.weight?p.weight+'kg':'', p.marbling?'근내 '+p.marbling:'', p.slaughterDate?p.slaughterDate.slice(2,7).replace('-','.'):''].filter(Boolean);
-    return `<li><span class="fam-prog" data-action="famEditProg" data-pid="${esc(p.pid)}" data-key="${esc((p.id||'').replace(/\D/g,''))}"><b title="${esc(p.id||'')}">${esc(sid)}</b>${bits.length?`<span class="fam-sub">${esc(bits.join(' · '))}</span>`:''}</span></li>`; };
+  const gCls = g => g==='1++'?'g1pp':g==='1+'?'g1p':g==='1'?'g1':'glow';
+  const progHtml = p => `<span class="fam-grade ${gCls(p.grade)}" data-action="famEditProg" data-pid="${esc(p.pid)}">${esc(p.grade||'?')}</span>`;
+  const progRow = list => list.length ? `<li class="fam-prog-li"><span class="fam-prog"><span class="fam-sub">후대</span>${list.map(progHtml).join('')}</span></li>` : '';
   const stCls = st => /임신중/.test(st)?'ok':/난임/.test(st)?'bad':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
   const famStatus = (owner,a)=>{
     if(a.slaughtered) return '도축'; if(a.fattening) return '비육전환';
@@ -2968,9 +2973,9 @@ function renderFamilyView(owner){
     const label = a
       ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" data-key="${esc(id.replace(/\D/g,''))}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
       : `<span class="fam-cow ext" data-key="${esc(id.replace(/\D/g,''))}">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
-    const add = a ? `<button type="button" class="fam-add" data-action="famAddProg" data-dam="${esc(id)}" title="후대 성적 추가">+</button>` : '';
+    const add = a ? `<button type="button" class="fam-add" data-action="famAddProg" data-dam="${esc(id)}" title="후대 등급 추가">+</button>` : '';
     const pl = prog.get(id)||[];
-    const inner = (ch.length&&depth<8 ? ch.map(c=>node(c.animalId, depth+1)).join('') : '') + pl.map(progHtml).join('');
+    const inner = (ch.length&&depth<8 ? ch.map(c=>node(c.animalId, depth+1)).join('') : '') + progRow(pl);
     return `<li>${label}${add}${inner?`<ul>${inner}</ul>`:''}</li>`;
   };
   // 뿌리: 기록부에 없는 어미, 또는 어미 번호가 없는 소 (어미가 외부면 그 외부 어미 밑으로 들어감)
@@ -2981,9 +2986,9 @@ function renderFamilyView(owner){
   const noLink = animals.filter(a=>!linked.has(a.animalId) && !a.slaughtered);
   return `
     <div class="open-head"><h2>가계도</h2><span class="open-count">${roots.length}개 모계</span></div>
-    <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 8px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면, + 는 후대(거세·도축) 성적 추가.</div>
-    <div class="fam-tools"><input type="search" id="fam_q" placeholder="개체번호 검색 (뒷자리만 쳐도 됨)" value="${esc(UI.famQ||'')}" inputmode="numeric"><button type="button" class="btn secondary small" data-action="famAddProg" data-dam="">+ 후대 성적</button></div>
-    ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두${pcount(r)?` · 후대 ${pcount(r)}`:''}</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}${(prog.get(r)||[]).map(progHtml).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
+    <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 8px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면, + 는 후대 도축 등급 추가.</div>
+    <div class="fam-tools"><input type="search" id="fam_q" placeholder="개체번호 검색 (뒷자리만 쳐도 됨)" value="${esc(UI.famQ||'')}" inputmode="numeric"><button type="button" class="btn secondary small" data-action="famAddProg" data-dam="">+ 후대 등급</button></div>
+    ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두${pcount(r)?` · 후대 ${pcount(r)}`:''}</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}${progRow(prog.get(r)||[])}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
     ${noLink.length ? `<div class="fam-free-title">연결 안 된 소 ${noLink.length}두</div>
       <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" data-key="${esc(a.animalId.replace(/\D/g,''))}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
 }
@@ -2999,46 +3004,31 @@ function famFilter(q){
 /* 후대(거세·도축) 성적 입력 */
 function openProgenyModal(pid, damId){
   const owner=UI.owner;
-  const p = pid ? (DATA.progeny||[]).find(x=>x.pid===pid) : { pid:'', damId:damId||'', id:'', sex:'거세', slaughterDate:'', weight:'', grade:'', yieldGrade:'', marbling:'', backfat:'', ema:'', note:'' };
+  const p = pid ? (DATA.progeny||[]).find(x=>x.pid===pid) : { pid:'', damId:damId||'', grade:'' };
   if(!p) return;
-  modalCtx = { type:'progeny', owner, pid: p.pid };
-  const gOpts=['','1++','1+','1','2','3','등외'].map(g=>`<option ${p.grade===g?'selected':''}>${g}</option>`).join('');
-  const yOpts=['','A','B','C'].map(g=>`<option ${p.yieldGrade===g?'selected':''}>${g}</option>`).join('');
-  const sOpts=['거세','암','수'].map(g=>`<option ${p.sex===g?'selected':''}>${g}</option>`).join('');
+  modalCtx = { type:'progeny', owner, pid: p.pid, damId: p.damId };
+  const dam = p.damId ? findAnimalLoose(owner, p.damId) : null;
   openModal(`
     <div class="modal">
-      <h2>${pid?'후대 성적 수정':'후대 성적 추가'}</h2>
-      <div class="modal-sub">축주: ${esc(owner)}</div>
-      <div class="form-grid">
-        <div class="field"><label>어미 개체번호 *</label><input type="text" id="pg_dam" list="pg_dam_list" value="${esc(p.damId)}"><datalist id="pg_dam_list">${ownerAnimalsFor(owner).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist></div>
-        <div class="field"><label>후대 개체번호</label><input type="text" id="pg_id" value="${esc(p.id)}" placeholder="002 0000 0000 0"></div>
-        <div class="field"><label>성별</label><select id="pg_sex">${sOpts}</select></div>
-        <div class="field"><label>도축일</label><input type="date" id="pg_date" value="${esc(p.slaughterDate)}"></div>
-        <div class="field"><label>도체중 (kg)</label><input type="number" inputmode="decimal" id="pg_wt" value="${esc(p.weight)}"></div>
-        <div class="field"><label>육질등급</label><select id="pg_grade">${gOpts}</select></div>
-        <div class="field"><label>근내지방도 (1~9)</label><input type="number" inputmode="numeric" id="pg_ms" value="${esc(p.marbling)}"></div>
-        <div class="field"><label>육량등급</label><select id="pg_yg">${yOpts}</select></div>
-        <div class="field"><label>등지방 (mm)</label><input type="number" inputmode="decimal" id="pg_bf" value="${esc(p.backfat)}"></div>
-        <div class="field"><label>배최장근단면적 (cm²)</label><input type="number" inputmode="decimal" id="pg_ema" value="${esc(p.ema)}"></div>
-        <div class="field" style="grid-column:1/-1;"><label>메모</label><input type="text" id="pg_note" value="${esc(p.note)}"></div>
-      </div>
+      <h2>${pid?'후대 등급 수정':'후대 등급 추가'}</h2>
+      <div class="modal-sub">${dam?'어미 '+esc(dam.animalId):'축주: '+esc(owner)}</div>
+      ${p.damId?'':`<div class="field"><label>어미 개체번호</label><input type="text" id="pg_dam" list="pg_dam_list" placeholder="뒷자리만 쳐도 됨"><datalist id="pg_dam_list">${ownerAnimalsFor(owner).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist></div>`}
+      <div class="pg-grades">${['1++','1+','1','2','3','등외'].map(g=>`<button type="button" class="pg-g ${p.grade===g?'on':''}" data-action="saveProgeny" data-grade="${g}">${g}</button>`).join('')}</div>
       <div class="modal-actions">
         ${pid?'<button class="btn secondary" data-action="deleteProgeny" style="margin-right:auto;color:#b91c1c;">삭제</button>':''}
-        <button class="btn secondary" data-action="closeModal">취소</button>
-        <button class="btn" data-action="saveProgeny">저장</button>
+        <button class="btn secondary" data-action="closeModal">닫기</button>
       </div>
     </div>`);
 }
-function actionSaveProgeny(){
-  const owner=modalCtx.owner; const v=id=>(document.getElementById(id).value||'').trim();
-  const damFound = findAnimalLoose(owner, v('pg_dam'));
-  const damId = damFound ? damFound.animalId : v('pg_dam');
+function actionSaveProgeny(grade){
+  const owner=modalCtx.owner;
+  let damId = modalCtx.damId;
+  if(!damId){ const q=((document.getElementById('pg_dam')||{}).value||'').trim(); const f=findAnimalLoose(owner,q); damId = f?f.animalId:q; }
   if(!damId){ toast('어미 개체번호를 넣어주세요.'); return; }
   if(!Array.isArray(DATA.progeny)) DATA.progeny=[];
-  const rec = { owner, damId, id:v('pg_id'), sex:v('pg_sex'), slaughterDate:v('pg_date'), weight:v('pg_wt'), grade:v('pg_grade'), marbling:v('pg_ms'), yieldGrade:v('pg_yg'), backfat:v('pg_bf'), ema:v('pg_ema'), note:v('pg_note') };
-  if(modalCtx.pid){ const i=DATA.progeny.findIndex(x=>x.pid===modalCtx.pid); if(i>=0) DATA.progeny[i]=Object.assign({pid:modalCtx.pid}, rec); }
-  else DATA.progeny.push(Object.assign({ pid:'pg'+Date.now().toString(36)+Math.random().toString(36).slice(2,6) }, rec));
-  saveState(); closeModal(); renderMain(); toast('후대 성적을 저장했어요.');
+  if(modalCtx.pid){ const r=DATA.progeny.find(x=>x.pid===modalCtx.pid); if(r){ r.grade=grade; } }
+  else DATA.progeny.push({ pid:'pg'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), owner, damId, grade });
+  saveState(); closeModal(); renderMain(); toast('후대 등급 '+grade+' 저장');
 }
 function actionDeleteProgeny(){
   DATA.progeny=(DATA.progeny||[]).filter(x=>x.pid!==modalCtx.pid);
@@ -6584,7 +6574,7 @@ const ACTIONS = {
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
   famAddProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(null, ds.dam||''); },
   famEditProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(ds.pid); },
-  saveProgeny: ()=> actionSaveProgeny(),
+  saveProgeny: ds=> actionSaveProgeny(ds.grade),
   deleteProgeny: ()=> actionDeleteProgeny(),
   famGoto: ds=>{ UI.view='animal'; UI.selectedAnimal=ds.id; render(); },
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
