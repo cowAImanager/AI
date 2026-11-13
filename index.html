@@ -306,29 +306,36 @@ main{flex:1;padding:18px 20px 70px;}
 .diff-num{font-size:12px;color:var(--ink-soft);font-weight:600;}
 
 /* 분만예정일 계산 결과 카드 */
-.fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
-.fam-card{--fc:#14b8a6;border:1px solid #d5f2ee;border-radius:12px;background:var(--surface);padding:0 12px 10px;overflow:hidden;box-shadow:0 1px 3px rgba(20,184,166,.08);}
-.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 -12px 8px;padding:8px 12px;background:#effcfa;border-bottom:1px solid #d5f2ee;}
-.fam-card-head .fam-cow{border-color:var(--fc);}
-.fam-n{margin-left:auto;font-size:11.5px;font-weight:800;color:#0f766e;}
+.fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;}
+.fam-card{border:1px solid #d5f2ee;border-radius:12px;background:var(--surface);overflow:hidden;}
+.fam-card-head{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#effcfa;border-bottom:1px solid #d5f2ee;}
+.fam-card-head .fam-row{flex:1;min-width:0;padding:0;background:none;border:0;}
+.fam-card-head .fam-row b{font-size:15px;}
+.fam-n{font-size:11.5px;font-weight:800;color:#0f766e;white-space:nowrap;}
 .fam-tree,.fam-tree ul{list-style:none;margin:0;padding:0;}
-.fam-tree{margin:0 0 0 6px !important;padding:0 !important;}
-.fam-tree ul{margin:0;padding:0 0 0 12px;}
-.fam-tree li{position:relative;padding:3px 0 3px 12px;}
-.fam-tree li::after{content:"";position:absolute;left:0;top:0;bottom:0;border-left:2px solid #99e6dc;}
-.fam-tree li:last-child::after{bottom:auto;height:16px;}
-.fam-tree li::before{content:"";position:absolute;left:0;top:15px;width:10px;border-top:2px solid #99e6dc;}
-.fam-cow{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid #e2e8f0;border-radius:8px;background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;}
-.fam-cow:hover{border-color:var(--fc,#14b8a6);}
-.fam-cow b{font-family:var(--mono,monospace);font-weight:800;color:var(--ink);}
-.fam-pre{font-family:var(--mono,monospace);color:#94a3b8;font-size:10px;}
-.fam-cow .fam-sub{color:#64748b;font-size:10.5px;}
-.fam-cow .fam-st{font-size:10px;padding:1px 6px;border-radius:5px;background:#f1f5f9;color:#475569;font-weight:700;}
+.fam-tree{padding:6px 12px 8px 14px !important;margin:0 !important;}
+.fam-tree ul{padding-left:16px;}
+.fam-tree li{position:relative;padding-left:14px;}
+.fam-tree li::after{content:"";position:absolute;left:0;top:0;bottom:0;border-left:2px solid #b7ece5;}
+.fam-tree li:last-child::after{bottom:auto;height:19px;}
+.fam-tree li::before{content:"";position:absolute;left:0;top:19px;width:10px;border-top:2px solid #b7ece5;}
+.fam-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #f1f5f9;cursor:pointer;min-width:0;}
+.fam-tree li:last-child>.fam-row{border-bottom-color:transparent;}
+.fam-row:hover b{color:#0f766e;}
+.fam-row b{font-family:var(--mono,monospace);font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap;}
+.fam-meta{font-size:11.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.fam-row .fam-st{margin-left:auto;flex-shrink:0;font-size:11px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-weight:700;}
 .fam-st.ok{background:#14b8a6;color:#fff;}
 .fam-st.wait{background:#ccfbf1;color:#0f766e;}
 .fam-st.warn{background:#f1f5f9;color:#475569;}
+.fam-st.bad{background:#fee2e2;color:#b91c1c;}
+.fam-row.gone{opacity:.45;}
+.fam-row.ext{cursor:default;}
+.fam-row.ext b{color:#94a3b8;}
+.fam-cow{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid #e2e8f0;border-radius:8px;background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;}
+.fam-cow b{font-family:var(--mono,monospace);font-weight:800;font-size:13px;color:var(--ink);}
+.fam-cow .fam-sub{color:#64748b;font-size:10.5px;}
 .fam-cow.gone{opacity:.45;}
-.fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
 /* 암소능력 */
@@ -2927,18 +2934,27 @@ function renderFamilyView(owner){
   const kids = new Map();
   animals.forEach(a=>{ const d=(a.damId||'').trim(); if(d){ if(!kids.has(d)) kids.set(d,[]); kids.get(d).push(a); } });
   kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
-  const stCls = st => /임신중/.test(st)?'ok':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
-  const idHtml = id => { const g=String(id).trim().split(/\s+/); return g.length>=4 ? `<span class="fam-pre">${esc(g.slice(0,2).join(' '))}</span><b>${esc(g.slice(2).join(' '))}</b>` : `<b>${esc(id)}</b>`; };
+  const stCls = st => /임신중/.test(st)?'ok':/난임/.test(st)?'bad':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
+  const famStatus = (owner,a)=>{
+    if(a.slaughtered) return '도축'; if(a.fattening) return '비육전환';
+    const r = shareAnimalStatus(owner,a);
+    if(r.status!=='비임신') return r.status;
+    const recs = recordsOf(owner, a.animalId);
+    if(r.basis==='calv' && calvedAfterPregnancy(recs)) return '분만 후 대기';   // 분만 뒤 아직 수정 안 함
+    if((currentAiCount(a, recs)||0) >= 3) return '난임';                        // 이번 공태 중 수정 3회 이상 미수태
+    return '비임신';
+  };
+  const idHtml = id => { const g=String(id).trim().split(/\s+/); return `<b title="${esc(id)}">${esc(g.length>=4?g.slice(2).join(' '):id)}</b>`; };
   const count = id => (kids.get(id)||[]).reduce((n,c)=>n+1+count(c.animalId),0);
   const node = (id, depth)=>{
     const a = byId.get(id);
     const ch = (kids.get(id)||[]);
     const yr = a && a.birth ? dateOnly(a.birth).slice(2,4) : '';
-    const st = a ? (a.slaughtered?'도축':a.fattening?'비육전환':shareAnimalStatus(owner,a).status) : '';
+    const st = a ? famStatus(owner,a) : '';
     const gone = a && (a.slaughtered||a.fattening);
     const label = a
-      ? `<span class="fam-cow ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}">${idHtml(id)}${yr?`<span class="fam-sub">'${yr}</span>`:''}${a.sire?`<span class="fam-sub">부 ${esc(a.sire)}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
-      : `<span class="fam-cow ext">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
+      ? `<div class="fam-row ${gone?'gone':''}" data-action="famGoto" data-id="${esc(id)}">${idHtml(id)}<span class="fam-meta">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</div>`
+      : `<div class="fam-row ext">${idHtml(id)}<span class="fam-meta">기록부에 없는 어미</span></div>`;
     return `<li>${label}${ch.length&&depth<8?`<ul>${ch.map(c=>node(c.animalId, depth+1)).join('')}</ul>`:''}</li>`;
   };
   // 뿌리: 기록부에 없는 어미, 또는 어미 번호가 없는 소 (어미가 외부면 그 외부 어미 밑으로 들어감)
