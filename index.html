@@ -352,6 +352,21 @@ html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .pg-g{padding:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:17px;font-weight:800;color:var(--ink);cursor:pointer;}
 .pg-g.on{border-color:#0d9488;background:#e3f9f5;color:#0f766e;}
 html[data-theme="dark"] .fam-prog{background:transparent;}
+@media (max-width:760px){
+  .fam-tree li{white-space:nowrap;padding:2px 0 2px 10px;}
+  .fam-tree li::before{top:12px;width:8px;}
+  .fam-tree li:last-child::after{height:13px;}
+  .fam-tree ul{padding-left:9px;}
+  .fam-card{overflow-x:auto;padding:0 8px 8px;}
+  .fam-card-head{margin:0 -8px 6px;padding:6px 8px;gap:4px;}
+  .fam-cow{gap:3px;padding:2px 5px;font-size:10px;border-radius:6px;}
+  .fam-cow b{font-size:11px;}
+  .fam-cow .fam-sub{font-size:9.5px;}
+  .fam-cow .fam-st,.fam-reg{font-size:9px;padding:0 4px;}
+  .fam-prog{margin-left:3px;}
+  .fam-prog .fam-grade,.fam-grade{min-width:0;padding:1px 4px;font-size:9.5px;margin:0 2px 0 0;}
+  .fam-add{width:16px;height:16px;font-size:11px;line-height:13px;margin-left:2px;}
+}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
 /* 암소능력 */
