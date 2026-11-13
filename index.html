@@ -344,7 +344,8 @@ html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .fam-grade.g1p{background:#fef3c7;color:#92400e;}
 .fam-grade.g1{background:#e0f2fe;color:#075985;}
 .fam-grade.glow{background:#f1f5f9;color:#475569;}
-.pg-grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;}
+.pg-label{font-size:12px;font-weight:700;color:var(--ink-soft);margin:12px 0 0;}
+.pg-grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px;}
 .pg-g{padding:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:17px;font-weight:800;color:var(--ink);cursor:pointer;}
 .pg-g.on{border-color:#0d9488;background:#e3f9f5;color:#0f766e;}
 html[data-theme="dark"] .fam-prog{background:transparent;}
@@ -2948,7 +2949,7 @@ function renderFamilyView(owner){
   kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
   const prog = new Map();
   (DATA.progeny||[]).filter(p=>p.owner===owner).forEach(p=>{ const d=(p.damId||'').trim(); if(!d) return; if(!prog.has(d)) prog.set(d,[]); prog.get(d).push(p); });
-  const gCls = g => g==='1++'?'g1pp':g==='1+'?'g1p':g==='1'?'g1':'glow';
+  const gCls = g => { g=String(g||'').replace(/[ABC]$/,''); return g==='1++'?'g1pp':g==='1+'?'g1p':g==='1'?'g1':'glow'; };
   const progHtml = p => `<span class="fam-grade ${gCls(p.grade)}" data-action="famEditProg" data-pid="${esc(p.pid)}">${esc(p.grade||'?')}</span>`;
   const progRow = list => list.length ? `<li class="fam-prog-li"><span class="fam-prog"><span class="fam-sub">후대</span>${list.map(progHtml).join('')}</span></li>` : '';
   const stCls = st => /임신중/.test(st)?'ok':/난임/.test(st)?'bad':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
@@ -3006,19 +3007,31 @@ function openProgenyModal(pid, damId){
   const owner=UI.owner;
   const p = pid ? (DATA.progeny||[]).find(x=>x.pid===pid) : { pid:'', damId:damId||'', grade:'' };
   if(!p) return;
-  modalCtx = { type:'progeny', owner, pid: p.pid, damId: p.damId };
+  const gm = String(p.grade||'').match(/^(1\+\+|1\+|1|2|3|등외)?\s*([ABC])?$/) || [];
+  modalCtx = { type:'progeny', owner, pid: p.pid, damId: p.damId, q: gm[1]||'', y: gm[2]||'' };
   const dam = p.damId ? findAnimalLoose(owner, p.damId) : null;
   openModal(`
     <div class="modal">
       <h2>${pid?'후대 등급 수정':'후대 등급 추가'}</h2>
       <div class="modal-sub">${dam?'어미 '+esc(dam.animalId):'축주: '+esc(owner)}</div>
       ${p.damId?'':`<div class="field"><label>어미 개체번호</label><input type="text" id="pg_dam" list="pg_dam_list" placeholder="뒷자리만 쳐도 됨"><datalist id="pg_dam_list">${ownerAnimalsFor(owner).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist></div>`}
-      <div class="pg-grades">${['1++','1+','1','2','3','등외'].map(g=>`<button type="button" class="pg-g ${p.grade===g?'on':''}" data-action="saveProgeny" data-grade="${g}">${g}</button>`).join('')}</div>
+      <div class="pg-label">육질등급</div>
+      <div class="pg-grades">${['1++','1+','1','2','3','등외'].map(g=>`<button type="button" class="pg-g pg-q ${modalCtx.q===g?'on':''}" data-action="pgPick" data-q="${g}">${g}</button>`).join('')}</div>
+      <div class="pg-label">육량등급</div>
+      <div class="pg-grades">${['A','B','C'].map(g=>`<button type="button" class="pg-g pg-y ${modalCtx.y===g?'on':''}" data-action="pgPick" data-y="${g}">${g}</button>`).join('')}</div>
+      <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;">둘 다 고르면 저장된다. 등외는 바로 저장.</div>
       <div class="modal-actions">
         ${pid?'<button class="btn secondary" data-action="deleteProgeny" style="margin-right:auto;color:#b91c1c;">삭제</button>':''}
         <button class="btn secondary" data-action="closeModal">닫기</button>
       </div>
     </div>`);
+}
+function actionPgPick(ds){
+  if(ds.q) modalCtx.q = ds.q; if(ds.y) modalCtx.y = ds.y;
+  document.querySelectorAll('.pg-q').forEach(b=>b.classList.toggle('on', b.dataset.q===modalCtx.q));
+  document.querySelectorAll('.pg-y').forEach(b=>b.classList.toggle('on', b.dataset.y===modalCtx.y));
+  if(modalCtx.q==='등외') return actionSaveProgeny('등외');
+  if(modalCtx.q && modalCtx.y) actionSaveProgeny(modalCtx.q+modalCtx.y);
 }
 function actionSaveProgeny(grade){
   const owner=modalCtx.owner;
@@ -6575,6 +6588,7 @@ const ACTIONS = {
   famAddProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(null, ds.dam||''); },
   famEditProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(ds.pid); },
   saveProgeny: ds=> actionSaveProgeny(ds.grade),
+  pgPick: ds=> actionPgPick(ds),
   deleteProgeny: ()=> actionDeleteProgeny(),
   famGoto: ds=>{ UI.view='animal'; UI.selectedAnimal=ds.id; render(); },
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
