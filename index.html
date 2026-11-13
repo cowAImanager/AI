@@ -333,6 +333,15 @@ main{flex:1;padding:18px 20px 70px;}
 html[data-theme="dark"] .fam-cow.oneyear{background:#3a3010;border-color:#a57f00;}
 html[data-theme="dark"] .fam-cow.oneyear b{color:#ffe08a;}
 .fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
+.fam-tools{display:flex;gap:6px;margin:0 0 10px;}
+.fam-tools input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:var(--surface);color:var(--ink);}
+.fam-cow.hit,.fam-prog.hit{outline:2.5px solid #f59e0b;outline-offset:1px;}
+.fam-add{margin-left:4px;width:20px;height:20px;border-radius:50%;border:1px dashed #94a3b8;background:transparent;color:#64748b;font-size:13px;line-height:16px;padding:0;cursor:pointer;vertical-align:middle;}
+.fam-add:hover{border-color:#0d9488;color:#0d9488;}
+.fam-prog{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc;font-size:11.5px;cursor:pointer;white-space:nowrap;}
+.fam-prog b{font-family:var(--mono,monospace);font-weight:700;font-size:12.5px;color:#475569;}
+.fam-prog .fam-sub{color:#64748b;font-size:11px;}
+html[data-theme="dark"] .fam-prog{background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
 .fam-free{display:flex;flex-wrap:wrap;gap:5px;}
 /* 암소능력 */
@@ -2201,7 +2210,7 @@ function renderMain(){
   else if(UI.view==='vaccine') main.innerHTML = renderVaccineView();
   else if(UI.view==='aiplan') main.innerHTML = renderAiPlanPanel(UI.owner);
   else if(UI.view==='ability') main.innerHTML = renderAbilityView(UI.owner);
-  else if(UI.view==='family') main.innerHTML = renderFamilyView(UI.owner);
+  else if(UI.view==='family'){ main.innerHTML = renderFamilyView(UI.owner); if(UI.famQ) famFilter(UI.famQ); }
   else main.innerHTML = renderScheduleView();
   if(prevScroll!=null){
     const newList = document.getElementById('animalListBox');
@@ -2931,6 +2940,12 @@ function renderFamilyView(owner){
   const kids = new Map();
   animals.forEach(a=>{ const d=(a.damId||'').trim(); if(d){ if(!kids.has(d)) kids.set(d,[]); kids.get(d).push(a); } });
   kids.forEach(l=>l.sort((x,y)=>(dateOnly(x.birth||'')||'').localeCompare(dateOnly(y.birth||'')||'')));
+  const prog = new Map();
+  (DATA.progeny||[]).filter(p=>p.owner===owner).forEach(p=>{ const d=(p.damId||'').trim(); if(!d) return; if(!prog.has(d)) prog.set(d,[]); prog.get(d).push(p); });
+  prog.forEach(l=>l.sort((x,y)=>(x.slaughterDate||'').localeCompare(y.slaughterDate||'')));
+  const progHtml = p => { const g=String(p.id||'').trim().split(/\s+/); const sid=g.length>=4?g.slice(2).join(' '):(p.id||'번호 없음');
+    const bits=[p.sex, p.grade, p.weight?p.weight+'kg':'', p.marbling?'근내 '+p.marbling:'', p.slaughterDate?p.slaughterDate.slice(2,7).replace('-','.'):''].filter(Boolean);
+    return `<li><span class="fam-prog" data-action="famEditProg" data-pid="${esc(p.pid)}" data-key="${esc((p.id||'').replace(/\D/g,''))}"><b title="${esc(p.id||'')}">${esc(sid)}</b>${bits.length?`<span class="fam-sub">${esc(bits.join(' · '))}</span>`:''}</span></li>`; };
   const stCls = st => /임신중/.test(st)?'ok':/난임/.test(st)?'bad':/비임신|공태/.test(st)?'warn':/감정/.test(st)?'wait':'';
   const famStatus = (owner,a)=>{
     if(a.slaughtered) return '도축'; if(a.fattening) return '비육전환';
@@ -2943,6 +2958,7 @@ function renderFamilyView(owner){
   };
   const idHtml = id => { const g=String(id).trim().split(/\s+/); return `<b title="${esc(id)}">${esc(g.length>=4?g.slice(2).join(' '):id)}</b>`; };
   const count = id => (kids.get(id)||[]).reduce((n,c)=>n+1+count(c.animalId),0);
+  const pcount = id => (prog.get(id)||[]).length + (kids.get(id)||[]).reduce((n,c)=>n+pcount(c.animalId),0);
   const node = (id, depth)=>{
     const a = byId.get(id);
     const ch = (kids.get(id)||[]);
@@ -2950,21 +2966,83 @@ function renderFamilyView(owner){
     const st = a ? famStatus(owner,a) : '';
     const gone = a && (a.slaughtered||a.fattening);
     const label = a
-      ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
-      : `<span class="fam-cow ext">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
-    return `<li>${label}${ch.length&&depth<8?`<ul>${ch.map(c=>node(c.animalId, depth+1)).join('')}</ul>`:''}</li>`;
+      ? `<span class="fam-cow ${gone?'gone':''} ${(!gone && animalFlags(owner,a).oneYear)?'oneyear':''}" data-action="famGoto" data-id="${esc(id)}" data-key="${esc(id.replace(/\D/g,''))}" ${(!gone && animalFlags(owner,a).oneYear)?'title="1년1산"':''}>${idHtml(id)}${(yr||a.sire)?`<span class="fam-sub">${[yr?yr+'년생':'', a.sire?'부 '+esc(a.sire):''].filter(Boolean).join(' · ')}</span>`:''}${st?`<span class="fam-st ${stCls(st)}">${esc(st)}</span>`:''}</span>`
+      : `<span class="fam-cow ext" data-key="${esc(id.replace(/\D/g,''))}">${idHtml(id)}<span class="fam-sub">기록부에 없음</span></span>`;
+    const add = a ? `<button type="button" class="fam-add" data-action="famAddProg" data-dam="${esc(id)}" title="후대 성적 추가">+</button>` : '';
+    const pl = prog.get(id)||[];
+    const inner = (ch.length&&depth<8 ? ch.map(c=>node(c.animalId, depth+1)).join('') : '') + pl.map(progHtml).join('');
+    return `<li>${label}${add}${inner?`<ul>${inner}</ul>`:''}</li>`;
   };
   // 뿌리: 기록부에 없는 어미, 또는 어미 번호가 없는 소 (어미가 외부면 그 외부 어미 밑으로 들어감)
-  const roots = [...kids.keys()].filter(d=>{ const a=byId.get(d); return !a || !(a.damId||'').trim(); })
+  const roots = [...new Set([...kids.keys(), ...[...prog.keys()].filter(d=>byId.has(d))])].filter(d=>{ const a=byId.get(d); return !a || !(a.damId||'').trim(); })
     .sort((x,y)=> (count(y)-count(x)) || x.localeCompare(y));
   const linked = new Set(); animals.forEach(a=>{ if((a.damId||'').trim()){ linked.add(a.animalId); linked.add(a.damId.trim()); } });
+  prog.forEach((l,d)=>linked.add(d));
   const noLink = animals.filter(a=>!linked.has(a.animalId) && !a.slaughtered);
   return `
     <div class="open-head"><h2>가계도</h2><span class="open-count">${roots.length}개 모계</span></div>
-    <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 10px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면으로 간다.</div>
-    ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
+    <div style="font-size:12px;color:var(--ink-soft);margin:2px 0 8px;">개체정보의 "어미 개체번호"로 이어진다. 소를 누르면 개체별 화면, + 는 후대(거세·도축) 성적 추가.</div>
+    <div class="fam-tools"><input type="search" id="fam_q" placeholder="개체번호 검색 (뒷자리만 쳐도 됨)" value="${esc(UI.famQ||'')}" inputmode="numeric"><button type="button" class="btn secondary small" data-action="famAddProg" data-dam="">+ 후대 성적</button></div>
+    ${roots.length ? `<div class="fam-cards">${roots.map(r=>`<div class="fam-card"><div class="fam-card-head">${node(r,0).replace(/^<li>/,'').replace(/<ul>[\s\S]*$/,'')}<span class="fam-n">자손 ${count(r)}두${pcount(r)?` · 후대 ${pcount(r)}`:''}</span></div><ul class="fam-tree">${(kids.get(r)||[]).map(c=>node(c.animalId,1)).join('')}${(prog.get(r)||[]).map(progHtml).join('')}</ul></div>`).join('')}</div>` : '<div class="empty-state">아직 어미 번호가 들어간 소가 없어요. 개체정보 수정에서 어미 개체번호를 넣으면 여기 이어져요.</div>'}
     ${noLink.length ? `<div class="fam-free-title">연결 안 된 소 ${noLink.length}두</div>
-      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
+      <div class="fam-free">${noLink.sort((x,y)=>byThirdId(x.animalId,y.animalId)).map(a=>{ const yr=a.birth?dateOnly(a.birth).slice(2,4):''; const oy=!a.fattening && animalFlags(owner,a).oneYear; return `<span class="fam-cow ${a.fattening?'gone':''} ${oy?'oneyear':''}" data-action="famGoto" data-id="${esc(a.animalId)}" data-key="${esc(a.animalId.replace(/\D/g,''))}" ${oy?'title="1년1산"':''}>${idHtml(a.animalId)}${yr?`<span class="fam-sub">'${yr}</span>`:''}</span>`; }).join('')}</div>` : ''}`;
+}
+function famFilter(q){
+  UI.famQ = q;
+  const k=(q||'').replace(/\D/g,'');
+  const view=document.getElementById('main')||document;
+  view.querySelectorAll('.fam-cow,.fam-prog').forEach(el=>el.classList.toggle('hit', !!k && (el.dataset.key||'').includes(k)));
+  view.querySelectorAll('.fam-card').forEach(c=>{ c.style.display = (!k || c.querySelector('.hit')) ? '' : 'none'; });
+  view.querySelectorAll('.fam-free .fam-cow').forEach(el=>{ el.style.display = (!k || el.classList.contains('hit')) ? '' : 'none'; });
+  const first=view.querySelector('.fam-cards .hit'); if(first && k.length>=3) first.scrollIntoView({block:'center',behavior:'smooth'});
+}
+/* 후대(거세·도축) 성적 입력 */
+function openProgenyModal(pid, damId){
+  const owner=UI.owner;
+  const p = pid ? (DATA.progeny||[]).find(x=>x.pid===pid) : { pid:'', damId:damId||'', id:'', sex:'거세', slaughterDate:'', weight:'', grade:'', yieldGrade:'', marbling:'', backfat:'', ema:'', note:'' };
+  if(!p) return;
+  modalCtx = { type:'progeny', owner, pid: p.pid };
+  const gOpts=['','1++','1+','1','2','3','등외'].map(g=>`<option ${p.grade===g?'selected':''}>${g}</option>`).join('');
+  const yOpts=['','A','B','C'].map(g=>`<option ${p.yieldGrade===g?'selected':''}>${g}</option>`).join('');
+  const sOpts=['거세','암','수'].map(g=>`<option ${p.sex===g?'selected':''}>${g}</option>`).join('');
+  openModal(`
+    <div class="modal">
+      <h2>${pid?'후대 성적 수정':'후대 성적 추가'}</h2>
+      <div class="modal-sub">축주: ${esc(owner)}</div>
+      <div class="form-grid">
+        <div class="field"><label>어미 개체번호 *</label><input type="text" id="pg_dam" list="pg_dam_list" value="${esc(p.damId)}"><datalist id="pg_dam_list">${ownerAnimalsFor(owner).map(x=>`<option value="${esc(x.animalId)}">`).join('')}</datalist></div>
+        <div class="field"><label>후대 개체번호</label><input type="text" id="pg_id" value="${esc(p.id)}" placeholder="002 0000 0000 0"></div>
+        <div class="field"><label>성별</label><select id="pg_sex">${sOpts}</select></div>
+        <div class="field"><label>도축일</label><input type="date" id="pg_date" value="${esc(p.slaughterDate)}"></div>
+        <div class="field"><label>도체중 (kg)</label><input type="number" inputmode="decimal" id="pg_wt" value="${esc(p.weight)}"></div>
+        <div class="field"><label>육질등급</label><select id="pg_grade">${gOpts}</select></div>
+        <div class="field"><label>근내지방도 (1~9)</label><input type="number" inputmode="numeric" id="pg_ms" value="${esc(p.marbling)}"></div>
+        <div class="field"><label>육량등급</label><select id="pg_yg">${yOpts}</select></div>
+        <div class="field"><label>등지방 (mm)</label><input type="number" inputmode="decimal" id="pg_bf" value="${esc(p.backfat)}"></div>
+        <div class="field"><label>배최장근단면적 (cm²)</label><input type="number" inputmode="decimal" id="pg_ema" value="${esc(p.ema)}"></div>
+        <div class="field" style="grid-column:1/-1;"><label>메모</label><input type="text" id="pg_note" value="${esc(p.note)}"></div>
+      </div>
+      <div class="modal-actions">
+        ${pid?'<button class="btn secondary" data-action="deleteProgeny" style="margin-right:auto;color:#b91c1c;">삭제</button>':''}
+        <button class="btn secondary" data-action="closeModal">취소</button>
+        <button class="btn" data-action="saveProgeny">저장</button>
+      </div>
+    </div>`);
+}
+function actionSaveProgeny(){
+  const owner=modalCtx.owner; const v=id=>(document.getElementById(id).value||'').trim();
+  const damFound = findAnimalLoose(owner, v('pg_dam'));
+  const damId = damFound ? damFound.animalId : v('pg_dam');
+  if(!damId){ toast('어미 개체번호를 넣어주세요.'); return; }
+  if(!Array.isArray(DATA.progeny)) DATA.progeny=[];
+  const rec = { owner, damId, id:v('pg_id'), sex:v('pg_sex'), slaughterDate:v('pg_date'), weight:v('pg_wt'), grade:v('pg_grade'), marbling:v('pg_ms'), yieldGrade:v('pg_yg'), backfat:v('pg_bf'), ema:v('pg_ema'), note:v('pg_note') };
+  if(modalCtx.pid){ const i=DATA.progeny.findIndex(x=>x.pid===modalCtx.pid); if(i>=0) DATA.progeny[i]=Object.assign({pid:modalCtx.pid}, rec); }
+  else DATA.progeny.push(Object.assign({ pid:'pg'+Date.now().toString(36)+Math.random().toString(36).slice(2,6) }, rec));
+  saveState(); closeModal(); renderMain(); toast('후대 성적을 저장했어요.');
+}
+function actionDeleteProgeny(){
+  DATA.progeny=(DATA.progeny||[]).filter(x=>x.pid!==modalCtx.pid);
+  saveState(); closeModal(); renderMain(); toast('삭제했어요.');
 }
 /* 개체 상세 혈통·기본정보에 암소능력 요약 표시 */
 function abilityDetailHtml(owner,a){
@@ -5902,7 +5980,7 @@ function renameOwnerTo(oldName, newName){
   const i = DATA.owners.indexOf(oldName);
   if(i<0){ toast('축주를 찾지 못했어요.'); return false; }
   DATA.owners[i] = newName;                                        // 1) 축주 목록
-  ['animals','records','schedule','vaccineLogs'].forEach(k=>{      // 2) owner 필드를 가진 자료
+  ['animals','records','schedule','vaccineLogs','progeny'].forEach(k=>{      // 2) owner 필드를 가진 자료
     (DATA[k]||[]).forEach(x=>{ if(x.owner===oldName) x.owner = newName; });
   });
   ['scheduleAnimals','scheduleRange','ownerProfiles','ownerFlags','shareTokens'].forEach(k=>{ // 3) 이름을 키로 쓰는 맵
@@ -6504,6 +6582,10 @@ const ACTIONS = {
   openAllSchedule: ()=>openAllSchedule(),
   setView: ds=>{ UI.view=ds.view; render(); },
   selectAnimal: ds=>{ UI.selectedAnimal=ds.id; renderMain(); },
+  famAddProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(null, ds.dam||''); },
+  famEditProg: ds=>{ if(!isAdmin()){ toast('읽기 전용이에요.'); return; } openProgenyModal(ds.pid); },
+  saveProgeny: ()=> actionSaveProgeny(),
+  deleteProgeny: ()=> actionDeleteProgeny(),
   famGoto: ds=>{ UI.view='animal'; UI.selectedAnimal=ds.id; render(); },
   setAnimalSort: ds=>{ UI.animalSort=ds.sort; renderMain(); },
   gotoAnimalDetail: ds=>{ UI.selectedAnimal=ds.id; UI.view='animal'; renderMain(); },
@@ -6749,6 +6831,7 @@ function initEvents(){
       renderMain();
     }
     else if(t.id==='syncbatch_q'){ syncBatchFilter(t.value); }
+    else if(t.id==='fam_q'){ famFilter(t.value); }
     else if(t.id==='f_damId' || (t.id==='f_birth' && document.getElementById('f_damId'))){ damAutoFill(); }
     else if(t.classList && t.classList.contains('ov-free')){
       const key=t.dataset.key; if(ovaryState[key]){ ovaryState[key].free=t.value; const hid=document.getElementById('f_'+key); if(hid) hid.value=ovaryCombined(key); }
