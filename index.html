@@ -6183,7 +6183,10 @@ function buildSharePayload(owner){
     .map(it => ({ date: it.date, id: it.animalId, note: `${VAC_LABEL[it.vaccine]} ${it.dose}` }))
     .sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   const progeny = (DATA.progeny||[]).filter(p=>p.owner===owner && p.damId && p.grade).map(p=>({ dam:p.damId, grade:p.grade }));
-  return { owner, updatedAt: todayStr(), animals, schedule, vaccines, progeny };
+  // 가계도 전용: 도축된 소도 계보를 잇기 위해 보낸다 (다른 탭에는 안 나옴)
+  const famExtra = DATA.animals.filter(a=>a.owner===owner && a.slaughtered).map(a=>{ const rg=regOf(owner,a);
+    return { id:a.animalId, dam:(a.damId||'').trim(), by:a.birth?dateOnly(a.birth).slice(2,4):'', sire:a.sire||'', reg:(rg&&rg!=='미등록')?rg:'', fst:'도축', gone:true }; });
+  return { owner, updatedAt: todayStr(), animals, schedule, vaccines, progeny, famExtra };
 }
 function shareViewerLink(owner){
   const token = ownerShareToken(owner);
