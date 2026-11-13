@@ -307,26 +307,26 @@ main{flex:1;padding:18px 20px 70px;}
 
 /* 분만예정일 계산 결과 카드 */
 .fam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
-.fam-card{--fc:#0d9488;border:1px solid #cbd5e1;border-left:4px solid var(--fc);border-radius:10px;background:var(--surface);padding:0 12px 10px;overflow:hidden;}
-.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 -12px 8px;padding:8px 12px;border-bottom:1px solid #e2e8f0;}
+.fam-card{--fc:#14b8a6;border:1px solid #a7ece2;border-radius:12px;background:var(--surface);padding:0 12px 10px;overflow:hidden;}
+.fam-card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 -12px 8px;padding:8px 12px;background:#e3f9f5;border-bottom:1px solid #a7ece2;}
 .fam-card-head .fam-cow{border-color:var(--fc);border-width:1.5px;}
-.fam-n{margin-left:auto;font-size:11.5px;font-weight:800;color:#fff;background:var(--fc);padding:2px 8px;border-radius:999px;}
+.fam-n{margin-left:auto;font-size:11.5px;font-weight:800;color:#0f766e;background:#c3f1e9;padding:2px 8px;border-radius:999px;}
 .fam-tree,.fam-tree ul{list-style:none;margin:0;padding:0;}
 .fam-tree{margin:0 0 0 6px !important;padding:0 !important;}
 .fam-tree ul{margin:0;padding:0 0 0 12px;}
 .fam-tree li{position:relative;padding:3px 0 3px 12px;}
-.fam-tree li::after{content:"";position:absolute;left:0;top:0;bottom:0;border-left:2px solid #14b8a6;}
+.fam-tree li::after{content:"";position:absolute;left:0;top:0;bottom:0;border-left:1.5px solid #c2ece5;}
 .fam-tree li:last-child::after{bottom:auto;height:16px;}
-.fam-tree li::before{content:"";position:absolute;left:0;top:15px;width:10px;border-top:2px solid #14b8a6;}
-.fam-cow{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #cbd5e1;border-radius:8px;background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;}
+.fam-tree li::before{content:"";position:absolute;left:0;top:15px;width:10px;border-top:1.5px solid #c2ece5;}
+.fam-cow{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #d6dee8;border-radius:8px;background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;}
 .fam-cow:hover{border-color:var(--fc,#0d9488);}
 .fam-cow b{font-family:var(--mono,monospace);font-weight:800;font-size:13.5px;color:var(--ink);}
 .fam-cow .fam-sub{color:#64748b;font-size:11px;}
-.fam-cow .fam-st{font-size:10.5px;padding:1px 7px;border-radius:5px;background:#64748b;color:#fff;font-weight:700;}
-.fam-st.ok{background:#0d9488;}
-.fam-st.wait{background:#0369a1;}
-.fam-st.warn{background:#64748b;}
-.fam-st.bad{background:#dc2626;}
+.fam-cow .fam-st{font-size:10.5px;padding:1px 7px;border-radius:5px;background:#e2e8f0;color:#334155;font-weight:700;}
+.fam-st.ok{background:#2cc4b0;color:#fff;}
+.fam-st.wait{background:#c7e6fb;color:#075985;}
+.fam-st.warn{background:#e2e8f0;color:#334155;}
+.fam-st.bad{background:#fdd3d3;color:#991b1b;}
 .fam-cow.gone{opacity:.45;}
 .fam-cow.ext{cursor:default;border-style:dashed;background:transparent;}
 .fam-free-title{font-size:12px;color:var(--ink-soft);margin:16px 0 6px;font-weight:700;}
