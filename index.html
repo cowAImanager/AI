@@ -4744,15 +4744,15 @@ function currentExpectedCalving(recs){
   const ai = currentAiDate(recs);
   return ai ? addDays(ai, 285) : '';
 }
-// 호흡기: 개체별·접종일 기준 (1차 수동 → 2주 후 2차 → 매년 보강)
+// 호흡기: 개체별·접종일 기준 (1차 수동 → 28일 후 2차 → 매년 보강)
 function nextRespVaccine(owner, a){
   const logs = vaccineLogsFor(owner, a.animalId, 'resp');
   if(logs.length===0) return null;                                  // 1차는 수동 시작
   const last = logs[logs.length-1];
-  if(logs.length===1 && last.dose==='1차') return { vaccine:'resp', dose:'2차', date: addDays(last.date, 14) };
+  if(logs.length===1 && last.dose==='1차') return { vaccine:'resp', dose:'2차', date: addDays(last.date, 28) };
   return { vaccine:'resp', dose:'보강', date: addDays(last.date, 365) };
 }
-// 설사: 임신 개체·분만예정일 역산 (첫 임신우 -49/-28, 이후 임신 보강 -28)
+// 설사: 임신 개체·분만예정일 역산 (첫 임신우 -56/-28, 이후 임신 보강 -28)
 function nextDiarrheaVaccine(owner, a, recs){
   if(!isCurrentlyPregnant(recs)) return null;
   const expCalv = currentExpectedCalving(recs);
@@ -4762,7 +4762,7 @@ function nextDiarrheaVaccine(owner, a, recs){
   const prior = logs.filter(v => aiStart && v.date < aiStart);       // 이전 임신 때 접종
   const thisCycle = logs.filter(v => !aiStart || v.date >= aiStart); // 이번 임신 접종
   if(prior.length===0){
-    if(thisCycle.length===0) return { vaccine:'diarrhea', dose:'1차', date: addDays(expCalv, -49) };
+    if(thisCycle.length===0) return { vaccine:'diarrhea', dose:'1차', date: addDays(expCalv, -56) };
     if(thisCycle.length===1) return { vaccine:'diarrhea', dose:'2차', date: addDays(expCalv, -28) };
     return null;
   }
@@ -4860,8 +4860,8 @@ function renderVaccineView(){
       ${isAdmin()?`<div style="margin:6px 0 8px;"><button class="btn small" data-action="openVaccineLog">+ 백신 접종 기록</button></div>`:''}
       ${mode==='cal' ? vacCalendarHtml(items) : `<div class="disease-list">${rows}</div>`}
       <div style="margin-top:14px;font-size:12px;color:var(--ink-soft);line-height:1.7;">
-        호흡기: 1차(수동) → 2주 후 2차 → 이후 매년 보강(마지막 접종 +365일).<br>
-        설사: 첫 임신우는 분만예정 −7주(1차)·−4주(2차), 이후 임신은 분만예정 −4주 보강.
+        호흡기: 1차(수동) → 4주 후 2차 → 이후 매년 보강(마지막 접종 +365일).<br>
+        설사: 첫 임신우는 분만예정 −8주(1차)·−4주(2차), 이후 임신은 분만예정 −4주 보강.
       </div>
     </div>`;
 }
