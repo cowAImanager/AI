@@ -5913,7 +5913,7 @@ function openBulkAddModal(){
   openModal(`
     <div class="modal" style="max-width:520px;">
       <h2>개체 일괄 추가</h2>
-      <div class="modal-sub" style="margin-bottom:10px;">한 줄에 한 마리. <b>개체번호</b>(띄어쓰기 있어도 됨) 뒤에 <b>출생일</b>(yy.mm.dd 또는 yyyy-mm-dd)을 적으면 같이 들어가요. 이미 있는 번호는 건너뜀.</div>
+      <div class="modal-sub" style="margin-bottom:10px;">한 줄에 한 마리. <b>개체번호</b>(띄어쓰기 있어도 됨) 뒤에 <b>출생일</b>(yy.mm.dd 또는 yyyy-mm-dd)을 적으면 같이 들어가요. 이미 있는 번호는 건너뜀. 추가한 뒤 이력제를 자동으로 조회해 도축된 개체는 도축 처리해요.</div>
       <div class="form-grid full">
         <div class="field"><label>축주</label>
           <div style="display:flex;gap:6px;"><select id="bulk_owner" style="flex:1;">${owners}</select><input type="text" id="bulk_owner_new" placeholder="새 축주 이름" style="flex:1;"></div>
@@ -5936,7 +5936,7 @@ function bulkAddApply(){
   if(!lines.length){ toast('개체 목록이 비어 있어요.'); return; }
   if(!DATA.owners.includes(owner)){ DATA.owners.push(owner); ensureOwnerMeta(owner); }
   const have=new Set(DATA.animals.filter(a=>a.owner===owner).map(a=>a.animalId.replace(/\s+/g,'')));
-  let added=0, skipped=0, bad=0;
+  let added=0, skipped=0, bad=0; const newIds=[];
   lines.forEach(line=>{
     const m=line.match(/(\d{3})\s*(\d{4})\s*(\d{4})\s*(\d)/);
     if(!m){ bad++; return; }
@@ -5946,12 +5946,40 @@ function bulkAddApply(){
     const d=rest.match(/(\d{2,4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
     if(d){ let y=parseInt(d[1],10); if(y<100) y+=2000; birth=`${y}-${String(d[2]).padStart(2,'0')}-${String(d[3]).padStart(2,'0')}`; }
     DATA.animals.push({animalId:id, owner, breed:'한우', sire:'', damSire:'', damDamSire:'', birth, parity:'', lastCalving:null});
-    have.add(id.replace(/\s+/g,'')); added++;
+    have.add(id.replace(/\s+/g,'')); added++; newIds.push(id);
   });
   saveState();
   UI.owner=owner; UI.view='animal'; UI.selectedAnimal=null;
   closeModal(); render();
   toast(`${owner}: ${added}두 추가${skipped?` · 중복 ${skipped}`:''}${bad?` · 인식 실패 ${bad}`:''}`);
+  if(newIds.length) bulkTraceCheck(owner, newIds);
+}
+/* 일괄 추가 뒤 이력제 자동 조회: 도축된 개체는 도축 처리, 빈 출생일·품종은 채움 */
+async function bulkTraceCheck(owner, ids){
+  if(!TRACE_URL || !ids || !ids.length) return;
+  let done=0, sl=0, fail=0;
+  const one = async id => {
+    try{
+      const r = await fetch(TRACE_URL + '?no=' + id.replace(/\D/g,''));
+      const d = await r.json();
+      if(!r.ok || d.error){ fail++; }
+      else{
+        const a = DATA.animals.find(x=>x.owner===owner && x.animalId===id);
+        if(a){
+          if(!a.birth && d.birth) a.birth = d.birth;
+          if(d.type){ if(/젖소/.test(d.type)) a.breed='젖소'; else if(/한우/.test(d.type)) a.breed='한우'; }
+          if(d.slaughterDate && !a.slaughtered){ a.slaughtered = true; a.slaughterDate = d.slaughterDate; sl++; }
+        }
+      }
+    }catch(e){ fail++; }
+    done++;
+    if(done % 5 === 0 && done < ids.length) toast(`이력 조회 중 ${done}/${ids.length}`);
+  };
+  const q = ids.slice();
+  const worker = async () => { while(q.length){ await one(q.shift()); } };
+  await Promise.all([worker(), worker(), worker()]);
+  saveState(); render();
+  toast(`이력 조회 완료 ${ids.length}두 · 도축 처리 ${sl}두${fail?` · 조회 실패 ${fail}두`:''}`);
 }
 function openBackupModal(){
   const st = storageStatusLabel();
