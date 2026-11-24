@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>수의학</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -1331,6 +1332,29 @@ html[data-theme="dark"] mark.ps{background:rgba(255,216,102,.35);}
   document.addEventListener('DOMContentLoaded',function(){ mo.observe(document.body,{childList:true,subtree:true}); });
 })();
 </script>
+<style id="namu-look">
+/* 나무위키 스타일 */
+html,body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;}
+.namu-doc{letter-spacing:0;}
+.rb-boxes .bx,[data-theme="dark"] .rb-boxes .bx{border:none;background:transparent;padding:0;margin:0 0 22px;border-radius:0;}
+.rb-boxes .bx{color:#373a3c;letter-spacing:0;}
+[data-theme="dark"] .rb-boxes .bx{color:var(--ink);}
+.rb-boxes .bx>.bx-title,.rb-boxes .bx.collapsed>.bx-title{font-size:21px;font-weight:700;color:#212529;padding:8px 0 8px;margin:0 0 14px;border-bottom:1px solid #CCCCCC;letter-spacing:-.01em;}
+[data-theme="dark"] .rb-boxes .bx>.bx-title{color:var(--ink);border-bottom-color:var(--line);}
+.rb-boxes .bx.collapsed{margin:0 0 4px;}
+.rb-boxes .bx.collapsed>.bx-title{margin:0;}
+.rb-boxes .bx p.bx-num{line-height:1.5;margin:0 0 1.6em;gap:0;}
+.rb-boxes .bx p.bx-num.bx-in{margin:-.9em 0 1.6em 1.6em;}
+.rb-boxes .bx p.bx-num:not(.starred):not(.bx-bul)>.bxn{display:none;}
+.rb-boxes .bx p.bx-num:last-child{margin-bottom:.4em;}
+mark.hl{background:none;color:#1557C0;padding:0;border-radius:0;}
+html[data-theme="dark"] mark.hl{background:none;color:#8FB4FF;}
+.hl-bar button[data-hl-act="add"]{background:#1557C0;color:#fff;border-color:#1557C0;}
+@media (max-width:700px){
+.rb-boxes .bx>.bx-title,.rb-boxes .bx.collapsed>.bx-title{font-size:18px;padding:8px 0 7px;}
+.rb-boxes .bx p.bx-num{font-size:15px;line-height:1.5;}
+}
+</style>
 </head>
 <body><div class="app" id="app"></div>
 <script>
@@ -5963,7 +5987,7 @@ function med_sysHtml(){
 </div>
 <div class="bx"><div class="bx-title">탄저병 <span style="font-weight:500;font-size:12px;color:var(--muted,#6b7280)">제2종 가축전염병</span></div>
 <p class="bx-num"><span class="bxn">•</span><span>제2종 가축전염병이자 인수공통전염병이다.</span></p>
-<p class="bx-num"><span class="bxn">•</span><span>원인은 Bacillus anthracis로, 아포와 협막을 만드는 그람양성 막대균이다. 크고 끝이 네모나며 사슬로 이어진다. 운동성이 없다. 아포는 산소가 있어야 만들어져서, 몸 안에서는 안 생기고 균이 몸 밖으로 나와 공기에 닿을 때 생긴다. 아포는 환경에서 수십 년 남는다.</span></p>
+<p class="bx-num"><span class="bxn">•</span><span>원인은 Bacillus anthracis로, 아포와 협막을 만드는 그람양성 호기성 막대균이다. 산소가 없어도 자라는 통성 혐기성으로도 적는다. 크고 끝이 네모나며 사슬로 이어진다. 운동성이 없다. 아포는 산소가 있어야 만들어져서, 몸 안에서는 안 생기고 균이 몸 밖으로 나와 공기에 닿을 때 생긴다. 아포는 환경에서 수십 년 남는다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>대부분 먹어서 걸린다. 오염된 흙을 직접 먹거나 오염된 땅에서 자란 풀과 사료를 먹는다. 아포는 입과 소화관 점막의 작은 상처로 들어간다. 흡입이나 피부 상처로도 들어가고, 흡혈 곤충이 옮기기도 한다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>들어온 아포는 대식세포에 실려 림프절로 간 뒤 혈류로 퍼져 패혈증이 된다. 협막은 면역을 피하게 한다. 독소는 방어항원, 치사인자, 부종인자 세 가지로 이루어지며, 혈관을 손상시켜 부종과 쇼크를 일으켜 죽게 한다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>죽은 소의 분비물과 조직이 흙을 오염시킨다. 골분이나 가죽 같은 동물성 부산물에도 아포가 묻어 온다. 사체를 먹는 새와 짐승이 아포를 퍼뜨린다.</span></p>
@@ -5976,20 +6000,13 @@ function med_sysHtml(){
 <p class="bx-num"><span class="bxn">•</span><span>혈액 도말을 다색 메틸렌블루로 염색하면 끝이 네모난 막대균이 사슬로 이어지고 둘레에 협막이 보인다. 클로스트리듐은 끝이 둥글고 협막이 없다. 배양, PCR, 형광항체법으로 확인하며, 현장에서 쓰는 면역크로마토 검사도 있다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>사체는 사후강직이 없거나 불완전하고 빨리 부패해 가스로 부푼다. 천연공에서 검고 타르 같은 피가 나오고 피가 굳지 않는다. 열었을 때는 광범위한 출혈, 체강의 혈액 섞인 액체, 심한 장염, 비장 종대가 보인다. 커진 비장은 물러서 검은딸기잼 같다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>감별할 병은 낙뢰, 기종저와 악성수종 같은 클로스트리듐 감염, 고창증, 급성 중독, 후대정맥 혈전증이다.</span></p>
-<p class="bx-num"><span class="bxn">•</span><span>경과가 빨라 치료할 틈이 대개 없다. 아주 초기에 치료하면 효과를 기대할 수 있다. 약은 페니실린과 테트라사이클린이고 최소 5일 쓴다. 페니실린 내성주가 보고된다. 항생제가 균을 없애도 이미 퍼진 독소에는 효과가 없다.</span></p>
+<p class="bx-num"><span class="bxn">•</span><span>경과가 빨라 치료할 틈이 대개 없다. 아주 초기에 치료하면 효과를 기대할 수 있다. 약은 페니실린과 테트라사이클린이고 최소 5일 쓴다. 용량은 프로카인 페니실린 22,000IU/kg 근육 12시간마다 또는 44,000IU/kg 24시간마다, 옥시테트라사이클린 10mg/kg 정맥 또는 근육 24시간마다다. 페니실린 내성주가 보고된다. 항생제가 균을 없애도 이미 퍼진 독소에는 효과가 없다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>발생하면 농장을 격리한다. 사체는 열거나 옮기지 말고 태우거나 깊이 묻는다. 소각이 더 낫고, 묻을 때는 물이 닿는 곳을 피한다. 오염된 깔짚과 흙도 같이 처리한다.</span></p>
-<p class="bx-num"><span class="bxn">•</span><span>남은 건강한 소는 백신을 놓는다. 예방으로 항생제를 주기도 하지만, 백신이 생균이라 항생제와 같이 쓰면 효과가 떨어진다. 7~10일 간격을 둔다. 이웃 농장도 접종하고, 곤충과 사체 먹는 짐승을 막고, 오염된 초지를 피한다.</span></p>
+<p class="bx-num"><span class="bxn">•</span><span>남은 건강한 소는 백신을 놓는다. 예방으로 항생제를 주기도 하지만(프로카인 페니실린 44,000IU/kg 24시간마다, 또는 지속성 옥시테트라사이클린 20mg/kg 72시간마다), 백신이 생균이라 항생제와 같이 쓰면 효과가 떨어진다. 7~10일 간격을 둔다. 이웃 농장도 접종하고, 곤충과 사체 먹는 짐승을 막고, 오염된 초지를 피한다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>백신은 Sterne주 아포 생균백신이다(협막이 없는 약독주). 상재 지역에서는 매년, 방목기 전에 놓는다. 접종 뒤 우유는 72시간 버린다.</span></p>
 <p class="bx-num"><span class="bxn">•</span><span>사람은 피부 탄저가 가장 흔하고, 사체를 다루는 수의사가 위험군이다. 시료를 뽑거나 사체를 다룰 때는 장갑, 가운, 마스크를 쓴다.</span></p>
 </div>
 
-<div class="bx"><div class="bx-title">탄저병 (이전 내용) <span style="font-weight:500;font-size:12px;color:var(--muted,#6b7280)">제2종 가축전염병</span></div>
-<p class="bx-num"><span class="bxn" data-n="155">•</span><span>제2종 가축전염병(현행 가축전염병예방법)이자 인수공통전염병이다.</span></p>
-<p class="bx-num"><span class="bxn" data-n="156">•</span><span>원인은 Bacillus anthracis다. 가뭄 뒤 큰비, 땅파기 뒤 발생이 많다.</span></p>
-<p class="bx-num"><span class="bxn" data-n="157">•</span><span>의심 사체는 열지 않는다(공기에 닿으면 아포 형성). 검사기관에 미리 알린다. 시료는 표재 정맥의 응고되지 않은 혈액, 큰 바늘로 뽑은 안구액 또는 눈알이고 귀·피부·장 내용물은 권하지 않는다. 12시간 넘은 사체는 클로스트리디아가 덮어 도말 판독이 어렵다. 혈액으로 15분 만에 보는 현장 면역크로마토 검사가 있다(민감도 93.1%). 감별은 기종저, 악성수종, 낙뢰, 고창증이다.</span></p>
-<p class="bx-num"><span class="bxn" data-n="158">•</span><span>치료는 페니실린 G 나트륨·칼륨 20,000IU/kg 정맥 12시간마다, 프로카인 페니실린 22,000IU/kg 근육 12시간마다 또는 44,000IU/kg 24시간마다, 옥시테트라사이클린 10mg/kg 정맥 또는 근육 24시간마다. 이미 퍼진 독소에는 효과가 없다. 최소 5일 치료하고 항생제는 검사 검출을 방해한다.</span></p>
-<p class="bx-num"><span class="bxn" data-n="159">•</span><span>위험군 예방 투여는 프로카인 페니실린 44,000IU/kg 24시간마다, 또는 지속성 옥시테트라사이클린 20mg/kg 72시간마다. 탄저 생균백신 접종 전후 7~10일 안에 항생제를 쓰면 백신 효과가 떨어진다. 사체는 태우거나 1.8m 이상 묻고 생석회를 덮는다.</span></p>
-</div>
 <div class="bx"><div class="bx-title">기종저 <span style="font-weight:500;font-size:12px;color:var(--muted,#6b7280)">제2종 가축전염병</span></div>
 <p class="bx-num"><span class="bxn">•</span><span>기종저는 가스가 차서 부풀며 썩는다는 뜻이다. 영어로는 blackleg(검은 다리)로, 병든 다리의 근육이 검붉게 변하는 데서 왔다.</span></p>
 <p class="bx-num"><span class="bxn" data-n="160">•</span><span>제2종 가축전염병(현행 가축전염병예방법)이며 2026년 3월 제3종으로 내리는 개정안이 발의되었다.</span></p>
