@@ -167,10 +167,40 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo'
   #vfam .fp{margin-left:3px;}
   #vfam .fg,#vfam .fp .fg{min-width:0;padding:1px 4px;font-size:9.5px;margin:0 2px 0 0;}
 }
+
+/* 글자 크기 조절 */
+#app{zoom:var(--vz,1);}
+.v-fsbar{max-width:560px;margin:0 auto;padding:10px 14px 0;display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.v-fsbar .lbl{font-size:12px;font-weight:700;color:var(--ink-soft);margin-right:2px;}
+.v-fsbtn{min-width:44px;height:36px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;padding:0 8px;}
+.v-fsbtn:active{background:var(--green-soft);}
+.v-fsbtn:disabled{opacity:.35;cursor:default;}
+.vz-big .v-prow{flex-wrap:wrap;row-gap:4px;}
+.vz-big .v-tab svg{display:none;}
+.vz-big .v-tab{padding:9px 1px;letter-spacing:-.03em;}
+.vz-big .v-head{flex-wrap:wrap;}
+.vz-big .v-gitem,.vz-big .v-today-row{flex-wrap:wrap;}
 </style>
 </head>
 <body>
+<div class="v-fsbar"><span class="lbl">글자 크기</span><button type="button" class="v-fsbtn" id="vfsDown" aria-label="글자 작게">가 −</button><button type="button" class="v-fsbtn" id="vfsUp" aria-label="글자 크게">가 +</button></div>
 <div class="wrap" id="app"></div>
+<script>
+(function(){
+  var STEPS=[1,1.12,1.25,1.4], KEY='viewerFontStep';
+  function get(){ var v=0; try{ var x=parseInt(localStorage.getItem(KEY),10); if(x>=0 && x<STEPS.length) v=x; }catch(e){} return v; }
+  function apply(v){
+    document.documentElement.style.setProperty('--vz', STEPS[v]);
+    document.documentElement.classList.toggle('vz-big', v>0);
+    document.getElementById('vfsDown').disabled = v<=0;
+    document.getElementById('vfsUp').disabled = v>=STEPS.length-1;
+  }
+  function step(d){ var v=Math.max(0, Math.min(STEPS.length-1, get()+d)); try{ localStorage.setItem(KEY, v); }catch(e){} apply(v); }
+  document.getElementById('vfsDown').addEventListener('click', function(){ step(-1); });
+  document.getElementById('vfsUp').addEventListener('click', function(){ step(1); });
+  apply(get());
+})();
+</script>
 
 <script>
 /* =========================================================
