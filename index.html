@@ -3453,7 +3453,7 @@ function renderPregCheckView(){
       tags.push(row.isStillbirthEnd
         ? `<span class="preg-tag neg">사산 ${fmtShort(row.calvDate)}</span>`
         : `<span class="preg-tag calf">분만 ${fmtShort(row.calvDate)}</span>`);
-      if(sexIcon(row.calfSex)) tags.push(`<span class="preg-tag sex" title="송아지 성별">${sexIcon(row.calfSex)}</span>`); else if(row.calfSex && /쌍/.test(row.calfSex)) tags.push(`<span class="preg-tag calf">${esc(row.calfSex)}</span>`);
+      if(sexIcon(row.calfSex)) tags.push(`<span class="preg-tag sex" title="송아지 성별">${sexIcon(row.calfSex)}</span>`); else if(row.calfSex && /쌍/.test(row.calfSex)) tags.push(`<span class="preg-tag calf">${esc(calfSexLabel(row.calfSex))}</span>`);
     } else if(row.isPreg){
       if(row.expCalv){
         const dd = daysBetween(todayStr(), row.expCalv);
@@ -3541,13 +3541,21 @@ function renderPregCheckView(){
     }
   });
   yearCalvings.sort((x,y)=> y.calvDate.localeCompare(x.calvDate));
+  // 출산 송아지 암수 집계 (쌍태는 성별을 넣은 경우 2마리로 셈, 성별 없는 건 미기입)
+  const calfCount = (()=>{ let m=0,f=0,unk=0;
+    yearCalvings.forEach(c=>{ const v=String(c.calfSex||'').trim(); const ic=sexIcon(v); const tw=twinSexOf(v);
+      if(ic==='♂') m++; else if(ic==='♀') f++;
+      else if(tw==='수수') m+=2; else if(tw==='암암') f+=2; else if(tw==='수암'){ m++; f++; }
+      else unk++; });
+    return {m,f,unk}; })();
+  const calfCountTxt = `♂ ${calfCount.m} · ♀ ${calfCount.f}` + (calfCount.unk ? ` · 미기입 ${calfCount.unk}` : '');
   const yearCalvingsHtml = yearCalvings.map(({animalId,recordId,calvDate,calfSex}) => `
     <div class="pregcheck-row" data-action="${recordId?'editRecord':'gotoAnimalDetail'}" data-id="${esc(recordId||animalId)}">
       <span class="tag-chip" data-animal-id="${esc(animalId)}">${esc(animalId)}</span>
       <span class="pregcheck-mid">
         <span class="pregcheck-date"><span class="pcd-prefix">분만일 </span>${fmtYmdShort(calvDate)}</span>
         <span class="pregcheck-days">${daysBetween(calvDate, today)}일 경과</span>
-        <span class="preg-tags">${sexIcon(calfSex)?`<span class="preg-tag sex">${sexIcon(calfSex)}</span>`:(calfSex&&/쌍/.test(calfSex)?`<span class="preg-tag calf">${esc(calfSex)}</span>`:'')}</span>
+        <span class="preg-tags">${sexIcon(calfSex)?`<span class="preg-tag sex">${sexIcon(calfSex)}</span>`:(calfSex&&/쌍/.test(calfSex)?`<span class="preg-tag calf">${esc(calfSexLabel(calfSex))}</span>`:'')}</span>
       </span>
     </div>`).join('') || `<div class="empty-state">${yearNow}년 출산 기록이 없어요.</div>`;
 
@@ -3572,7 +3580,7 @@ function renderPregCheckView(){
         </div>
         <div class="preg-stat clickable ${pf==='calvings'?'sel':''}" data-action="setPregFilter" data-filter="calvings">
           <div class="preg-stat-num">${yearCalvings.length}<span style="font-size:14px;font-weight:700;">두</span></div>
-          <div class="preg-stat-label">${yearNow}년 출산</div>
+          <div class="preg-stat-label">${yearNow}년 출산 <span class="preg-stat-sub">${calfCountTxt}</span></div>
         </div>
         ${(()=>{ const oy = oneYearStats(yearCalvings, pregnant); return `<div class="preg-stat ratecol2" title="올해 분만우 중 분만 후 81일 안에 수태한 소. 분모는 결과가 난 소(임신중 또는 81일 경과), 아직 81일 안 지난 비임신우 ${oy.pending}두는 보류">
           <div class="preg-stat-num">${oy.n}<span style="font-size:14px;font-weight:700;">두</span></div>
@@ -3605,7 +3613,7 @@ function renderPregCheckView(){
       ${showPreg?`<div class="section-title" ${showActive?'style="margin-top:26px;"':''}><span>🐄 임신중 (${pregnant.length}두)</span></div>
       <div class="pregcheck-list">${pregnantHtml}</div>`:''}
       ${showCalv?`<div class="section-title calv-title" style="margin-top:26px;">
-        <span>🐣 ${yearNow}년 출산 (${yearCalvings.length}두)</span>
+        <span>🐣 ${yearNow}년 출산 (${yearCalvings.length}두 · ${calfCountTxt})</span>
         <span class="calv-year-nav">
           <button class="iconbtn" data-action="shiftCalvYear" data-dir="-1" title="이전 해">‹</button>
           ${yearNow!==thisYear?`<button class="iconbtn" data-action="shiftCalvYear" data-dir="0" title="올해로">${thisYear}</button>`:''}
@@ -5060,7 +5068,11 @@ function openRecordModal(record, owner, presetAnimalId){
         </div>
         <div class="field ox-compact">
           <label>송아지 성별</label>
-          ${segToggle('calfSex', r.calfSex, [['수','수'],['암','암'],['쌍태','쌍태']])}
+          ${segToggle('calfSex', /쌍/.test(r.calfSex||'') ? '쌍태' : r.calfSex, [['수','수'],['암','암'],['쌍태','쌍태']], 'refreshTwinSex')}
+        </div>
+        <div class="field ox-compact" id="calf-twin-wrap" style="display:none;">
+          <label>쌍태 성별</label>
+          ${segToggle('calfTwin', twinSexOf(r.calfSex), [['수수','♂♂'],['암암','♀♀'],['수암','♂♀']])}
         </div>
       </div>
       <div class="sync-proto-hint">분만일을 입력하면 임신중에서 빠지고 분만완료로 표시돼요. <b>산차 +1 · 최근분만일</b>도 자동 갱신됩니다.</div>
@@ -5081,6 +5093,7 @@ function openRecordModal(record, owner, presetAnimalId){
     </div>
   `);
   refreshPregStage();
+  refreshTwinSex();
   // 발정일시·수정일시를 입력/변경하면 수정간격 자동 계산
   ['f_estrusDate_date','f_estrusDate_time','f_aiDate_date','f_aiDate_time'].forEach(function(id){
     var el = document.getElementById(id);
@@ -5124,7 +5137,7 @@ function actionSaveRecord(){
     pregnant2: (g('f_pregnant2')||{value:''}).value.trim(),
     fetalSex: (g('f_fetalSex')||{value:''}).value.trim(),
     calvingDate: (g('f_calvingDate')||{value:''}).value || null,
-    calfSex: (g('f_calfSex')||{value:''}).value.trim(),
+    calfSex: (()=>{ const m=(g('f_calfSex')||{value:''}).value.trim(); const t=(g('f_calfTwin')||{value:''}).value.trim(); return (m==='쌍태' && t) ? '쌍태('+t+')' : m; })(),
     stillbirthDate: (g('f_stillbirthDate')||{value:''}).value || null,
     estrusVulvar: g('f_estrusVulvar').value.trim(),
     estrusMucus: g('f_estrusMucus').value.trim(),
@@ -6182,6 +6195,27 @@ function animalFlags(owner, a){
   }
   return { oneYear, aiN, repeat: aiN>=3 };
 }
+// 쌍태 성별: '쌍태(수수)'·'쌍태(암암)'·'쌍태(수암)' 형태로 저장
+function twinSexOf(v){
+  const m = String(v||'').match(/수수|암암|수암|암수/);
+  return m ? (m[0]==='암수' ? '수암' : m[0]) : '';
+}
+function calfSexLabel(v){
+  v = String(v||'').trim();
+  if(!/쌍/.test(v)) return v;
+  const t = twinSexOf(v);
+  return '쌍태' + (t ? ' ' + ({'수수':'♂♂','암암':'♀♀','수암':'♂♀'})[t] : '');
+}
+function refreshTwinSex(){
+  const main = ((document.getElementById('f_calfSex')||{}).value||'').trim();
+  const wrap = document.getElementById('calf-twin-wrap'); if(!wrap) return;
+  const on = main==='쌍태';
+  wrap.style.display = on ? '' : 'none';
+  if(!on){
+    const h=document.getElementById('f_calfTwin'); if(h) h.value='';
+    wrap.querySelectorAll('.seg-tbtn').forEach(b=>b.classList.remove('on'));
+  }
+}
 function sexIcon(v){
   v = String(v||'').trim();
   if(/^(수|수컷|♂|m|male)$/i.test(v)) return '♂';
@@ -6825,6 +6859,7 @@ const ACTIONS = {
     const grp = e && e.target && e.target.closest('.seg-toggle');
     if(grp){ grp.querySelectorAll('.seg-tbtn').forEach(b=>b.classList.toggle('on', b.dataset.val===nv && nv!=='')); }
     if(ds.then==='refreshPregStage') refreshPregStage();
+    if(ds.then==='refreshTwinSex') refreshTwinSex();
   },
   applySyncProtocol: ds=>{ if(!isAdmin()) return noAdminToast(); applySyncProtocol(ds.name); },
   clearSyncSteps: ()=>{ if(!isAdmin()) return noAdminToast(); clearSyncSteps(); },
