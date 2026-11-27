@@ -622,7 +622,7 @@ html[data-theme="dark"] .fam-prog{background:transparent;}
 /* 임신감정 */
 .preg-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
 .preg-summary.five{grid-template-columns:repeat(5,minmax(0,1fr));}
-.preg-summary.preg-five{grid-template-columns:repeat(6,minmax(0,1fr));}
+.preg-summary.preg-five{grid-template-columns:repeat(7,minmax(0,1fr));}
 .preg-summary.disease-three{grid-template-columns:repeat(3,minmax(0,1fr));}
 @media (max-width:560px){
   .preg-summary{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -630,6 +630,7 @@ html[data-theme="dark"] .fam-prog{background:transparent;}
   /* 임신감정: 2칸씩 3줄 (대상·임신중 / 첫수정 수태율·수태당 수정횟수 / 출산·1년1산) */
   .preg-summary.preg-five{grid-template-columns:repeat(2,minmax(0,1fr));}
   .preg-summary.preg-five > .preg-stat{grid-column:auto;justify-content:center;}
+  .preg-summary.preg-five > .preg-stat.fertilecol{grid-column:1 / -1;}
   .preg-summary.preg-five .preg-stat-sub{white-space:normal;line-height:1.2;}
 
   /* 질환: 5칸 한 줄 */
@@ -2028,6 +2029,18 @@ function ageMonths(birth){
   let months = (now.getFullYear()-y)*12 + (now.getMonth()+1-m);
   if(now.getDate() < d) months -= 1;
   return months + '개월';
+}
+// 가임암소: 16개월령을 넘었고 비육·도축이 아닌 소 (출생일이 없으면 세지 않음)
+function isFertileCow(a){
+  if(!a || a.slaughtered || a.fattening) return false;
+  const b = dateOnly(a.birth||''); if(!b) return false;
+  const [y,m,d] = b.split('-').map(Number);
+  const lim = new Date(y, (m-1)+16, d);            // 출생일 + 16개월
+  const t = new Date(todayStr()+'T00:00');
+  return t.getTime() > lim.getTime();
+}
+function fertileCowCount(owner){
+  return DATA.animals.filter(a=>a.owner===owner && isFertileCow(a)).length;
 }
 /* 품종 그림/배지 + 수정난이도 별 꾸밈 */
 function breedIcon(breed){ return breed==='젖소' ? '🐄' : '🐂'; }
@@ -3562,6 +3575,10 @@ function renderPregCheckView(){
   return `
     <div class="panel">
       <div class="preg-summary five preg-five">
+        <div class="preg-stat fertilecol" title="16개월령을 넘었고 비육·도축이 아닌 소">
+          <div class="preg-stat-num">${fertileCowCount(UI.owner)}<span style="font-size:14px;font-weight:700;">두</span></div>
+          <div class="preg-stat-label">가임암소</div>
+        </div>
         <div class="preg-stat clickable ${pf==='active'?'sel':''}" data-action="setPregFilter" data-filter="active">
           <div class="preg-stat-num">${active.length}</div>
           <div class="preg-stat-label">임신감정 대상</div>
@@ -6267,7 +6284,7 @@ function buildSharePayload(owner){
   // 가계도 전용: 도축된 소도 계보를 잇기 위해 보낸다 (다른 탭에는 안 나옴)
   const famExtra = DATA.animals.filter(a=>a.owner===owner && a.slaughtered).map(a=>{ const rg=regOf(owner,a);
     return { id:a.animalId, dam:(a.damId||'').trim(), by:a.birth?dateOnly(a.birth).slice(2,4):'', sire:a.sire||'', reg:(rg&&rg!=='미등록')?rg:'', fst:'도축', gone:true }; });
-  return { owner, updatedAt: todayStr(), animals, schedule, vaccines, progeny, famExtra };
+  return { owner, updatedAt: todayStr(), animals, schedule, vaccines, progeny, famExtra, fertile: fertileCowCount(owner) };
 }
 function shareViewerLink(owner){
   const token = ownerShareToken(owner);
